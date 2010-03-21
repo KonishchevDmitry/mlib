@@ -64,6 +64,9 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data)
 			QDomNode entry = entries.item(entry_id);
 			Feed_item item;
 
+			if(entry_id)
+				MLIB_DV("");
+
 			// Title and summary -->
 				item.title = entry.firstChildElement("title").text();
 				MLIB_DV("Title: '%1'.", item.title);
@@ -79,6 +82,51 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data)
 				}
 			// Title and summary <--
 
+			// Feed info -->
+			{
+				QDomElement source_dom = entry.firstChildElement("source");
+
+				// Feed URI -->
+				{
+					QString stream_id = source_dom.attribute("gr:stream-id");
+					MLIB_DV("Stream id: %1", stream_id);
+
+					QString stream_id_prefix = "feed/";
+					if(
+						!stream_id.startsWith(stream_id_prefix) ||
+						// http:// or may be https://
+						!( item.feed_uri = stream_id.mid(stream_id_prefix.size()) ).startsWith("http")
+					)
+					{
+						// TODO: at less its id
+						MLIB_SW(_F( tr("Gotten item with invalid stream id '%1'. Skipping it."), stream_id ));
+						continue;
+					}
+				}
+				// Feed URI <--
+
+				// Feed name -->
+				{
+					QDomNodeList titles = source_dom.elementsByTagName("title");
+
+					MLIB_DV("Titles count: %1.", titles.size());
+
+					if(
+						titles.size() < 1 ||
+						( item.feed_name = titles.item(0).toElement().text() ).isEmpty()
+					)
+					{
+						// TODO: at less its id
+						MLIB_SW(tr("Gotten item with empty subscription name. Skipping it."));
+						continue;
+					}
+
+					MLIB_DV("Feed name: '%1'.", item.feed_name);
+				}
+				// Feed name <--
+			}
+			// Feed info <--
+
 			// Labels -->
 			{
 				QDomElement entry_dom = entry.toElement();
@@ -90,11 +138,13 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data)
 				for(int category_id = 0; category_id < categories.size(); category_id++)
 				{
 					QString label = categories.item(category_id).toElement().attribute("label");
-					MLIB_DV("\t%1", label);
 
 // TODO
 					if(!label.isEmpty()/* && label != "reading-list" && label != "fresh"*/)
+					{
+						MLIB_DV("\t%1", label);
 						labels << label;
+					}
 				}
 
 				Q_FOREACH(const QString& label, labels)

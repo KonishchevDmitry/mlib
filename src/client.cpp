@@ -66,8 +66,8 @@ void Client::on_reader_error(const QString& error)
 void Client::on_reading_list(const Feed_items_list& items)
 {
 // TODO
-	Q_FOREACH(const Feed_item& item, items)
-		MLIB_D(item.title);
+//	Q_FOREACH(const Feed_item& item, items)
+//		MLIB_D(item.title);
 	this->items = items;
 	emit mode_changed(OFFLINE);
 }

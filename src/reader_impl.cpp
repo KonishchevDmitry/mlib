@@ -201,7 +201,7 @@ void Reader_impl::on_authentication_finished(void)
 // TODO: max size limit
 void Reader_impl::on_data_gotten(qint64 size, qint64 total_size)
 {
-	MLIB_D("Data gotten: %1 of %2.", size, total_size);
+	MLIB_DV("Data gotten: %1 of %2.", size, total_size);
 }
 
 
@@ -322,7 +322,7 @@ void Reader_impl::process(void)
 	switch(task.type())
 	{
 		case Task::GET_READING_LIST:
-			request.setUrl(QUrl("http://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=10"));
+			request.setUrl(QUrl("http://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=20"));
 			break;
 
 		default:

@@ -40,6 +40,9 @@ class Feed_item
 	public:
 		QString		title;
 		QString		summary;
+
+		QString		feed_name;
+		QString		feed_uri;
 		QStringList	labels;
 };
 
