@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# Updates project file
+#
+
+project_file=grov.pro
+src_dir=src
+
+project=$(
+	set -e
+
+	sed -r '
+		s/^\s*SRC_DIR\s*=.*/SRC_DIR = $$_PRO_FILE_PWD_\/'$src_dir'/
+		/^\s*# Automatically generated rules -->\s*$/,/^\s*# Automatically generated rules <--\s*$/d
+	' "$project_file"
+
+	echo '# Automatically generated rules -->'
+	(
+		cd "$src_dir"
+
+		find -name '*.cpp' -o -name '*.hh' \
+			| sed 's/\.\/\(.*\)/\tSOURCES += $$SRC_DIR\/\1/'
+		echo
+		find -name '*.hpp' -o -name '*.hxx' \
+			| sed 's/\.\/\(.*\)/\tHEADERS += $$SRC_DIR\/\1/'
+		echo
+		find -type d -a -not -name '.*' \
+			| sed 's/\.\/\(.*\)/\tDEPENDPATH += $$SRC_DIR\/\1/'
+	)
+	echo '# Automatically generated rules <--'
+)
+
+if [[ $? -eq 0 ]]
+then
+	echo "$project" > "$project_file"
+	qmake -Wall -Wlogic -Wparser
+	make distclean
+fi
+
