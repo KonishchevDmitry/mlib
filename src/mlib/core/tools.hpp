@@ -23,9 +23,9 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/noncopyable.hpp>
 
-
-/// GCC's attributes
-#define MLIB_ATTRIBUTE(args...) __attribute__ (( args ))
+#if MLIB_DEVELOP_MODE
+	#include <QtCore/QDebug>
+#endif
 
 
 /// Returns variable's type.

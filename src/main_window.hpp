@@ -24,6 +24,8 @@
 #include <QtGui/QMainWindow>
 
 #include <src/client.hpp>
+#include <src/common.hpp>
+#include <src/feeds_model.hxx>
 
 
 namespace Ui {
@@ -43,7 +45,12 @@ class Main_window: public QMainWindow
 
 	private:
 		Ui::Main_window*	ui;
+
+		/// Represents our Google Reader offline client.
 		Client*				client;
+
+		/// Model that is used to display feeds list.
+		Feeds_model*		feeds_model;
 
 
 	protected:

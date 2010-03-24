@@ -28,6 +28,7 @@
 
 #include <src/common.hpp>
 #include <src/feed_item.hpp>
+#include <src/feed_tree.hpp>
 
 #include "storage.hpp"
 
@@ -106,6 +107,9 @@ namespace grov
 	}
 // Scoped_transaction <--
 
+
+
+const Big_id Storage::NO_LABEL_ID;
 
 
 Storage::Storage(QObject* parent)
@@ -196,9 +200,9 @@ void Storage::add_items(const Feed_items_list& items)
 
 	try
 	{
-		QHash<QString, size_t> feeds;
-		QHash<QString, size_t> labels;
-		QHash< size_t, QSet<size_t> > labels_to_feeds;
+		QHash<QString, Big_id> feeds;
+		QHash<QString, Big_id> labels;
+		QHash< Big_id, QSet<Big_id> > labels_to_feeds;
 
 		// For SQLite it really speeds up many insertions.
 		Scoped_transaction transaction(*this->db);
@@ -318,6 +322,9 @@ void Storage::add_items(const Feed_items_list& items)
 		// Adding items <--
 
 		transaction.commit();
+
+		// TODO:
+		emit feed_tree_changed(this->get_feed_tree());
 	}
 	catch(m::Exception& e)
 	{
@@ -368,6 +375,44 @@ QSqlQuery Storage::exec(const QString& query_string)
 
 
 
+Feed_tree Storage::get_feed_tree(void)
+{
+	Feed_tree feed_tree = Feed_tree::create();
+
+	QSqlQuery labels_query = this->exec(
+		"SELECT id, name FROM labels" );
+
+	QSqlQuery labels_feeds_query = this->prepare(
+		"SELECT "
+			"feeds.id, feeds.name "
+		"FROM "
+			"feeds, labels_to_feeds "
+		"WHERE "
+			"label_id = :label_id AND feeds.id = feed_id"
+	);
+
+	while(labels_query.next())
+	{
+		Big_id label_id = labels_query.value(0).toLongLong();
+		QString label_name = labels_query.value(1).toString();
+
+		Feed_tree_item* label = feed_tree.add_label(label_id, label_name);
+		labels_feeds_query.bindValue(":label_id", label_id);
+		this->exec(labels_feeds_query);
+
+		while(labels_feeds_query.next())
+		{
+			Big_id feed_id = labels_feeds_query.value(0).toLongLong();
+			QString feed_name = labels_feeds_query.value(1).toString();
+			label->add_feed(feed_id, feed_name);
+		}
+	}
+
+	return feed_tree;
+}
+
+
+
 Feed_item Storage::get_item(bool next)
 {
 	if(!this->current_query.get())
@@ -395,6 +440,29 @@ Feed_item Storage::get_item(bool next)
 	}
 	else
 		throw No_more_items();
+}
+
+
+
+void Storage::get_label_info(Big_id id, QString* name, QString* unread)
+{
+/*
+	QSqlQuery query = this->exec(_F(
+		"SELECT COUNT(*) FROM labels_to_items WHERE label_id = %1", id ));
+
+	while(labels_query.next())
+	{
+		Big_id label_id = labels_query.value(0).toLongLong();
+		labels_feeds_query.bindValue(":label_id", label_id);
+		this->exec(labels_feeds_query);
+
+		feeds_tree << Label_to_feeds_map(label_id, Feeds_ids());
+		Feeds_ids& feeds = feeds_tree.last().second;
+
+		while(labels_feeds_query.next())
+			feeds << labels_feeds_query.value(0).toLongLong();
+	}
+	*/
 }
 
 

@@ -20,22 +20,39 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QTreeView" name="feed_view"/>
-      </item>
-      <item>
-       <widget class="QWebView" name="items_view">
-        <property name="url">
-         <url>
-          <string>about:blank</string>
-         </url>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QTreeView" name="feeds_view"/>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="spacing">
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-     </layout>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QWebView" name="items_view">
+          <property name="url">
+           <url>
+            <string>about:blank</string>
+           </url>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

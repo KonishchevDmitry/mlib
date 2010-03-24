@@ -30,6 +30,7 @@ class QSqlQuery;
 
 #include <src/common.hpp>
 #include <src/feed_item.hxx>
+#include <src/feed_tree.hxx>
 
 #include "storage.hxx"
 
@@ -45,6 +46,12 @@ class Storage: public QObject
 	public:
 		/// Class for throwing in get_next_item() and get_previous_item().
 		class No_more_items {};
+
+
+	public:
+	// TODO:
+		/// See description of Feeds_tree.
+		static const Big_id	NO_LABEL_ID = -1;
 
 
 	public:
@@ -66,6 +73,11 @@ class Storage: public QObject
 		///
 		/// @throw m::Exception.
 		void		add_items(const Feed_items_list& items);
+
+		/// Gets label name and unread items count by its id.
+		///
+		/// @throw m::Exception, No_more_items.
+		void		get_label_info(Big_id id, QString* name, QString* unread);
 
 		/// Returns next feeds' item.
 		///
@@ -104,10 +116,20 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		QSqlQuery	exec(const QString& query_string);
 
+		/// Returns current feed tree.
+		///
+		/// @throw m::Exception.
+		Feed_tree	get_feed_tree(void);
+
 		/// Prepares SQL query for execution.
 		///
 		/// @throw m::Exception.
 		QSqlQuery	prepare(const QString& string);
+
+
+	signals:
+		/// Emitted when feeds tree changed.
+		void	feed_tree_changed(const Feed_tree& feed_tree);
 };
 
 }

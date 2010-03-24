@@ -19,6 +19,9 @@
 
 #include <cstdlib>
 
+/// GCC's attributes
+#define MLIB_ATTRIBUTE(args...) __attribute__ (( args ))
+
 
 namespace m { namespace messages_aux {
 
@@ -39,8 +42,8 @@ namespace m { namespace messages_aux {
 
 
 
-	inline void	show_message_helper_no_return(const char* file, int line, Message_type type, const QString& message);
-	inline void	show_message_helper_no_return(const char* file, int line, Message_type type, const QString& title, const QString& message);
+	inline void	show_message_helper_no_return(const char* file, int line, Message_type type, const QString& message) MLIB_ATTRIBUTE(noreturn);
+	inline void	show_message_helper_no_return(const char* file, int line, Message_type type, const QString& title, const QString& message) MLIB_ATTRIBUTE(noreturn);
 	inline void	show_message_helper_return(const char* file, int line, Message_type type, const QString& message);
 	inline void	show_message_helper_return(const char* file, int line, Message_type type, const QString& title, const QString& message);
 

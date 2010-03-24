@@ -19,6 +19,8 @@
 
 
 #include <src/client.hpp>
+#include <src/common.hpp>
+#include <src/feeds_model.hpp>
 
 #include "main_window.hpp"
 #include "ui_main_window.h"
@@ -37,6 +39,9 @@ Main_window::Main_window(const QString user, const QString password, QWidget *pa
 
 	// TODO
 	this->client = new Client(user, password, this);
+
+	this->feeds_model = new Feeds_model(this->client, this);
+	ui->feeds_view->setModel(this->feeds_model);
 
 	connect(this->client, SIGNAL(mode_changed(Client::Mode)),
 		this, SLOT(mode_changed(Client::Mode)) );

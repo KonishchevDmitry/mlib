@@ -21,8 +21,32 @@
 #ifndef GROV_HEADER_STORAGE_FWD
 #define GROV_HEADER_STORAGE_FWD
 
+#include <QtCore/QPair>
+
+#include <src/common.hpp>
+
+
 namespace grov
 {
+	#warning
+	#if 0
+	/// Feed's id and name.
+	typedef QPair<Big_id, QString> Feed_info;
+
+	/// Label's id and name.
+	typedef QPair<Big_id, QString> Label_info;
+
+	typedef QList<Feed_info> Feeds_info;
+
+	/// Stores feeds that belongs to label.
+	typedef QPair<Label_info, Feeds_info> Label_to_feeds_map;
+
+	/// Represents a feeds tree as a list of labels associated with feeds.
+	///
+	/// Feeds which has not any label, belongs to id == Storage::NO_LABEL_ID.
+	typedef QList<Label_to_feeds_map> Feeds_tree;
+	#endif
+
 	class Storage;
 }
 
