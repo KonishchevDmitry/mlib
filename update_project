@@ -1,39 +1,38 @@
 #!/bin/bash
 #
-# Updates project file
+# Updates projects' CMakeProjectFiles.txt
 #
 
-project_file=grov.pro
-src_dir=src
-
-project=$(
+update()
+{(
 	set -e
 
-	sed -r '
-		s/^\s*SRC_DIR\s*=.*/SRC_DIR = $$_PRO_FILE_PWD_\/'$src_dir'/
-		/^\s*# Automatically generated rules -->\s*$/,/^\s*# Automatically generated rules <--\s*$/d
-	' "$project_file"
+	project_path="$1"
+	project_name="$2"
 
-	echo '# Automatically generated rules -->'
+	cd "$project_path"
+
 	(
-		cd "$src_dir"
+		echo "set(${project_name}_SOURCES"
+			find -name '*.cpp' | sed 's/^\.\//\t/'
+		echo ')'
+		echo ''
+		echo "set(${project_name}_MOC_SOURCES"
+			for file in $(find -name '*.hpp')
+			do
+				if grep -F Q_OBJECT "$file" > /dev/null
+				then
+					echo "$file"
+				fi
+			done | sed 's/^\.\//\t/'
+		echo ')'
+		echo ''
+		echo "set(${project_name}_UIS"
+			find -name '*.ui' | sed 's/^\.\//\t/'
+		echo ')'
+	) > "CMakeProjectFiles.txt"
+)}
 
-		find -name '*.cpp' -o -name '*.hh' \
-			| sed 's/\.\/\(.*\)/\tSOURCES += $$SRC_DIR\/\1/'
-		echo
-		find -name '*.hpp' -o -name '*.hxx' \
-			| sed 's/\.\/\(.*\)/\tHEADERS += $$SRC_DIR\/\1/'
-		echo
-		find -type d -a -not -name '.*' \
-			| sed 's/\.\/\(.*\)/\tDEPENDPATH += $$SRC_DIR\/\1/'
-	)
-	echo '# Automatically generated rules <--'
-)
-
-if [[ $? -eq 0 ]]
-then
-	echo "$project" > "$project_file"
-	qmake -Wall -Wlogic -Wparser
-	make distclean
-fi
+update mlib MLIB
+update src GROV
 

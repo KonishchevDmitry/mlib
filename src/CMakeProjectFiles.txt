@@ -1,0 +1,28 @@
+set(GROV_SOURCES
+	storage.cpp
+	reader_impl.cpp
+	main_window.cpp
+	feeds_view.cpp
+	items_list_parser.cpp
+	reader.cpp
+	client.cpp
+	feed_item.cpp
+	main.cpp
+	feeds_model.cpp
+	feed_tree.cpp
+)
+
+set(GROV_MOC_SOURCES
+	client.hpp
+	storage.hpp
+	feeds_view.hpp
+	reader.hpp
+	items_list_parser.hpp
+	reader_impl.hpp
+	main_window.hpp
+	feeds_model.hpp
+)
+
+set(GROV_UIS
+	main_window.ui
+)

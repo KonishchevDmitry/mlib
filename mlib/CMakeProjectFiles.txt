@@ -1,0 +1,11 @@
+set(MLIB_SOURCES
+	core/exception.cpp
+	core/messages.cpp
+	core/format.cpp
+)
+
+set(MLIB_MOC_SOURCES
+)
+
+set(MLIB_UIS
+)
