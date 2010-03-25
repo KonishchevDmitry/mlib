@@ -32,10 +32,11 @@ namespace grov {
 Main_window::Main_window(const QString user, const QString password, QWidget *parent)
 :
 	QMainWindow(parent),
-	ui(new Ui::Main_window)
+	ui(new Ui::Main_window),
+	current_item_id(-1)
 {
     ui->setupUi(this);
-	ui->items_view->setVisible(false);
+	ui->viewer->setVisible(false);
 
 
 	// TODO
@@ -105,7 +106,7 @@ void Main_window::mode_changed(Client::Mode mode)
 	ui->go_offline_action->setVisible(mode == Client::NONE);
 	ui->flush_offline_data_action->setVisible(mode == Client::OFFLINE);
 
-	ui->items_view->setVisible(mode == Client::OFFLINE);
+	ui->viewer->setVisible(mode == Client::OFFLINE);
 
 	// TODO
 	if(mode == Client::OFFLINE)
@@ -123,6 +124,15 @@ void Main_window::on_go_offline_action_activated(void)
 
 void Main_window::on_next_item_action_activated(void)
 {
+	try
+	{
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_W(tr("Unable to mark feed's item as read"), EE(e));
+		return;
+	}
+
 	try
 	{
 		Feed_item item = this->client->get_next_item();
@@ -156,6 +166,13 @@ void Main_window::on_previous_item_action_activated(void)
 
 
 
+void Main_window::reset_current_item(void)
+{
+	this->current_item_id = -1;
+}
+
+
+
 void Main_window::set_current_item(const Feed_item& item)
 {
 	QString html;
@@ -167,6 +184,8 @@ void Main_window::set_current_item(const Feed_item& item)
 	html += "</body></html>";
 
 	ui->items_view->setHtml(html);
+
+	this->current_item_id = item.id;
 }
 
 
@@ -180,6 +199,8 @@ void Main_window::set_no_more_items(void)
 	html += "</center></body></html>";
 
 	ui->items_view->setHtml(html);
+
+	this->reset_current_item();
 }
 
 
@@ -193,6 +214,8 @@ void Main_window::set_no_selected_feed(void)
 	html += "</center></body></html>";
 
 	ui->items_view->setHtml(html);
+
+	this->reset_current_item();
 }
 
 

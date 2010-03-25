@@ -34,13 +34,16 @@ class Feed_item
 {
 	public:
 		Feed_item(void);
-		Feed_item(const QString& title, const QString& summary);
+		Feed_item(Big_id id, const QString& title, const QString& summary);
 
 
 	public:
+		Big_id		id;
+
 		QString		title;
 		QString		summary;
 
+		// TODO
 		QString		feed_name;
 		QString		feed_uri;
 		QStringList	labels;

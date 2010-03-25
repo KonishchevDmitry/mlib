@@ -158,7 +158,8 @@ Storage::Storage(QObject* parent)
 					"id INTEGER PRIMARY KEY,"
 					"feed_id INTEGER,"
 					"title TEXT,"
-					"summary TEXT"
+					"summary TEXT,"
+					"read DEFAULT 0"
 				")"
 			);
 			this->exec("CREATE INDEX items_feed_id ON items(feed_id)");
@@ -354,7 +355,7 @@ void Storage::create_current_query(void)
 			case SOURCE_FEED:
 				query = this->prepare(
 					"SELECT "
-						"title, summary "
+						"id, title, summary "
 					"FROM "
 						"items "
 					"WHERE "
@@ -365,7 +366,7 @@ void Storage::create_current_query(void)
 			case SOURCE_LABEL:
 				query = this->prepare(
 					"SELECT "
-						"title, summary "
+						"id, title, summary "
 					"FROM "
 						"items, labels_to_items "
 					"WHERE "
@@ -475,8 +476,9 @@ Feed_item Storage::get_item(bool next)
 	if(exists)
 	{
 		return Feed_item(
-			this->current_query->value(0).toString(),
-			this->current_query->value(1).toString()
+			m::qvariant_to_big_id(this->current_query->value(0)),
+			this->current_query->value(1).toString(),
+			this->current_query->value(2).toString()
 		);
 	}
 	else

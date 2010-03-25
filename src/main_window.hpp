@@ -50,11 +50,19 @@ class Main_window: public QMainWindow
 		Client*				client;
 
 
+		/// Id of item that is being displayed at this time or -1 if no item
+		/// is being displayed at this time.
+		Big_id				current_item_id;
+
+
 	protected:
 		void	changeEvent(QEvent *e);
 
 
 	private:
+		/// Sets current_item_id to -1.
+		void	reset_current_item(void);
+
 		/// Sets current feed item.
 		void	set_current_item(const Feed_item& item);
 

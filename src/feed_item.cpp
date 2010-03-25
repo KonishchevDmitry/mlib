@@ -28,13 +28,16 @@ namespace grov
 
 
 Feed_item::Feed_item(void)
+:
+	id(-1)
 {
 }
 
 
 
-Feed_item::Feed_item(const QString& title, const QString& summary)
+Feed_item::Feed_item(Big_id id, const QString& title, const QString& summary)
 :
+	id(id),
 	title(title),
 	summary(summary)
 {
