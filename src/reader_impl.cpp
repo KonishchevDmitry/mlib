@@ -322,7 +322,7 @@ void Reader_impl::process(void)
 	switch(task.type())
 	{
 		case Task::GET_READING_LIST:
-			request.setUrl(QUrl("http://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=20"));
+			request.setUrl(QUrl("http://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=2000"));
 			break;
 
 		default:

@@ -89,16 +89,22 @@ class Storage: public QObject
 		std::auto_ptr<QSqlQuery>		current_query;
 
 
+		/// Cache of items' ids that needs to be marked as read.
+		QList<Big_id>					readed_items_cache;
+
+
 	public:
 		/// Adds items to the storage.
 		///
 		/// @throw m::Exception.
 		void		add_items(const Feed_items_list& items);
 
-		/// Gets label name and unread items count by its id.
+		/// TODO: use outside
+		/// TODO: by timer
+		/// Flushs all cached data.
 		///
 		/// @throw m::Exception, No_more_items.
-		void		get_label_info(Big_id id, QString* name, QString* unread);
+		void		flush_cache(void);
 
 		/// Returns next feeds' item.
 		///
@@ -110,16 +116,16 @@ class Storage: public QObject
 		/// @throw m::Exception, No_more_items.
 		Feed_item	get_previous_item(void);
 
+		/// Marks item as read.
+		///
+		/// @throw m::Exception.
+		void		mark_as_read(Big_id id);
+
 		/// Sets current source to a feed with id == \a id.
 		void		set_current_source_to_feed(Big_id id);
 
 		/// Sets current source to a feed with id == \a id.
 		void		set_current_source_to_label(Big_id id);
-
-	protected:
-		/// Resets current internal state - current position for
-		/// get_next_item() and get_previous_item(), etc.
-		void		reset(void);
 
 	private:
 		/// Creates a query that will be used to display items requested by
@@ -152,6 +158,10 @@ class Storage: public QObject
 		///
 		/// @throw m::Exception.
 		QSqlQuery	prepare(const QString& string);
+
+		/// Resets current internal state - current position for
+		/// get_next_item() and get_previous_item(), etc.
+		void		reset(void);
 
 
 	signals:

@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>549</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -43,7 +43,7 @@
     <addaction name="flush_offline_data_action"/>
     <addaction name="quit_action"/>
    </widget>
-   <widget class="QMenu" name="menu_Feed">
+   <widget class="QMenu" name="feed_menu">
     <property name="title">
      <string>&amp;Feed</string>
     </property>
@@ -51,7 +51,7 @@
     <addaction name="next_item_action"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menu_Feed"/>
+   <addaction name="feed_menu"/>
   </widget>
   <action name="quit_action">
    <property name="text">
@@ -113,5 +113,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>quit_action</sender>
+   <signal>activated()</signal>
+   <receiver>grov::Main_window</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>274</x>
+     <y>194</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

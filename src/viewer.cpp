@@ -71,6 +71,7 @@ void Viewer::connect_to_storage(Storage* storage)
 void Viewer::feed_selected(Big_id id)
 {
 	this->storage->set_current_source_to_feed(id);
+	this->reset_current_item();
 	this->go_to_next_item();
 }
 
@@ -78,14 +79,16 @@ void Viewer::feed_selected(Big_id id)
 
 void Viewer::go_to_next_item(void)
 {
-//	try
-//	{
-//	}
-//	catch(m::Exception& e)
-//	{
-//		MLIB_W(tr("Unable to mark feed's item as read"), EE(e));
-//		return;
-//	}
+	try
+	{
+		if(this->current_item_id >= 0)
+			this->storage->mark_as_read(this->current_item_id);
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_W(tr("Unable to mark feed's item as read"), EE(e));
+		return;
+	}
 
 	try
 	{
@@ -123,6 +126,7 @@ void Viewer::go_to_previous_item(void)
 void Viewer::label_selected(Big_id id)
 {
 	this->storage->set_current_source_to_label(id);
+	this->reset_current_item();
 	this->go_to_next_item();
 }
 

@@ -134,57 +134,68 @@ Storage::Storage(QObject* parent)
 	// Opening database <--
 
 	// Creating all tables -->
-		try
+		if(this->db->tables().empty())
 		{
-			Scoped_transaction transaction(*this->db);
+			try
+			{
+				Scoped_transaction transaction(*this->db);
 
-			this->exec(
-				"CREATE TABLE feeds("
-					"id INTEGER PRIMARY KEY,"
-					"name TEXT,"
-					"uri TEXT"
-				")"
-			);
+				this->exec(
+					"CREATE TABLE config("
+						"name TEXT,"
+						"value TEXT"
+					")"
+				);
+				this->exec("INSERT INTO config VALUES ('version', 1)");
 
-			this->exec(
-				"CREATE TABLE labels("
-					"id INTEGER PRIMARY KEY,"
-					"name TEXT"
-				")"
-			);
+				this->exec(
+					"CREATE TABLE feeds("
+						"id INTEGER PRIMARY KEY,"
+						"name TEXT,"
+						"uri TEXT"
+					")"
+				);
 
-			this->exec(
-				"CREATE TABLE items("
-					"id INTEGER PRIMARY KEY,"
-					"feed_id INTEGER,"
-					"title TEXT,"
-					"summary TEXT,"
-					"read DEFAULT 0"
-				")"
-			);
-			this->exec("CREATE INDEX items_feed_id ON items(feed_id)");
+				this->exec(
+					"CREATE TABLE labels("
+						"id INTEGER PRIMARY KEY,"
+						"name TEXT"
+					")"
+				);
 
-			this->exec(
-				"CREATE TABLE labels_to_items("
-					"label_id INTEGER,"
-					"item_id INTEGER"
-				")"
-			);
-			this->exec("CREATE INDEX labels_to_items_label_id ON labels_to_items(label_id)");
+				this->exec(
+					"CREATE TABLE items("
+						"id INTEGER PRIMARY KEY,"
+						"feed_id INTEGER,"
+						"title TEXT,"
+						"summary TEXT,"
+						"read DEFAULT 0"
+					")"
+				);
+				this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
 
-			this->exec(
-				"CREATE TABLE labels_to_feeds("
-					"label_id INTEGER,"
-					"feed_id INTEGER"
-				")"
-			);
-			this->exec("CREATE INDEX labels_to_feeds_label_id ON labels_to_feeds(label_id)");
+				this->exec(
+					"CREATE TABLE labels_to_items("
+						"label_id INTEGER,"
+						"item_id INTEGER"
+					")"
+				);
+				this->exec("CREATE INDEX labels_to_items_label_id_idx ON labels_to_items(label_id)");
 
-			transaction.commit();
-		}
-		catch(m::Exception& e)
-		{
-			M_THROW(PAM( tr("Unable to create table in the database:"), EE(e) ));
+				this->exec(
+					"CREATE TABLE labels_to_feeds("
+						"label_id INTEGER,"
+						"feed_id INTEGER"
+					")"
+				);
+				this->exec("CREATE INDEX labels_to_feeds_label_id_idx ON labels_to_feeds(label_id)");
+
+				transaction.commit();
+			}
+			catch(m::Exception& e)
+			{
+				M_THROW(PAM( tr("Unable to create table in the database:"), EE(e) ));
+			}
 		}
 	// Creating all tables <--
 }
@@ -344,7 +355,8 @@ void Storage::create_current_query(void)
 {
 	MLIB_D("Creating new current query...");
 
-	this->reset();
+	// Throws m::Exception
+	this->flush_cache();
 
 	try
 	{
@@ -359,7 +371,8 @@ void Storage::create_current_query(void)
 					"FROM "
 						"items "
 					"WHERE "
-						"feed_id = :source_id"
+						"feed_id = :source_id AND "
+						"read = 0"
 				);
 				break;
 
@@ -371,7 +384,8 @@ void Storage::create_current_query(void)
 						"items, labels_to_items "
 					"WHERE "
 						"label_id = :source_id AND "
-						"items.id = item_id"
+						"items.id = item_id AND "
+						"read = 0"
 				);
 				break;
 
@@ -387,6 +401,7 @@ void Storage::create_current_query(void)
 	}
 	catch(m::Exception& e)
 	{
+		this->reset();
 		M_THROW(PAM( tr("Unable to query a feed's item from the database:"), EE(e) ));
 	}
 }
@@ -413,9 +428,47 @@ QSqlQuery Storage::exec(const QString& query_string)
 
 
 
+void Storage::flush_cache(void)
+{
+	if(this->readed_items_cache.empty())
+		return;
+
+	try
+	{
+		Scoped_transaction transaction(*this->db);
+
+		QSqlQuery query = this->prepare(
+			"UPDATE "
+				"items "
+			"SET "
+				"read = 1 "
+			"WHERE "
+				"id = :id"
+		);
+
+		Q_FOREACH(Big_id id, this->readed_items_cache)
+		{
+			query.bindValue(":id", id);
+			this->exec(query);
+		}
+
+		transaction.commit();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to mark feed's item(s) as read:", "", !this->readed_items_cache.isEmpty()), EE(e) ));
+	}
+
+	this->readed_items_cache.clear();
+}
+
+
+
+// TODO: feeds without labels
 Feed_tree Storage::get_feed_tree(void)
 {
-// TODO: feeds without labels
+	this->flush_cache();
+
 	Feed_tree feed_tree = Feed_tree::create();
 
 	QSqlQuery labels_query = this->exec(
@@ -487,30 +540,6 @@ Feed_item Storage::get_item(bool next)
 
 
 
-void Storage::get_label_info(Big_id id, QString* name, QString* unread)
-{
-// TODO
-/*
-	QSqlQuery query = this->exec(_F(
-		"SELECT COUNT(*) FROM labels_to_items WHERE label_id = %1", id ));
-
-	while(labels_query.next())
-	{
-		Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
-		labels_feeds_query.bindValue(":label_id", label_id);
-		this->exec(labels_feeds_query);
-
-		feeds_tree << Label_to_feeds_map(label_id, Feeds_ids());
-		Feeds_ids& feeds = feeds_tree.last().second;
-
-		while(labels_feeds_query.next())
-			feeds << m::qvariant_to_big_id(labels_feeds_query.value(0));
-	}
-	*/
-}
-
-
-
 Feed_item Storage::get_next_item(void)
 {
 	// Throws m::Exception
@@ -523,6 +552,17 @@ Feed_item Storage::get_previous_item(void)
 {
 	// Throws m::Exception
 	return this->get_item(false);
+}
+
+
+
+void Storage::mark_as_read(Big_id id)
+{
+	this->readed_items_cache << id;
+
+	if(readed_items_cache.size() > 10)
+		// Throws m::Exception
+		this->flush_cache();
 }
 
 

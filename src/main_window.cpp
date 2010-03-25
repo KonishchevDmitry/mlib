@@ -70,6 +70,8 @@ void Main_window::mode_changed(Client::Mode mode)
 	ui->go_offline_action->setVisible(mode == Client::MODE_NONE);
 	ui->flush_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
 
+	ui->feed_menu->setEnabled(mode == Client::MODE_OFFLINE);
+
 	ui->viewer->setVisible(mode == Client::MODE_OFFLINE);
 
 	// TODO may be reset Viewer
