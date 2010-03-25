@@ -20,7 +20,6 @@
 
 #include <src/client.hpp>
 #include <src/common.hpp>
-#include <src/feeds_model.hpp>
 
 #include "main_window.hpp"
 #include "ui_main_window.h"
@@ -32,31 +31,29 @@ namespace grov {
 Main_window::Main_window(const QString user, const QString password, QWidget *parent)
 :
 	QMainWindow(parent),
-	ui(new Ui::Main_window),
-	current_item_id(-1)
+	ui(new Ui::Main_window)
 {
     ui->setupUi(this);
-	ui->viewer->setVisible(false);
 
+	// Client -->
+		// TODO
+		this->client = new Client(user, password, this);
 
-	// TODO
-	this->client = new Client(user, password, this);
+		connect(this->client, SIGNAL(mode_changed(Client::Mode)),
+			this, SLOT(mode_changed(Client::Mode)) );
+	// Client <--
 
-	connect(this->client, SIGNAL(mode_changed(Client::Mode)),
-		this, SLOT(mode_changed(Client::Mode)) );
+	// Viewer -->
+		ui->viewer->connect_to_storage(this->client);
 
+		connect(ui->next_item_action, SIGNAL(activated()),
+			ui->viewer, SLOT(go_to_next_item()) );
 
-	// TODO
-	ui->feeds_view->connect_to_storage(this->client);
+		connect(ui->previous_item_action, SIGNAL(activated()),
+			ui->viewer, SLOT(go_to_previous_item()) );
+	// Viewer <--
 
-	connect(ui->feeds_view, SIGNAL(unselected()),
-		this, SLOT(set_no_selected_feed()) );
-
-	connect(ui->feeds_view, SIGNAL(feed_selected(Big_id)),
-		this, SLOT(feed_selected(Big_id)) );
-
-	connect(ui->feeds_view, SIGNAL(label_selected(Big_id)),
-		this, SLOT(label_selected(Big_id)) );
+	this->mode_changed(Client::MODE_NONE);
 }
 
 
@@ -68,49 +65,14 @@ Main_window::~Main_window()
 
 
 
-void Main_window::changeEvent(QEvent *e)
-{
-	QMainWindow::changeEvent(e);
-
-	switch(e->type())
-	{
-		case QEvent::LanguageChange:
-			ui->retranslateUi(this);
-			break;
-
-		default:
-			break;
-	}
-}
-
-
-
-void Main_window::feed_selected(Big_id id)
-{
-	client->set_current_source_to_feed(id);
-	this->on_next_item_action_activated();
-}
-
-
-
-void Main_window::label_selected(Big_id id)
-{
-	client->set_current_source_to_label(id);
-	this->on_next_item_action_activated();
-}
-
-
-
 void Main_window::mode_changed(Client::Mode mode)
 {
-	ui->go_offline_action->setVisible(mode == Client::NONE);
-	ui->flush_offline_data_action->setVisible(mode == Client::OFFLINE);
+	ui->go_offline_action->setVisible(mode == Client::MODE_NONE);
+	ui->flush_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
 
-	ui->viewer->setVisible(mode == Client::OFFLINE);
+	ui->viewer->setVisible(mode == Client::MODE_OFFLINE);
 
-	// TODO
-	if(mode == Client::OFFLINE)
-		this->on_next_item_action_activated();
+	// TODO may be reset Viewer
 }
 
 
@@ -118,104 +80,6 @@ void Main_window::mode_changed(Client::Mode mode)
 void Main_window::on_go_offline_action_activated(void)
 {
 	this->client->download();
-}
-
-
-
-void Main_window::on_next_item_action_activated(void)
-{
-	try
-	{
-	}
-	catch(m::Exception& e)
-	{
-		MLIB_W(tr("Unable to mark feed's item as read"), EE(e));
-		return;
-	}
-
-	try
-	{
-		Feed_item item = this->client->get_next_item();
-		this->set_current_item(item);
-	}
-	catch(Storage::No_more_items&)
-	{
-		this->set_no_more_items();
-	}
-	catch(m::Exception& e)
-	{
-		MLIB_W(tr("Unable to fetch feed's item"), EE(e));
-	}
-}
-
-
-
-void Main_window::on_previous_item_action_activated(void)
-{
-	try
-	{
-		Feed_item item = this->client->get_previous_item();
-		this->set_current_item(item);
-	}
-	catch(Storage::No_more_items&) { }
-	catch(m::Exception& e)
-	{
-		MLIB_W(tr("Unable to fetch feed's item"), EE(e));
-	}
-}
-
-
-
-void Main_window::reset_current_item(void)
-{
-	this->current_item_id = -1;
-}
-
-
-
-void Main_window::set_current_item(const Feed_item& item)
-{
-	QString html;
-
-	html += "<html><body>";
-	if(!item.title.isEmpty())
-		html += "<h1>" + item.title + "</h1>";
-	html += item.summary;
-	html += "</body></html>";
-
-	ui->items_view->setHtml(html);
-
-	this->current_item_id = item.id;
-}
-
-
-
-void Main_window::set_no_more_items(void)
-{
-	QString html;
-
-	html += "<html><body><center>";
-	html += tr("You have no unread items.");
-	html += "</center></body></html>";
-
-	ui->items_view->setHtml(html);
-
-	this->reset_current_item();
-}
-
-
-
-void Main_window::set_no_selected_feed(void)
-{
-	QString html;
-
-	html += "<html><body><center>";
-	html += tr("Please select a label or a feed to view its items.");
-	html += "</center></body></html>";
-
-	ui->items_view->setHtml(html);
-
-	this->reset_current_item();
 }
 
 

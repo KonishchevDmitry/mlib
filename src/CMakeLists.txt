@@ -4,7 +4,7 @@ project(GROV)
 include(CMakeProjectFiles.txt)
 configure_file(config.hpp.in config.hpp)
 
-include_directories(${PROJECT_SOURCE_DIR}/.. ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR}/..)
+include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/.. ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR}/..)
 
 QT4_WRAP_CPP(GROV_MOC_CPP ${GROV_MOC_SOURCES})
 QT4_WRAP_UI(GROV_UI_CPP ${GROV_UIS})

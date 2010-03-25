@@ -7,6 +7,7 @@ set(GROV_SOURCES
 	reader.cpp
 	client.cpp
 	feed_item.cpp
+	viewer.cpp
 	main.cpp
 	feeds_model.cpp
 	feed_tree.cpp
@@ -15,6 +16,7 @@ set(GROV_SOURCES
 set(GROV_MOC_SOURCES
 	client.hpp
 	storage.hpp
+	viewer.hpp
 	feeds_view.hpp
 	reader.hpp
 	items_list_parser.hpp
@@ -25,4 +27,5 @@ set(GROV_MOC_SOURCES
 
 set(GROV_UIS
 	main_window.ui
+	viewer.ui
 )

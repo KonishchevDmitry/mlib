@@ -69,7 +69,7 @@ void Client::on_reading_list(const Feed_items_list& items)
 //	Q_FOREACH(const Feed_item& item, items)
 //		MLIB_D(item.title);
 	this->items = items;
-	emit mode_changed(OFFLINE);
+	emit mode_changed(MODE_OFFLINE);
 }
 
 

@@ -44,11 +44,11 @@ class Client: public Storage
 		/// Mode in which client currently working.
 		enum Mode {
 			/// When we have no Google Reader's data.
-			NONE,
+			MODE_NONE,
 
 			/// When we downloaded Google Reader's data and working in offline
 			/// mode.
-			OFFLINE
+			MODE_OFFLINE
 		};
 
 
