@@ -26,7 +26,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTreeView" name="feeds_view"/>
+      <widget class="grov::Feeds_view" name="feeds_view"/>
       <widget class="QFrame" name="frame">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
@@ -139,6 +139,11 @@
    <class>QWebView</class>
    <extends>QWidget</extends>
    <header>QtWebKit/QWebView</header>
+  </customwidget>
+  <customwidget>
+   <class>grov::Feeds_view</class>
+   <extends>QTreeView</extends>
+   <header location="global">src/feeds_view.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

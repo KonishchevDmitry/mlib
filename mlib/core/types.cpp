@@ -18,35 +18,19 @@
 **************************************************************************/
 
 
-#ifndef MLIB_HEADER_CORE_TYPES
-#define MLIB_HEADER_CORE_TYPES
+#include <QtCore/QVariant>
 
-#include <string>
-
-class QVariant;
-
-#include <QtCore/QObject>
-#include <QtCore/QList>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+#include "types.hpp"
 
 
-namespace m {
+namespace m{
 
 
-/// Id for databases' entries and for other storages with big amount of data.
-typedef long long Big_id;
-
-
-/// Converts QVariant to Big_id.
-Big_id	qvariant_to_big_id(const QVariant& variant);
+Big_id qvariant_to_big_id(const QVariant& variant)
+{
+	return variant.toLongLong();
+}
 
 
 }
-
-#if MLIB_ENABLE_ALIASES
-	using m::Big_id;
-#endif
-
-#endif
 

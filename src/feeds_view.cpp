@@ -17,9 +17,12 @@
 *                                                                         *
 **************************************************************************/
 
-// TODO:
+#include <QtCore/QModelIndex>
+#include <QtGui/QItemSelection>
+#include <QtGui/QItemSelectionModel>
 
-//#include <src/client.hpp>
+#include <src/common.hpp>
+#include <src/feeds_model.hpp>
 
 #include "feeds_view.hpp"
 
@@ -29,129 +32,44 @@ namespace grov {
 
 Feeds_view::Feeds_view(QWidget *parent)
 :
-	QTreeView(parent)
+	QTreeView(parent),
+	storage(NULL)
 {
-#if 0
-    ui->setupUi(this);
-	ui->items_view->setVisible(false);
-
-	// TODO
-	this->client = new Client(user, password, this);
-
-	connect(this->client, SIGNAL(mode_changed(Client::Mode)),
-		this, SLOT(mode_changed(Client::Mode)) );
-#endif
 }
 
 
 
-#if 0
-Feeds_view::~Feeds_view()
+void Feeds_view::connect_to_storage(Storage* storage)
 {
-    delete ui;
+	MLIB_A(!this->storage);
+
+	this->storage = storage;
+	this->model = new Feeds_model(this->storage, this);
+	this->setModel(this->model);
+	this->selection = this->selectionModel();
+
+	connect(this->selection, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
+		this, SLOT(selection_changed(const QItemSelection&, const QItemSelection&)) );
 }
 
 
 
-void Feeds_view::changeEvent(QEvent *e)
+void Feeds_view::selection_changed(const QItemSelection& selected, const QItemSelection& deselected)
 {
-	QMainWindow::changeEvent(e);
+	QModelIndexList selected_indexes = selected.indexes();
 
-	switch(e->type())
+	if(selected_indexes.isEmpty())
+		emit unselected();
+	else
 	{
-		case QEvent::LanguageChange:
-			ui->retranslateUi(this);
-			break;
+		const QModelIndex& index = selected_indexes.at(0);
 
-		default:
-			break;
+		if(index.data(Feeds_model::ROLE_IS_FEED).toBool())
+			emit feed_selected(m::qvariant_to_big_id(index.data(Feeds_model::ROLE_ID)));
+		else
+			emit label_selected(m::qvariant_to_big_id(index.data(Feeds_model::ROLE_ID)));
 	}
 }
-
-
-
-void Feeds_view::mode_changed(Client::Mode mode)
-{
-	ui->go_offline_action->setVisible(mode == Client::NONE);
-	ui->flush_offline_data_action->setVisible(mode == Client::OFFLINE);
-
-	ui->items_view->setVisible(mode == Client::OFFLINE);
-
-	// TODO
-	if(mode == Client::OFFLINE)
-		this->on_next_item_action_activated();
-}
-
-
-
-void Feeds_view::on_go_offline_action_activated(void)
-{
-	this->client->download();
-}
-
-
-
-void Feeds_view::on_next_item_action_activated(void)
-{
-	try
-	{
-		Feed_item item = this->client->get_next_item();
-		this->set_current_item(item);
-	}
-	catch(Storage::No_more_items&)
-	{
-		this->set_no_more_items();
-	}
-	catch(m::Exception& e)
-	{
-		MLIB_W(tr("Unable to fetch feed's item"), EE(e));
-	}
-}
-
-
-
-void Feeds_view::on_previous_item_action_activated(void)
-{
-	try
-	{
-		Feed_item item = this->client->get_previous_item();
-		this->set_current_item(item);
-	}
-	catch(Storage::No_more_items&) { }
-	catch(m::Exception& e)
-	{
-		MLIB_W(tr("Unable to fetch feed's item"), EE(e));
-	}
-}
-
-
-
-void Feeds_view::set_current_item(const Feed_item& item)
-{
-	QString html;
-
-	html += "<html><body>";
-	if(!item.title.isEmpty())
-		html += "<h1>" + item.title + "</h1>";
-	html += item.summary;
-	html += "</body></html>";
-
-	ui->items_view->setHtml(html);
-}
-
-
-
-void Feeds_view::set_no_more_items(void)
-{
-	QString html;
-
-	html += "<html><body><center>";
-	html += tr("You have no unread items.");
-	html += "</center></body></html>";
-
-	ui->items_view->setHtml(html);
-}
-#endif
 
 
 }

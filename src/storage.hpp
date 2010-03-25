@@ -43,6 +43,20 @@ class Storage: public QObject
 {
 	Q_OBJECT
 
+	private:
+		/// Source from which items are being gotten at this moment.
+		enum Current_source {
+			/// No source has been setted yet.
+			SOURCE_NONE,
+
+			/// A feed with id this->id.
+			SOURCE_FEED,
+
+			/// A label with id this->id.
+			SOURCE_LABEL,
+		};
+
+
 	public:
 		/// Class for throwing in get_next_item() and get_previous_item().
 		class No_more_items {};
@@ -63,6 +77,13 @@ class Storage: public QObject
 	private:
 		/// Database for offline access to the feeds' items.
 		boost::scoped_ptr<QSqlDatabase>	db;
+
+
+		// Current source.
+		Current_source					current_source;
+
+		/// Current source's id.
+		Big_id							current_source_id;
 
 		/// Current query that user processes on the database.
 		std::auto_ptr<QSqlQuery>		current_query;
@@ -88,6 +109,12 @@ class Storage: public QObject
 		///
 		/// @throw m::Exception, No_more_items.
 		Feed_item	get_previous_item(void);
+
+		/// Sets current source to a feed with id == \a id.
+		void		set_current_source_to_feed(Big_id id);
+
+		/// Sets current source to a feed with id == \a id.
+		void		set_current_source_to_label(Big_id id);
 
 	protected:
 		/// Resets current internal state - current position for

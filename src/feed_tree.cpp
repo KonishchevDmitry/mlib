@@ -107,6 +107,13 @@ size_t Feed_tree_item::get_child_id(const Feed_tree_item* child) const
 
 
 
+Big_id Feed_tree_item::get_id(void) const
+{
+	return this->id;
+}
+
+
+
 const QString& Feed_tree_item::get_name(void) const
 {
 	return this->name;
@@ -117,6 +124,13 @@ const QString& Feed_tree_item::get_name(void) const
 const Feed_tree_item* Feed_tree_item::get_parent(void) const
 {
 	return this->parent;
+}
+
+
+
+bool Feed_tree_item::is_feed(void) const
+{
+	return this->type == TYPE_FEED;
 }
 
 

@@ -54,10 +54,28 @@ int Feeds_model::columnCount(const QModelIndex& parent) const
 
 QVariant Feeds_model::data(const QModelIndex& index, int role) const
 {
-	if(!index.isValid() || role != Qt::DisplayRole)
+	if(!index.isValid())
 		return QVariant();
 
-	return this->get(index)->get_name();
+	const Feed_tree_item* item = this->get(index);
+
+	switch(role)
+	{
+		case Qt::DisplayRole:
+			return item->get_name();
+			break;
+
+		case ROLE_IS_FEED:
+			return item->is_feed();
+			break;
+
+		case ROLE_ID:
+			return item->get_id();
+			break;
+
+		default:
+			return QVariant();
+	}
 }
 
 

@@ -49,9 +49,6 @@ class Main_window: public QMainWindow
 		/// Represents our Google Reader offline client.
 		Client*				client;
 
-		/// Model that is used to display feeds list.
-		Feeds_model*		feeds_model;
-
 
 	protected:
 		void	changeEvent(QEvent *e);
@@ -66,6 +63,12 @@ class Main_window: public QMainWindow
 
 
 	private slots:
+		/// Called when user selects a feed.
+		void	feed_selected(Big_id id);
+
+		/// Called when user selects a label.
+		void	label_selected(Big_id id);
+
 		/// Called when current mode changed.
 		void	mode_changed(Client::Mode mode);
 
@@ -77,6 +80,9 @@ class Main_window: public QMainWindow
 
 		/// When user clicks "Previous feed item" button.
 		void	on_previous_item_action_activated(void);
+
+		/// Sets items view widget to "Please select a label or a feed" state.
+		void	set_no_selected_feed(void);
 };
 
 }

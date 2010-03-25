@@ -36,10 +36,21 @@ class Feeds_model: public QAbstractItemModel
 	Q_OBJECT
 
 	public:
+		enum {
+			/// Is tree item a feed or a label.
+			ROLE_IS_FEED = Qt::UserRole,
+
+			/// Feed's or label's id.
+			ROLE_ID
+		};
+
+
+	public:
 		Feeds_model(Storage* storage, QObject *parent = 0);
 
 
 	private:
+		/// All offline data.
 		Storage*	storage;
 
 		/// Current feed tree.

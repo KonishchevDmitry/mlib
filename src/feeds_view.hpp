@@ -18,55 +18,65 @@
 **************************************************************************/
 
 
-// TODO:
 #ifndef GROV_HEADER_FEEDS_VIEW
 #define GROV_HEADER_FEEDS_VIEW
 
+class QItemSelection;
+class QItemSelectionModel;
+
 #include <QtGui/QTreeView>
+
+#include <src/feeds_model.hxx>
+#include <src/storage.hxx>
 
 
 namespace grov {
 
+/// Displays a tree of subscriptions and labels.
+///
+/// This view is not works itself after construction. You must call
+/// connect_to_storage() method to start its work.
 class Feeds_view: public QTreeView
 {
 	Q_OBJECT
 
 	public:
 		Feeds_view(QWidget *parent = 0);
-#if 0
-		~Feeds_view(void);
 
 
 	private:
-		Ui::Feeds_view*	ui;
-		Client*				client;
+		/// All offline data.
+		Storage*				storage;
+
+		/// Our model that is used to display feed tree.
+		Feeds_model*			model;
+
+		/// View's selection model.
+		QItemSelectionModel*	selection;
 
 
-	protected:
-		void	changeEvent(QEvent *e);
+	public:
+		/// Connects view to the storage, so it will display its feeds.
+		void	connect_to_storage(Storage* storage);
 
 
-	private:
-		/// Sets current feed item.
-		void	set_current_item(const Feed_item& item);
+	signals:
+		/// Emits when user selects a feed.
+		void	feed_selected(Big_id id);
 
-		/// Displays "There is no more unread items" message instead of item.
-		void	set_no_more_items(void);
+		/// Emits when user selects a label.
+		void	label_selected(Big_id id);
+
+		/// Emits when user selects nothing.
+		void	unselected(void);
 
 
 	private slots:
-		/// Called when current mode changed.
-		void	mode_changed(Client::Mode mode);
+		/// View's selection changed.
+		void	selection_changed(const QItemSelection& selected, const QItemSelection& deselected);
 
-		/// When user clicks "Go offline" button.
-		void	on_go_offline_action_activated(void);
 
-		/// When user clicks "Next feed item" button.
-		void	on_next_item_action_activated(void);
 
-		/// When user clicks "Previous feed item" button.
-		void	on_previous_item_action_activated(void);
-#endif
 };
 
 }

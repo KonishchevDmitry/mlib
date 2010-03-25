@@ -115,7 +115,8 @@ const Big_id Storage::NO_LABEL_ID;
 Storage::Storage(QObject* parent)
 :
 	QObject(parent),
-	db(new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")))
+	db(new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE"))),
+	current_source(SOURCE_NONE)
 {
 	// Opening database -->
 		// TODO
@@ -155,10 +156,12 @@ Storage::Storage(QObject* parent)
 			this->exec(
 				"CREATE TABLE items("
 					"id INTEGER PRIMARY KEY,"
+					"feed_id INTEGER,"
 					"title TEXT,"
 					"summary TEXT"
 				")"
 			);
+			this->exec("CREATE INDEX items_feed_id ON items(feed_id)");
 
 			this->exec(
 				"CREATE TABLE labels_to_items("
@@ -213,7 +216,7 @@ void Storage::add_items(const Feed_items_list& items)
 				"SELECT id, uri FROM feeds" );
 
 			while(query.next())
-				feeds[query.value(1).toString()] = query.value(0).toLongLong();
+				feeds[query.value(1).toString()] = m::qvariant_to_big_id(query.value(0));
 		}
 		// Getting all known feeds <--
 
@@ -223,15 +226,15 @@ void Storage::add_items(const Feed_items_list& items)
 				"SELECT id, name FROM labels" );
 
 			while(query.next())
-				labels[query.value(1).toString()] = query.value(0).toLongLong();
+				labels[query.value(1).toString()] = m::qvariant_to_big_id(query.value(0));
 		}
 		// Getting all known labels <--
 
 		// Adding items -->
 		{
 			QSqlQuery insert_item_query = this->prepare(
-				"INSERT INTO items (title, summary) "
-					"values (:title, :summary)"
+				"INSERT INTO items (feed_id, title, summary) "
+					"values (:feed_id, :title, :summary)"
 			);
 
 
@@ -251,11 +254,6 @@ void Storage::add_items(const Feed_items_list& items)
 
 			Q_FOREACH(const Feed_item& item, items)
 			{
-				insert_item_query.bindValue(":title", item.title);
-				insert_item_query.bindValue(":summary", item.summary);
-				this->exec(insert_item_query);
-
-				Big_id item_id = insert_item_query.lastInsertId().toLongLong();
 				Big_id feed_id;
 
 				// Feed -->
@@ -267,7 +265,7 @@ void Storage::add_items(const Feed_items_list& items)
 						insert_feed_query.bindValue(":name", item.feed_name);
 						insert_feed_query.bindValue(":uri", item.feed_uri);
 						this->exec(insert_feed_query);
-						feed_id = insert_feed_query.lastInsertId().toLongLong();
+						feed_id = m::qvariant_to_big_id(insert_feed_query.lastInsertId());
 
 						feeds[item.feed_uri] = feed_id;
 					}
@@ -275,6 +273,13 @@ void Storage::add_items(const Feed_items_list& items)
 						feed_id = iter.value();
 				}
 				// Feed <--
+
+				insert_item_query.bindValue(":feed_id", feed_id);
+				insert_item_query.bindValue(":title", item.title);
+				insert_item_query.bindValue(":summary", item.summary);
+				this->exec(insert_item_query);
+
+				Big_id item_id = m::qvariant_to_big_id(insert_item_query.lastInsertId());
 
 				// Labels -->
 					Q_FOREACH(const QString& label, item.labels)
@@ -287,7 +292,7 @@ void Storage::add_items(const Feed_items_list& items)
 							{
 								insert_label_query.bindValue(":name", label);
 								this->exec(insert_label_query);
-								label_id = insert_label_query.lastInsertId().toLongLong();
+								label_id = m::qvariant_to_big_id(insert_label_query.lastInsertId());
 
 								labels[label] = label_id;
 							}
@@ -342,9 +347,41 @@ void Storage::create_current_query(void)
 
 	try
 	{
-		this->current_query = std::auto_ptr<QSqlQuery>(new QSqlQuery(
-			this->prepare("SELECT title, summary FROM items") ));
+		QSqlQuery query;
 
+		switch(this->current_source)
+		{
+			case SOURCE_FEED:
+				query = this->prepare(
+					"SELECT "
+						"title, summary "
+					"FROM "
+						"items "
+					"WHERE "
+						"feed_id = :source_id"
+				);
+				break;
+
+			case SOURCE_LABEL:
+				query = this->prepare(
+					"SELECT "
+						"title, summary "
+					"FROM "
+						"items, labels_to_items "
+					"WHERE "
+						"label_id = :source_id AND "
+						"items.id = item_id"
+				);
+				break;
+
+			default:
+				M_THROW(tr("Logical error (invalid item's source type)."));
+				break;
+		}
+
+		query.bindValue(":source_id", this->current_source_id);
+
+		this->current_query = std::auto_ptr<QSqlQuery>(new QSqlQuery(query));
 		this->exec(*current_query);
 	}
 	catch(m::Exception& e)
@@ -377,6 +414,7 @@ QSqlQuery Storage::exec(const QString& query_string)
 
 Feed_tree Storage::get_feed_tree(void)
 {
+// TODO: feeds without labels
 	Feed_tree feed_tree = Feed_tree::create();
 
 	QSqlQuery labels_query = this->exec(
@@ -393,7 +431,7 @@ Feed_tree Storage::get_feed_tree(void)
 
 	while(labels_query.next())
 	{
-		Big_id label_id = labels_query.value(0).toLongLong();
+		Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
 		QString label_name = labels_query.value(1).toString();
 
 		Feed_tree_item* label = feed_tree.add_label(label_id, label_name);
@@ -402,7 +440,7 @@ Feed_tree Storage::get_feed_tree(void)
 
 		while(labels_feeds_query.next())
 		{
-			Big_id feed_id = labels_feeds_query.value(0).toLongLong();
+			Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
 			QString feed_name = labels_feeds_query.value(1).toString();
 			label->add_feed(feed_id, feed_name);
 		}
@@ -415,6 +453,9 @@ Feed_tree Storage::get_feed_tree(void)
 
 Feed_item Storage::get_item(bool next)
 {
+	if(this->current_source == SOURCE_NONE)
+		throw No_more_items();
+
 	if(!this->current_query.get())
 		// Throws m::Exception
 		this->create_current_query();
@@ -446,13 +487,14 @@ Feed_item Storage::get_item(bool next)
 
 void Storage::get_label_info(Big_id id, QString* name, QString* unread)
 {
+// TODO
 /*
 	QSqlQuery query = this->exec(_F(
 		"SELECT COUNT(*) FROM labels_to_items WHERE label_id = %1", id ));
 
 	while(labels_query.next())
 	{
-		Big_id label_id = labels_query.value(0).toLongLong();
+		Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
 		labels_feeds_query.bindValue(":label_id", label_id);
 		this->exec(labels_feeds_query);
 
@@ -460,7 +502,7 @@ void Storage::get_label_info(Big_id id, QString* name, QString* unread)
 		Feeds_ids& feeds = feeds_tree.last().second;
 
 		while(labels_feeds_query.next())
-			feeds << labels_feeds_query.value(0).toLongLong();
+			feeds << m::qvariant_to_big_id(labels_feeds_query.value(0));
 	}
 	*/
 }
@@ -499,6 +541,24 @@ void Storage::reset(void)
 {
 	MLIB_D("Reseting...");
 	this->current_query.reset();
+}
+
+
+
+void Storage::set_current_source_to_feed(Big_id id)
+{
+	this->current_source = SOURCE_FEED;
+	this->current_source_id = id;
+	this->reset();
+}
+
+
+
+void Storage::set_current_source_to_label(Big_id id)
+{
+	this->current_source = SOURCE_LABEL;
+	this->current_source_id = id;
+	this->reset();
 }
 
 

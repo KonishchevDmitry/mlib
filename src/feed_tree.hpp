@@ -34,7 +34,7 @@ namespace grov
 /// Represents a tree of labels and feeds.
 class Feed_tree_item
 {
-	public:
+	private:
 		/// Type of tree's item.
 		enum Type {
 			/// Root node.
@@ -98,11 +98,17 @@ class Feed_tree_item
 		/// Returns item's child's id.
 		size_t					get_child_id(const Feed_tree_item* child) const;
 
+		/// Returns item's id.
+		Big_id		 			get_id(void) const;
+
 		/// Returns item's name.
 		const QString&			get_name(void) const;
 
 		/// Returns a parent item.
 		const Feed_tree_item*	get_parent(void) const;
+
+		/// Is this item a feed?
+		bool					is_feed(void) const;
 
 	private:
 		/// Adds an item to this item.

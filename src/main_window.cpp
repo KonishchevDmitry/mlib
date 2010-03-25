@@ -37,14 +37,25 @@ Main_window::Main_window(const QString user, const QString password, QWidget *pa
     ui->setupUi(this);
 	ui->items_view->setVisible(false);
 
+
 	// TODO
 	this->client = new Client(user, password, this);
 
-	this->feeds_model = new Feeds_model(this->client, this);
-	ui->feeds_view->setModel(this->feeds_model);
-
 	connect(this->client, SIGNAL(mode_changed(Client::Mode)),
 		this, SLOT(mode_changed(Client::Mode)) );
+
+
+	// TODO
+	ui->feeds_view->connect_to_storage(this->client);
+
+	connect(ui->feeds_view, SIGNAL(unselected()),
+		this, SLOT(set_no_selected_feed()) );
+
+	connect(ui->feeds_view, SIGNAL(feed_selected(Big_id)),
+		this, SLOT(feed_selected(Big_id)) );
+
+	connect(ui->feeds_view, SIGNAL(label_selected(Big_id)),
+		this, SLOT(label_selected(Big_id)) );
 }
 
 
@@ -69,6 +80,22 @@ void Main_window::changeEvent(QEvent *e)
 		default:
 			break;
 	}
+}
+
+
+
+void Main_window::feed_selected(Big_id id)
+{
+	client->set_current_source_to_feed(id);
+	this->on_next_item_action_activated();
+}
+
+
+
+void Main_window::label_selected(Big_id id)
+{
+	client->set_current_source_to_label(id);
+	this->on_next_item_action_activated();
 }
 
 
@@ -150,6 +177,19 @@ void Main_window::set_no_more_items(void)
 
 	html += "<html><body><center>";
 	html += tr("You have no unread items.");
+	html += "</center></body></html>";
+
+	ui->items_view->setHtml(html);
+}
+
+
+
+void Main_window::set_no_selected_feed(void)
+{
+	QString html;
+
+	html += "<html><body><center>";
+	html += tr("Please select a label or a feed to view its items.");
 	html += "</center></body></html>";
 
 	ui->items_view->setHtml(html);
