@@ -123,6 +123,14 @@ QString _S(const Value& value)
 
 
 
+template <class Value>
+QString _S(Value* value)
+{
+	return "0x" + QString::number(size_t(value), 16).toUpper();
+}
+
+
+
 QString _S(char symbol)
 {
 	return QChar(symbol);

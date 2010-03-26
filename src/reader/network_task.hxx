@@ -18,14 +18,12 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_READER_IMPL_FWD
-#define GROV_HEADER_READER_IMPL_FWD
+#ifndef GROV_HEADER_READER_NETWORK_TASK_FWD
+#define GROV_HEADER_READER_NETWORK_TASK_FWD
 
-namespace grov {
-
-class Reader_impl;
-
-}
+namespace grov { namespace reader {
+	class Network_task;
+}}
 
 #endif
 

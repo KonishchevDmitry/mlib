@@ -60,12 +60,6 @@ class Client: public Storage
 		/// Our Google Reader abstraction.
 		Reader*		reader;
 
-// TODO
-		/// All offline data.
-//		Storage*	storage;
-// TODO
-Feed_items_list items;
-
 
 	public:
 		/// Downloads all items that user did not read.
@@ -84,7 +78,7 @@ Feed_items_list items;
 		virtual void	on_reader_error(const QString& error);
 
 		/// On reader request error.
-		virtual void	on_reading_list(const Feed_items_list& items);
+		virtual void	on_reading_list(void);
 };
 
 }

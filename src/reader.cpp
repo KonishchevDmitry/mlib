@@ -20,7 +20,8 @@
 
 #include <src/common.hpp>
 #include <src/feed_item.hxx>
-#include <src/reader_impl.hpp>
+
+#include <src/reader/implementation.hpp>
 
 #include "reader.hpp"
 
@@ -32,13 +33,13 @@ namespace grov
 Reader::Reader(Storage* storage, const QString& user, const QString& password, QObject* parent)
 :
 	QObject(parent),
-	impl(new Reader_impl(storage, user, password, this))
+	impl(new reader::Implementation(storage, user, password, this))
 {
 	this->connect(impl, SIGNAL(error(const QString&)),
 		this, SIGNAL(error(const QString&)) );
 
-	this->connect(impl, SIGNAL(reading_list(const Feed_items_list&)),
-		this, SIGNAL(reading_list(const Feed_items_list&)) );
+	this->connect(impl, SIGNAL(reading_list_gotten()),
+		this, SIGNAL(reading_list_gotten()) );
 }
 
 

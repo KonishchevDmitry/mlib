@@ -81,6 +81,7 @@ void Main_window::mode_changed(Client::Mode mode)
 
 void Main_window::on_go_offline_action_activated(void)
 {
+	ui->go_offline_action->setEnabled(false);
 	this->client->download();
 }
 

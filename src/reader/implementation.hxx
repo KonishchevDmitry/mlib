@@ -18,51 +18,14 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_READER
-#define GROV_HEADER_READER
+#ifndef GROV_HEADER_READER_IMPLEMENTATION_FWD
+#define GROV_HEADER_READER_IMPLEMENTATION_FWD
 
-#include <src/common.hpp>
-#include <src/feed_item.hxx>
-#include <src/storage.hxx>
+namespace grov { namespace reader {
 
-#include <src/reader/implementation.hxx>
+class Implementation;
 
-
-namespace grov
-{
-
-/// Represents Google Reader as an asynchronous storage.
-class Reader: public QObject
-{
-	Q_OBJECT
-
-	public:
-		Reader(Storage* storage, const QString& user, const QString& password, QObject* parent = NULL);
-
-
-	private:
-		/// Class implementation.
-		reader::Implementation*	impl;
-
-
-	public:
-		/// Gets reading list.
-		///
-		/// This is asynchronous operation. When it will be completed either
-		///  reading_list() or error() signal will be generated.
-		void			get_reading_list(void);
-
-
-	signals:
-		/// Request failed.
-		void	error(const QString& error);
-
-		/// Emits when all reading list's items gotten.
-		// TODO
-		void	reading_list_gotten(void);
-};
-
-}
+}}
 
 #endif
 

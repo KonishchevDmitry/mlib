@@ -44,7 +44,7 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data)
 		int error_column;
 
 		if(!xml.setContent(data, false, &error, &error_line, &error_column))
-			M_THROW("%1 at %2:%3", error, error_line, error_column);
+			M_THROW(CSF(_F( "%1 at %2:%3.", error, error_line, error_column )));
 	}
 	// Building a DOM tree <--
 

@@ -29,6 +29,7 @@ namespace m {
 		error(error)
 	{
 		QString error_string = _F("Exception: %1", error);
+		// TODO: make as MLIB_DV
 		_MLIB_SHOW_MESSAGE_FROM(file, line, MESSAGE_TYPE_DEBUG, return, error_string);
 	}
 

@@ -1,6 +1,10 @@
 set(GROV_SOURCES
+	reader/task.cpp
+	reader/tasks/authenticate.cpp
+	reader/tasks/get_reading_list.cpp
+	reader/implementation.cpp
+	reader/network_task.cpp
 	storage.cpp
-	reader_impl.cpp
 	main_window.cpp
 	feeds_view.cpp
 	items_list_parser.cpp
@@ -14,13 +18,17 @@ set(GROV_SOURCES
 )
 
 set(GROV_MOC_SOURCES
+	reader/tasks/get_reading_list.hpp
+	reader/tasks/authenticate.hpp
+	reader/implementation.hpp
+	reader/network_task.hpp
+	reader/task.hpp
 	client.hpp
 	storage.hpp
 	viewer.hpp
 	feeds_view.hpp
 	reader.hpp
 	items_list_parser.hpp
-	reader_impl.hpp
 	main_window.hpp
 	feeds_model.hpp
 )

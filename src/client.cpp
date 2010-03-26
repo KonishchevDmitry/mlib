@@ -41,8 +41,8 @@ Client::Client(const QString& user, const QString& password, QObject* parent)
 	connect(this->reader, SIGNAL(error(const QString&)),
 		this, SLOT(on_reader_error(const QString&)) );
 
-	connect(this->reader, SIGNAL(reading_list(const Feed_items_list&)),
-		this, SLOT(on_reading_list(const Feed_items_list&)) );
+	connect(this->reader, SIGNAL(reading_list_gotten()),
+		this, SLOT(on_reading_list()) );
 }
 
 
@@ -63,12 +63,9 @@ void Client::on_reader_error(const QString& error)
 
 
 
-void Client::on_reading_list(const Feed_items_list& items)
-{
 // TODO
-//	Q_FOREACH(const Feed_item& item, items)
-//		MLIB_D(item.title);
-	this->items = items;
+void Client::on_reading_list(void)
+{
 	emit mode_changed(MODE_OFFLINE);
 }
 

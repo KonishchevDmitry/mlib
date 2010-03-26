@@ -50,6 +50,10 @@ QString			_F(const QString& format, const A1& arg_1, const A2& arg_2, const A3& 
 template <class Value>
 QString			_S(const Value& value);
 
+/// Converts pointer to a string.
+template <class Value>
+QString			_S(Value* value);
+
 /// Specialization of _S().
 inline QString	_S(char symbol);
 

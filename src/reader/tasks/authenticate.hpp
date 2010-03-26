@@ -18,51 +18,54 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_READER
-#define GROV_HEADER_READER
+#ifndef GROV_HEADER_READER_TASKS_AUTHENTICATE
+#define GROV_HEADER_READER_TASKS_AUTHENTICATE
+
+
+class QNetworkRequest;
 
 #include <src/common.hpp>
-#include <src/feed_item.hxx>
-#include <src/storage.hxx>
 
-#include <src/reader/implementation.hxx>
+#include <src/reader/network_task.hpp>
+
+#include "authenticate.hxx"
 
 
-namespace grov
-{
+namespace grov { namespace reader { namespace tasks {
 
-/// Represents Google Reader as an asynchronous storage.
-class Reader: public QObject
+
+/// Authenticates us at Google Reader.
+class Authenticate: public Network_task
 {
 	Q_OBJECT
 
 	public:
-		Reader(Storage* storage, const QString& user, const QString& password, QObject* parent = NULL);
+		Authenticate(const QNetworkRequest& request_template, const QString& user, const QString& password, QObject* parent = NULL);
 
 
 	private:
-		/// Class implementation.
-		reader::Implementation*	impl;
+		/// Google Reader's user name.
+		QString	user;
+
+		/// Google Reader's password.
+		QString	password;
 
 
 	public:
-		/// Gets reading list.
-		///
-		/// This is asynchronous operation. When it will be completed either
-		///  reading_list() or error() signal will be generated.
-		void			get_reading_list(void);
+		/// Processes the task.
+		virtual void	process(void);
+
+		/// See Network_task::request_finished().
+		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
 
 	signals:
-		/// Request failed.
-		void	error(const QString& error);
-
-		/// Emits when all reading list's items gotten.
-		// TODO
-		void	reading_list_gotten(void);
+		/// This signal is emitted when we successfully login to Google Reader.
+		void	authenticated(const QString& sid);
 };
 
-}
+
+}}}
 
 #endif
 

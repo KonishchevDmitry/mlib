@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
 	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
 	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
 
+// TODO: GUI messages
 MLIB_D("Starting application...");
 
 //QLocale::setDefault(QLocale::system());

@@ -18,51 +18,50 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_READER
-#define GROV_HEADER_READER
+#ifndef GROV_HEADER_READER_TASKS_GET_READING_LIST
+#define GROV_HEADER_READER_TASKS_GET_READING_LIST
+
+
+class QNetworkRequest;
 
 #include <src/common.hpp>
-#include <src/feed_item.hxx>
-#include <src/storage.hxx>
+#include <src/feed_item.hpp>
 
-#include <src/reader/implementation.hxx>
+#include <src/reader/network_task.hpp>
+
+#include "get_reading_list.hxx"
 
 
-namespace grov
-{
+namespace grov { namespace reader { namespace tasks {
 
-/// Represents Google Reader as an asynchronous storage.
-class Reader: public QObject
+
+/// Gets Google Reader reading list.
+class Get_reading_list: public Network_task
 {
 	Q_OBJECT
 
 	public:
-		Reader(Storage* storage, const QString& user, const QString& password, QObject* parent = NULL);
-
-
-	private:
-		/// Class implementation.
-		reader::Implementation*	impl;
+		Get_reading_list(const QNetworkRequest& request_template, QObject* parent = NULL);
 
 
 	public:
-		/// Gets reading list.
-		///
-		/// This is asynchronous operation. When it will be completed either
-		///  reading_list() or error() signal will be generated.
-		void			get_reading_list(void);
+		/// Processes the task.
+		virtual void	process(void);
+
+		/// See Network_task::request_finished().
+		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
 
 	signals:
-		/// Request failed.
-		void	error(const QString& error);
+		/// Emits when next bunch of items gotten.
+		void	items_gotten(const Feed_items_list& items);
 
 		/// Emits when all reading list's items gotten.
-		// TODO
 		void	reading_list_gotten(void);
 };
 
-}
+
+}}}
 
 #endif
 

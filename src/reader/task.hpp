@@ -18,51 +18,52 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_READER
-#define GROV_HEADER_READER
+#ifndef GROV_HEADER_READER_TASK
+#define GROV_HEADER_READER_TASK
 
 #include <src/common.hpp>
-#include <src/feed_item.hxx>
-#include <src/storage.hxx>
 
-#include <src/reader/implementation.hxx>
+#include "task.hxx"
 
 
-namespace grov
-{
+namespace grov { namespace reader {
 
-/// Represents Google Reader as an asynchronous storage.
-class Reader: public QObject
+
+/// Base class for all tasks that we need to process.
+class Task: public QObject
 {
 	Q_OBJECT
 
 	public:
-		Reader(Storage* storage, const QString& user, const QString& password, QObject* parent = NULL);
+		Task(QObject* parent = NULL);
 
 
 	private:
-		/// Class implementation.
-		reader::Implementation*	impl;
+		/// Was task cancelled.
+		bool			is_cancelled;
 
 
 	public:
-		/// Gets reading list.
-		///
-		/// This is asynchronous operation. When it will be completed either
-		///  reading_list() or error() signal will be generated.
-		void			get_reading_list(void);
+		/// Returns true if task was cancelled.
+		bool			cancelled(void);
+
+		/// Processes the task.
+		virtual void	process(void) = 0;
 
 
 	signals:
-		/// Request failed.
-		void	error(const QString& error);
+		/// This signal tasks emits when processing fails.
+		void	error(const QString& message);
 
-		/// Emits when all reading list's items gotten.
-		// TODO
-		void	reading_list_gotten(void);
+
+	public slots:
+		/// Cancels the task.
+		void			cancel(void);
+
 };
 
-}
+
+}}
 
 #endif
 
