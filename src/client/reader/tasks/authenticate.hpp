@@ -26,6 +26,7 @@ class QNetworkRequest;
 
 #include <src/common.hpp>
 
+#include <src/client/reader.hxx>
 #include <src/client/reader/network_task.hpp>
 
 #include "authenticate.hxx"
@@ -40,7 +41,7 @@ class Authenticate: public Network_task
 	Q_OBJECT
 
 	public:
-		Authenticate(const QNetworkRequest& request_template, const QString& user, const QString& password, QObject* parent = NULL);
+		Authenticate(Reader* reader, const QString& user, const QString& password, QObject* parent = NULL);
 
 
 	private:
@@ -58,10 +59,16 @@ class Authenticate: public Network_task
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
+	private:
+		/// Gets Google Reader authentication id from its reply.
+		///
+		/// @throw m::Exception.
+		QString	get_auth_id(const QByteArray& reply);
+
 
 	signals:
 		/// This signal is emitted when we successfully login to Google Reader.
-		void	authenticated(const QString& sid);
+		void	authenticated(const QString& auth_id);
 };
 
 

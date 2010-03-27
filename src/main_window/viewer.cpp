@@ -100,6 +100,10 @@ void Viewer::go_to_next_item(void)
 	{
 		this->set_no_more_items();
 	}
+	catch(client::Storage::No_selected_items&)
+	{
+		this->set_no_selected_feed();
+	}
 	catch(m::Exception& e)
 	{
 		MLIB_W(tr("Unable to fetch feed's item"), EE(e));
@@ -116,6 +120,7 @@ void Viewer::go_to_previous_item(void)
 		this->set_current_item(item);
 	}
 	catch(client::Storage::No_more_items&) { }
+	catch(client::Storage::No_selected_items&) { }
 	catch(m::Exception& e)
 	{
 		MLIB_W(tr("Unable to fetch feed's item"), EE(e));

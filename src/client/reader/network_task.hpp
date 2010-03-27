@@ -23,11 +23,12 @@
 
 class QNetworkAccessManager;
 class QNetworkReply;
+class QNetworkRequest;
 class QTimer;
 
-#include <QtNetwork/QNetworkRequest>
-
 #include <src/common.hpp>
+
+#include <src/client/reader.hxx>
 
 #include "task.hpp"
 
@@ -44,17 +45,12 @@ class Network_task: public Task
 	Q_OBJECT
 
 	public:
-		Network_task(const QNetworkRequest& request_template, QObject* parent = NULL);
+		Network_task(Reader* reader, QObject* parent = NULL);
 
 
 	protected:
-		/// QNetworkRequest template.
-		///
-		/// We create all requests based on this template.
-		QNetworkRequest	request_template;
-
-		/// QNetworkReply that is processing at this moment.
-		QNetworkReply*	current_reply;
+		/// Reader that created us.
+		Reader*			reader;
 
 		/// Number of failed requests.
 		size_t			fails_count;
@@ -63,11 +59,11 @@ class Network_task: public Task
 		/// Object through which we carry out the networking.
 		QNetworkAccessManager*	manager;
 
+		/// QNetworkReply that is processing at this moment.
+		QNetworkReply*			current_reply;
+
 		/// Timer to implement timeouts.
 		QTimer*					timeout_timer;
-
-		/// Data size which we already downloaded.
-		qint64					downloaded_bytes;
 
 		/// Error string if request failed.
 		QString					reply_error;
@@ -75,10 +71,16 @@ class Network_task: public Task
 
 	protected:
 		/// Sends an HTTP GET request.
-		void			get(const QString& url);
+		void					get(const QString& url);
 
 		/// Sends an HTTP POST request.
-		void			post(const QNetworkRequest& request, const QByteArray& data);
+		void					post(const QString& url, const QByteArray& data);
+
+		/// Returns a QNetworkRequest object with the common HTTP headers
+		/// and Cookies setted.
+		///
+		/// We create all requests by this method.
+		virtual QNetworkRequest	prepare_request(const QString& url);
 
 		/// get() or post() request finished.
 		///
@@ -86,11 +88,22 @@ class Network_task: public Task
 		/// error.isEmpty() == true.
 		///
 		/// When request fails, the fails_count is incremented.
-		virtual void	request_finished(const QString& error, const QByteArray& reply) = 0;
+		virtual void			request_finished(const QString& error, const QByteArray& reply) = 0;
 
-		/// Returns true if we have to many request's fails and should stop
+		/// This is convenient method for checking the \a error parameter of
+		/// request_finished() method.
+		///
+		/// - If this is error and we already have too many tries, than it
+		///   throws m::Exception with this error.
+		/// - If this is error and we have free tries, it returns true.
+		/// - Otherwise returns false.
+		///
+		/// @throw m::Exception.
+		bool					throw_if_fatal_error(const QString& error);
+
+		/// Returns true if we have too many request's fails and should stop
 		/// useless tries.
-		bool			to_many_tries(void);
+		bool					to_many_tries(void);
 
 	private:
 		/// Starts processing the reply.

@@ -81,7 +81,7 @@ namespace grov { namespace client {
 	{
 		if(!this->closed)
 		{
-			MLIB_D("Rollbacking the transaction...");
+			MLIB_D("Rolling back the transaction...");
 
 			if(!this->db.rollback())
 			{
@@ -339,13 +339,48 @@ void Storage::add_items(const Feed_items_list& items)
 
 		transaction.commit();
 
-		// TODO:
-		emit feed_tree_changed(this->get_feed_tree());
+		// TODO: odd emits
+		emit feed_tree_changed();
 	}
 	catch(m::Exception& e)
 	{
 		M_THROW(PAM( tr("Unable to add feeds' items to the database:"), EE(e) ));
 	}
+}
+
+
+
+void Storage::clear(void)
+// TODO: VACUUM
+{
+	this->reset();
+	this->clear_cache();
+
+	try
+	{
+		Scoped_transaction transaction(*this->db);
+
+		this->exec("DELETE FROM feeds");
+		this->exec("DELETE FROM labels");
+		this->exec("DELETE FROM items");
+		this->exec("DELETE FROM labels_to_items");
+		this->exec("DELETE FROM labels_to_feeds");
+
+		transaction.commit();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to delete data from the database:"), EE(e) ));
+	}
+
+	emit this->feed_tree_changed();
+}
+
+
+
+void Storage::clear_cache(void)
+{
+	this->readed_items_cache.clear();
 }
 
 
@@ -357,52 +392,47 @@ void Storage::create_current_query(void)
 	// Throws m::Exception
 	this->flush_cache();
 
-	try
+
+	QSqlQuery query;
+
+	switch(this->current_source)
 	{
-		QSqlQuery query;
+		case SOURCE_FEED:
+			query = this->prepare(
+				"SELECT "
+					"id, title, summary "
+				"FROM "
+					"items "
+				"WHERE "
+					"feed_id = :source_id AND "
+					"read = 0"
+			);
+			break;
 
-		switch(this->current_source)
-		{
-			case SOURCE_FEED:
-				query = this->prepare(
-					"SELECT "
-						"id, title, summary "
-					"FROM "
-						"items "
-					"WHERE "
-						"feed_id = :source_id AND "
-						"read = 0"
-				);
-				break;
+		case SOURCE_LABEL:
+			query = this->prepare(
+				"SELECT "
+					"id, title, summary "
+				"FROM "
+					"items, labels_to_items "
+				"WHERE "
+					"label_id = :source_id AND "
+					"items.id = item_id AND "
+					"read = 0"
+			);
+			break;
 
-			case SOURCE_LABEL:
-				query = this->prepare(
-					"SELECT "
-						"id, title, summary "
-					"FROM "
-						"items, labels_to_items "
-					"WHERE "
-						"label_id = :source_id AND "
-						"items.id = item_id AND "
-						"read = 0"
-				);
-				break;
-
-			default:
-				M_THROW(tr("Logical error (invalid item's source type)."));
-				break;
-		}
-
-		query.bindValue(":source_id", this->current_source_id);
-
-		this->current_query = std::auto_ptr<QSqlQuery>(new QSqlQuery(query));
-		this->exec(*current_query);
+		default:
+			M_THROW(tr("Logical error (invalid item's source type)."));
+			break;
 	}
-	catch(m::Exception& e)
-	{
-		this->reset();
-		M_THROW(PAM( tr("Unable to query a feed's item from the database:"), EE(e) ));
-	}
+
+	query.bindValue(":source_id", this->current_source_id);
+
+	// Throws m::Exception
+	this->exec(query);
+
+	this->current_query.reset(new QSqlQuery(query));
 }
 
 
@@ -466,40 +496,48 @@ void Storage::flush_cache(void)
 // TODO: feeds without labels
 Feed_tree Storage::get_feed_tree(void)
 {
+	// Throws m::Exception
 	this->flush_cache();
 
-	Feed_tree feed_tree = Feed_tree::create();
-
-	QSqlQuery labels_query = this->exec(
-		"SELECT id, name FROM labels" );
-
-	QSqlQuery labels_feeds_query = this->prepare(
-		"SELECT "
-			"feeds.id, feeds.name "
-		"FROM "
-			"feeds, labels_to_feeds "
-		"WHERE "
-			"label_id = :label_id AND feeds.id = feed_id"
-	);
-
-	while(labels_query.next())
+	try
 	{
-		Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
-		QString label_name = labels_query.value(1).toString();
+		Feed_tree feed_tree = Feed_tree::create();
 
-		Feed_tree_item* label = feed_tree.add_label(label_id, label_name);
-		labels_feeds_query.bindValue(":label_id", label_id);
-		this->exec(labels_feeds_query);
+		QSqlQuery labels_query = this->exec(
+			"SELECT id, name FROM labels" );
 
-		while(labels_feeds_query.next())
+		QSqlQuery labels_feeds_query = this->prepare(
+			"SELECT "
+				"feeds.id, feeds.name "
+			"FROM "
+				"feeds, labels_to_feeds "
+			"WHERE "
+				"label_id = :label_id AND feeds.id = feed_id"
+		);
+
+		while(labels_query.next())
 		{
-			Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
-			QString feed_name = labels_feeds_query.value(1).toString();
-			label->add_feed(feed_id, feed_name);
-		}
-	}
+			Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
+			QString label_name = labels_query.value(1).toString();
 
-	return feed_tree;
+			Feed_tree_item* label = feed_tree.add_label(label_id, label_name);
+			labels_feeds_query.bindValue(":label_id", label_id);
+			this->exec(labels_feeds_query);
+
+			while(labels_feeds_query.next())
+			{
+				Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
+				QString feed_name = labels_feeds_query.value(1).toString();
+				label->add_feed(feed_id, feed_name);
+			}
+		}
+
+		return feed_tree;
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to get feed tree from the database:"), EE(e) ));
+	}
 }
 
 
@@ -507,34 +545,41 @@ Feed_tree Storage::get_feed_tree(void)
 Feed_item Storage::get_item(bool next)
 {
 	if(this->current_source == SOURCE_NONE)
-		throw No_more_items();
+		throw No_selected_items();
 
-	if(!this->current_query.get())
-		// Throws m::Exception
-		this->create_current_query();
-
-	bool exists;
-
-	if(next)
-		exists = this->current_query->next();
-	else
+	try
 	{
-		exists = this->current_query->previous();
+		if(!this->current_query.get())
+			this->create_current_query();
 
-		if(!exists)
+		bool exists;
+
+		if(next)
 			exists = this->current_query->next();
-	}
+		else
+		{
+			exists = this->current_query->previous();
 
-	if(exists)
-	{
-		return Feed_item(
-			m::qvariant_to_big_id(this->current_query->value(0)),
-			this->current_query->value(1).toString(),
-			this->current_query->value(2).toString()
-		);
+			if(!exists)
+				exists = this->current_query->next();
+		}
+
+		if(exists)
+		{
+			return Feed_item(
+				m::qvariant_to_big_id(this->current_query->value(0)),
+				this->current_query->value(1).toString(),
+				this->current_query->value(2).toString()
+			);
+		}
+		else
+			throw No_more_items();
 	}
-	else
-		throw No_more_items();
+	catch(m::Exception& e)
+	{
+		this->reset();
+		M_THROW(PAM( tr("Unable to query a feed's item from the database:"), EE(e) ));
+	}
 }
 
 
@@ -551,6 +596,21 @@ Feed_item Storage::get_previous_item(void)
 {
 	// Throws m::Exception
 	return this->get_item(false);
+}
+
+
+
+bool Storage::has_items(void)
+{
+	try
+	{
+		QSqlQuery query = this->exec("SELECT COUNT(*) FROM items");
+		return query.next() && m::qvariant_to_big_id(query.value(0));
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to query feed's items from the database:"), EE(e) ));
+	}
 }
 
 

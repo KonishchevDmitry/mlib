@@ -21,12 +21,17 @@
 #ifndef GROV_HEADER_CLIENT_READER
 #define GROV_HEADER_CLIENT_READER
 
+class QNetworkCookieJar;
+
+#include <QtCore/QQueue>
+
 #include <src/common.hpp>
-#include <src/common/feed_item.hxx>
 
 #include "storage.hxx"
 
-#include "reader/implementation.hxx"
+#include "reader/task.hxx"
+
+#include "reader.hxx"
 
 
 namespace grov { namespace client {
@@ -37,30 +42,83 @@ class Reader: public QObject
 {
 	Q_OBJECT
 
+	private:
+	// TODO
+		/// Possible asynchronous tasks.
+		enum Task_type {
+			/// Get reading list (list of items that user did not read).
+			TASK_TYPE_GET_READING_LIST
+		};
+
+
 	public:
 		Reader(client::Storage* storage, const QString& user, const QString& password, QObject* parent = NULL);
 
 
+	public:
+		/// Storage for offline data.
+		client::Storage*	storage;
+
+// TODO:
+		/// Storage for all ours cookies.
+		QNetworkCookieJar*	cookies;
+
+		/// Google Reader's authentication id.
+		QString				auth_id;
+
 	private:
-		/// Class implementation.
-		reader::Implementation*	impl;
+		/// Google Reader's user name.
+		QString				user;
+
+		/// Google Reader's password.
+		QString				password;
+
+
+// TODO
+		/// Google Reader's tasks, waiting for login.
+		QQueue<Task_type>	pending_gr_tasks;
 
 
 	public:
-		/// Gets reading list.
+	// TODO: description
+		/// Gets reading list (list of items that user did not read).
 		///
 		/// This is asynchronous operation. When it will be completed either
-		///  reading_list() or error() signal will be generated.
+		/// reading_list() or error() signal will be generated.
 		void	get_reading_list(void);
+
+	private:
+		/// Adds Google Reader's task (task, that needs Google Reader login).
+		void			add_google_reader_task(Task_type type);
+
+		/// Prepares and process a task.
+		void			process_task(reader::Task* task);
 
 
 	signals:
-		/// Request failed.
+		/// When user cancelling current operation or when task processing
+		/// fails, we cancelling all pending and processing tasks.
+		///
+		/// All tasks connects to this signal.
+		///
+		/// There is no error in cancelling all tasks when one of them fails -
+		/// for our goals this works fine.
+		void	cancel_all_tasks(void);
+
+		/// Emits when task processing fails.
 		void	error(const QString& error);
 
 		/// Emits when all reading list's items gotten.
 		// TODO
 		void	reading_list_gotten(void);
+
+
+	private slots:
+		/// Called when we successfully login to Google Reader.
+		void	authenticated(const QString& auth_id);
+
+		/// Called when task processing fails.
+		void	task_error(const QString& message);
 };
 
 

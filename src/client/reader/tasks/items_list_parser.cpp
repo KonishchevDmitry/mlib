@@ -30,7 +30,7 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-QList<Feed_item> Items_list_parser::parse(const QByteArray& data)
+QList<Feed_item> Items_list_parser::parse(const QByteArray& data, QString* continuation_code)
 {
 	MLIB_DV("Parsing feeds' items list:");
 
@@ -55,6 +55,23 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data)
 
 		if(root.tagName() != "feed")
 			M_THROW(tr("Invalid XML root element: '%1'."), root.tagName());
+
+		// Continuation code -->
+			if(continuation_code)
+			{
+				QDomNodeList codes = root.elementsByTagName("gr:continuation");
+
+				MLIB_DV("Number of continuation codes: %1.", codes.size());
+
+				if(codes.isEmpty())
+					continuation_code->clear();
+				else
+				{
+					*continuation_code = codes.item(0).toElement().text();
+					MLIB_DV("Continuation code: '%1'.", *continuation_code);
+				}
+			}
+		// Continuation code <--
 
 		QDomNodeList entries = root.elementsByTagName("entry");
 
@@ -111,7 +128,7 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data)
 					MLIB_DV("Titles count: %1.", titles.size());
 
 					if(
-						titles.size() < 1 ||
+						titles.isEmpty() ||
 						( item.feed_name = titles.item(0).toElement().text() ).isEmpty()
 					)
 					{

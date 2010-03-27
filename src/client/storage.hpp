@@ -60,6 +60,9 @@ class Storage: public QObject
 		/// Class for throwing in get_next_item() and get_previous_item().
 		class No_more_items {};
 
+		/// Class for throwing in get_next_item() and get_previous_item().
+		class No_selected_items {};
+
 
 	public:
 	// TODO:
@@ -98,21 +101,19 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void		add_items(const Feed_items_list& items);
 
-		/// TODO: use outside
-		/// TODO: by timer
-		/// Flushs all cached data.
+		/// Returns current feed tree.
 		///
-		/// @throw m::Exception, No_more_items.
-		void		flush_cache(void);
+		/// @throw m::Exception.
+		Feed_tree	get_feed_tree(void);
 
 		/// Returns next feeds' item.
 		///
-		/// @throw m::Exception, No_more_items.
+		/// @throw m::Exception, No_more_items, No_selected_items.
 		Feed_item	get_next_item(void);
 
 		/// Returns previous feeds' item.
 		///
-		/// @throw m::Exception, No_more_items.
+		/// @throw m::Exception, No_more_items, No_selected_items.
 		Feed_item	get_previous_item(void);
 
 		/// Marks item as read.
@@ -126,12 +127,33 @@ class Storage: public QObject
 		/// Sets current source to a feed with id == \a id.
 		void		set_current_source_to_label(Big_id id);
 
+	protected:
+		/// Deletes all storage's data.
+		///
+		/// @throw m::Exception.
+		void		clear(void);
+
+		/// Checks whether storage has any items.
+		///
+		/// @throw m::Exception.
+		bool		has_items(void);
+
 	private:
+		/// Deletes all cached data.
+		void		clear_cache(void);
+
 		/// Creates a query that will be used to display items requested by
 		/// user.
 		///
 		/// @throw m::Exception.
 		void		create_current_query(void);
+
+		/// TODO: use outside
+		/// TODO: by timer
+		/// Flushs all cached data.
+		///
+		/// @throw m::Exception, No_more_items.
+		void		flush_cache(void);
 
 		/// Returns item corresponding to current_query.
 		///
@@ -148,11 +170,6 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		QSqlQuery	exec(const QString& query_string);
 
-		/// Returns current feed tree.
-		///
-		/// @throw m::Exception.
-		Feed_tree	get_feed_tree(void);
-
 		/// Prepares SQL query for execution.
 		///
 		/// @throw m::Exception.
@@ -165,7 +182,7 @@ class Storage: public QObject
 
 	signals:
 		/// Emitted when feeds tree changed.
-		void	feed_tree_changed(const Feed_tree& feed_tree);
+		void	feed_tree_changed(void);
 };
 
 }}

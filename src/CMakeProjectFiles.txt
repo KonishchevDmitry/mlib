@@ -6,7 +6,6 @@ set(GROV_SOURCES
 	client/reader/tasks/items_list_parser.cpp
 	client/reader/tasks/authenticate.cpp
 	client/reader/tasks/get_reading_list.cpp
-	client/reader/implementation.cpp
 	client/reader/network_task.cpp
 	client/storage.cpp
 	client/reader.cpp
@@ -22,7 +21,6 @@ set(GROV_MOC_SOURCES
 	client/reader/tasks/get_reading_list.hpp
 	client/reader/tasks/items_list_parser.hpp
 	client/reader/tasks/authenticate.hpp
-	client/reader/implementation.hpp
 	client/reader/network_task.hpp
 	client/reader/task.hpp
 	client/storage.hpp

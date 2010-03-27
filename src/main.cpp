@@ -18,59 +18,54 @@
 **************************************************************************/
 
 
-// TODO: rewrite
-
-#include <QtGui/QApplication>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QLocale>
 #include <QtCore/QTranslator>
+
+#include <QtGui/QApplication>
 // TODO
 #include <QtCore/QTextCodec>
 
-#include <mlib/core.hpp>
+#include <src/client.hpp>
+#include <src/common.hpp>
+#include <src/main_window.hpp>
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
 
-using namespace grov;
-
+// TODO: GUI messages
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 
+	// TODO
 	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
 	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
 
-// TODO: GUI messages
-MLIB_D("Starting application...");
+	MLIB_D("Starting application...");
 
-//QLocale::setDefault(QLocale::system());
+	//QLocale::setDefault(QLocale::system());
 
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
+	// TODO
+	QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
 
-
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
+	// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
+	// -->
+		QTranslator qtTranslator;
+		qtTranslator.load("qt_" + QLocale::system().name(),
+		QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+		app.installTranslator(&qtTranslator);
 
 
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
+		QTranslator myappTranslator;
+		myappTranslator.load("lang/grov_" + QLocale::system().name());
+		app.installTranslator(&myappTranslator);
+	// <--
 
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
 
-	return app.exec();
+	grov::Main_window main_window(argv[1], argv[2]);
+	main_window.show();
+
+	int exit_code = app.exec();
+	MLIB_D("Exiting with code %1...", exit_code);
+	return exit_code;
 }
 

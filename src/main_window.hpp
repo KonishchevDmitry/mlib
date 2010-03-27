@@ -56,6 +56,9 @@ class Main_window: public QMainWindow
 		/// Called when current mode changed.
 		void	mode_changed(Client::Mode mode);
 
+		/// When user clicks "Discard all offline data" button.
+		void	on_discard_all_offline_data_action_activated(void);
+
 		/// When user clicks "Go offline" button.
 		void	on_go_offline_action_activated(void);
 };

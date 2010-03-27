@@ -23,6 +23,9 @@
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 
+#include <src/client/reader.hpp>
+#include <src/client/storage.hpp>
+
 #include "items_list_parser.hpp"
 
 #include "get_reading_list.hpp"
@@ -31,9 +34,9 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Get_reading_list::Get_reading_list(const QNetworkRequest& request_template, QObject* parent)
+Get_reading_list::Get_reading_list(Reader* reader, QObject* parent)
 :
-	Network_task(request_template, parent)
+	Network_task(reader, parent)
 {
 }
 
@@ -45,44 +48,58 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 
 	try
 	{
-		// Checking for errors -->
-			if(!error.isEmpty())
-			{
-				if(this->to_many_tries())
-					M_THROW(error);
-				else
+		Feed_items_list items;
+
+		try
+		{
+			// Checking for errors -->
+				if(this->throw_if_fatal_error(error))
 				{
-					MLIB_D("Reading list request failed. Trying again...");
+					MLIB_D("Request failed. Trying again...");
 					this->process();
 					return;
 				}
-			}
-		// Checking for errors <--
+			// Checking for errors <--
 
-		// Getting feeds' items -->
-		{
-			Feed_items_list items;
-
-			try
-			{
-				items = Items_list_parser().parse(reply);
-			}
-			catch(m::Exception& e)
-			{
-				M_THROW(PAM( tr("Parsing error:"), EE(e) ));
-			}
-
-			emit this->items_gotten(items);
-			// TODO
-			emit this->reading_list_gotten();
+			// Getting feeds' items -->
+				try
+				{
+					items = Items_list_parser().parse(reply, &this->continuation_code);
+				}
+				catch(m::Exception& e)
+				{
+					M_THROW(PAM( tr("Parsing error:"), EE(e) ));
+				}
+			// Getting feeds' items <--
 		}
-		// Getting feeds' items <--
+		catch(m::Exception& e)
+		{
+			M_THROW(tr("Unable to get Google Reader's reading list. %1"), EE(e));
+		}
+
+		// Throws m::Exception
+		this->reader->storage->add_items(items);
+
+		// TODO
+		if(this->continuation_code.isEmpty() || items.empty())
+			emit this->reading_list_gotten();
+		else
+			// TODO max number limit
+			this->process();
 	}
 	catch(m::Exception& e)
 	{
-		MLIB_D("Getting reading list error. %1", EE(e));
-		emit this->error(_F( tr("Unable to get Google Reader's reading list. %1"), EE(e) ));
+		emit this->error(EE(e));
 	}
+}
+
+
+
+QNetworkRequest Get_reading_list::prepare_request(const QString& url)
+{
+	QNetworkRequest request = Network_task::prepare_request(url);
+	request.setRawHeader("Authorization", "GoogleLogin auth=" + this->reader->auth_id.toAscii());
+	return request;
 }
 
 
@@ -90,9 +107,14 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 void Get_reading_list::process(void)
 {
 	MLIB_D("Getting Google Reader's reading list...");
-	// TODO
-	//this->get("http://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=2000");
-	this->get("http://www.google.com/reader/atom/user/14394675015157700687/state/com.google/reading-list?n=20");
+
+	// TODO: more xt
+	QString query = "https://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=1000&xt=user/-/state/com.google/read";
+
+	if(!this->continuation_code.isEmpty())
+		query += "&c=" + this->continuation_code;
+
+	this->get(query);
 }
 
 

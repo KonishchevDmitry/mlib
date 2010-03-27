@@ -74,8 +74,8 @@ class Feeds_model: public QAbstractItemModel
 
 
 	private slots:
-		/// Emitted when feeds tree changed in DB.
-		void	on_feed_tree_changed(const Feed_tree& feed_tree);
+		/// Called when feeds tree changed in DB.
+		void	feed_tree_changed(void);
 };
 
 

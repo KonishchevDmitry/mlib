@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>549</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -40,6 +40,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="go_offline_action"/>
+    <addaction name="discard_all_offline_data_action"/>
     <addaction name="flush_offline_data_action"/>
     <addaction name="quit_action"/>
    </widget>
@@ -82,9 +83,6 @@
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
   </action>
   <action name="next_item_action">
    <property name="text">
@@ -100,6 +98,14 @@
    </property>
    <property name="shortcut">
     <string>K</string>
+   </property>
+  </action>
+  <action name="discard_all_offline_data_action">
+   <property name="text">
+    <string>&amp;Discard all offline data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
    </property>
   </action>
  </widget>

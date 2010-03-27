@@ -34,8 +34,12 @@ class Items_list_parser: public QObject
 	Q_OBJECT
 
 	public:
+		/// @param continuation_code - if not NULL, writes by pointer Google
+		/// Reader continuation code or empty string, if there is no continuation
+		/// code in \a data.
+		///
 		/// @throw m::Exception.
-		Feed_items_list	parse(const QByteArray& data);
+		Feed_items_list	parse(const QByteArray& data, QString* continuation_code);
 };
 
 

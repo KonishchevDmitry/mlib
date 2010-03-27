@@ -44,6 +44,10 @@ class Client: public client::Storage
 			/// When we have no Google Reader's data.
 			MODE_NONE,
 
+			/// When we are downloading Google Reader's data at this moment to
+			/// go offline.
+			MODE_GOING_OFFLINE,
+
 			/// When we downloaded Google Reader's data and working in offline
 			/// mode.
 			MODE_OFFLINE
@@ -55,15 +59,28 @@ class Client: public client::Storage
 
 
 	private:
+		/// Current mode.
+		Mode			mode;
+
 		/// Our Google Reader abstraction.
 		client::Reader*	reader;
 
 
 	public:
-		/// Downloads all items that user did not read.
+		/// Returns current mode.
+		Mode			current_mode(void);
+
+		/// Deletes all offline data and goes to mode MODE_NONE.
+		void			discard_offline_data(void);
+
+		/// Goes to offline mode.
 		///
 		/// This is asynchronous operation.
-		void			download(void);
+		void			go_offline(void);
+
+	private:
+		/// Changes current mode.
+		void			change_mode(Mode mode);
 
 
 	signals:
@@ -73,7 +90,7 @@ class Client: public client::Storage
 
 	private slots:
 		/// On reader request error.
-		virtual void	on_reader_error(const QString& error);
+		virtual void	on_reader_error(const QString& message);
 
 		/// On reader request error.
 		virtual void	on_reading_list(void);

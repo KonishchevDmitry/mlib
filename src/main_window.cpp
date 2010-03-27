@@ -53,7 +53,7 @@ Main_window::Main_window(const QString user, const QString password, QWidget *pa
 			ui->viewer, SLOT(go_to_previous_item()) );
 	// Viewer <--
 
-	this->mode_changed(Client::MODE_NONE);
+	this->mode_changed(this->client->current_mode());
 }
 
 
@@ -68,6 +68,7 @@ Main_window::~Main_window()
 void Main_window::mode_changed(Client::Mode mode)
 {
 	ui->go_offline_action->setVisible(mode == Client::MODE_NONE);
+	ui->discard_all_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
 	ui->flush_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
 
 	ui->feed_menu->setEnabled(mode == Client::MODE_OFFLINE);
@@ -79,10 +80,17 @@ void Main_window::mode_changed(Client::Mode mode)
 
 
 
+void Main_window::on_discard_all_offline_data_action_activated(void)
+{
+	// TODO: Are you sure question
+	this->client->discard_offline_data();
+}
+
+
+
 void Main_window::on_go_offline_action_activated(void)
 {
-	ui->go_offline_action->setEnabled(false);
-	this->client->download();
+	this->client->go_offline();
 }
 
 

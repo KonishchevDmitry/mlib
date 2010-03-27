@@ -40,8 +40,10 @@ Feeds_model::Feeds_model(client::Storage* storage, QObject *parent)
 	storage(storage),
 	feed_tree(Feed_tree::create())
 {
-	connect(this->storage, SIGNAL(feed_tree_changed(const Feed_tree&)),
-		this, SLOT(on_feed_tree_changed(const Feed_tree&)) );
+	connect(this->storage, SIGNAL(feed_tree_changed()),
+		this, SLOT(feed_tree_changed()) );
+
+	this->feed_tree_changed();
 }
 
 
@@ -81,6 +83,34 @@ QVariant Feeds_model::data(const QModelIndex& index, int role) const
 
 
 
+void Feeds_model::feed_tree_changed(void)
+{
+	MLIB_D("Feed tree changed. Updating it...");
+
+	if(this->feed_tree.count())
+	{
+		this->beginRemoveRows(QModelIndex(), 0, this->feed_tree.count() - 1);
+		this->endRemoveRows();
+	}
+
+	try
+	{
+		this->feed_tree = this->storage->get_feed_tree();
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_W(tr("Error while updating subscription list"), EE(e) );
+	}
+
+	if(this->feed_tree.count())
+	{
+		this->beginInsertRows(QModelIndex(), 0, this->feed_tree.count() - 1);
+		this->endInsertRows();
+	}
+}
+
+
+
 Qt::ItemFlags Feeds_model::flags(const QModelIndex& index) const
 {
 	if(!index.isValid())
@@ -105,27 +135,6 @@ QVariant Feeds_model::headerData(int section, Qt::Orientation orientation, int r
 //	 return rootItem->data(section);
 //
 	return tr("Subscriptions");
-}
-
-
-
-void Feeds_model::on_feed_tree_changed(const Feed_tree& feed_tree)
-{
-	MLIB_D("Feed tree changed. Updating it...");
-
-	if(this->feed_tree.count())
-	{
-		this->beginRemoveRows(QModelIndex(), 0, this->feed_tree.count() - 1);
-		this->endRemoveRows();
-	}
-
-	this->feed_tree = feed_tree;
-
-	if(this->feed_tree.count())
-	{
-		this->beginInsertRows(QModelIndex(), 0, this->feed_tree.count() - 1);
-		this->endInsertRows();
-	}
 }
 
 

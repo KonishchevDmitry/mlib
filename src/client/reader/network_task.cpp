@@ -22,16 +22,19 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
+// TODO
+//#include <QtCore/QVariant>
 
 #include <QtNetwork/QNetworkAccessManager>
 // TODO
-#include <QtNetwork/QNetworkCookie>
-// TODO
-#include <QtCore/QVariant>
+//#include <QtNetwork/QNetworkCookie>
+//#include <QtNetwork/QNetworkCookieJar>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
 #include <src/common.hpp>
+
+#include <src/client/reader.hpp>
 
 #include "network_task.hpp"
 
@@ -39,17 +42,16 @@
 namespace grov { namespace client { namespace reader {
 
 
-Network_task::Network_task(const QNetworkRequest& request_template, QObject* parent)
+Network_task::Network_task(Reader* reader, QObject* parent)
 :
 	Task(parent),
 
-	request_template(request_template),
-	current_reply(NULL),
+	reader(reader),
 	fails_count(0),
 
 	manager(new QNetworkAccessManager(this)),
-	timeout_timer(new QTimer(this)),
-	downloaded_bytes(0)
+	current_reply(NULL),
+	timeout_timer(new QTimer(this))
 {
 	this->timeout_timer->setSingleShot(true);
 	// TODO
@@ -64,9 +66,7 @@ void Network_task::get(const QString& url)
 {
 	MLIB_D("Processing a HTTP GET to '%1'...", url);
 
-	QNetworkRequest request = this->request_template;
-	request.setUrl(url);
-
+	QNetworkRequest request = this->prepare_request(url);
 	this->process_reply(manager->get(request));
 }
 
@@ -75,7 +75,6 @@ void Network_task::get(const QString& url)
 void Network_task::on_data_gotten(qint64 size, qint64 total_size)
 {
 	MLIB_DV("Data gotten: %1 of %2.", size, total_size);
-	this->downloaded_bytes += size;
 
 	// If connection is not timed out yet
 	if(this->timeout_timer->isActive())
@@ -88,7 +87,7 @@ void Network_task::on_data_gotten(qint64 size, qint64 total_size)
 		{
 			// TODO
 			const qint64 max_size = 10 * 1024 * 1024;
-			const qint64 reply_size = std::max(this->downloaded_bytes, total_size);
+			const qint64 reply_size = std::max(size, total_size);
 
 			if(reply_size > max_size)
 			{
@@ -129,10 +128,17 @@ void Network_task::on_finished(void)
 			int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
 			if(code != 200)
-				M_THROW(PAM("Server returned error:", _F("%1 (%2).",
-					reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), code) ));
+				M_THROW("Server returned error: %1 (%2).",
+					reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), code );
 		}
 		// Checking HTTP status code <--
+
+// TODO
+		// Getting cookies from the reply
+//		this->reader->cookies->setCookiesFromUrl(
+//			QNetworkCookie::parseCookies(reply->rawHeader("Set-Cookie")),
+//			reply->request().url()
+//		);
 
 		reply_data = reply->readAll();
 		MLIB_DV("Request reply:\n%1", reply_data);
@@ -143,8 +149,8 @@ void Network_task::on_finished(void)
 		reply_error = EE(e);
 	}
 
-	reply->deleteLater();
 	this->request_finished(reply_error, reply_data);
+	reply->deleteLater();
 }
 
 
@@ -158,10 +164,29 @@ void Network_task::on_timeout(void)
 
 
 
-void Network_task::post(const QNetworkRequest& request, const QByteArray& data)
+void Network_task::post(const QString& url, const QByteArray& data)
 {
-	MLIB_D("Processing a HTTP POST to '%1'...", request.url().toString());
+	MLIB_D("Processing a HTTP POST to '%1'...", url);
+	QNetworkRequest request(url);
+	// TODO
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 	this->process_reply(this->manager->post(request, data));
+}
+
+
+
+QNetworkRequest Network_task::prepare_request(const QString& url)
+{
+	QNetworkRequest request(url);
+
+	// TODO
+//	request.setHeader(QNetworkRequest::CookieHeader,
+//		qVariantFromValue(this->reader->cookies->cookiesForUrl(QUrl(url))) );
+
+	// TODO
+	request.setRawHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8");
+
+	return request;
 }
 
 
@@ -171,7 +196,6 @@ void Network_task::process_reply(QNetworkReply* reply)
 	MLIB_A(!this->current_reply);
 
 	this->current_reply = reply;
-	this->downloaded_bytes = 0;
 	this->reply_error.clear();
 	this->timeout_timer->start();
 
@@ -180,6 +204,21 @@ void Network_task::process_reply(QNetworkReply* reply)
 
 	connect(reply, SIGNAL(finished()),
 		this, SLOT(on_finished()) );
+}
+
+
+
+bool Network_task::throw_if_fatal_error(const QString& error)
+{
+	if(error.isEmpty())
+		return false;
+	else
+	{
+		if(this->to_many_tries())
+			M_THROW(error);
+		else
+			return true;
+	}
 }
 
 

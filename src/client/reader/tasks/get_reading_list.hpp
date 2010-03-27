@@ -27,6 +27,7 @@ class QNetworkRequest;
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 
+#include <src/client/reader.hxx>
 #include <src/client/reader/network_task.hpp>
 
 #include "get_reading_list.hxx"
@@ -41,7 +42,12 @@ class Get_reading_list: public Network_task
 	Q_OBJECT
 
 	public:
-		Get_reading_list(const QNetworkRequest& request_template, QObject* parent = NULL);
+		Get_reading_list(Reader* reader, QObject* parent = NULL);
+
+
+	private:
+		/// Reading list continuation code.
+		QString	continuation_code;
 
 
 	public:
@@ -51,11 +57,12 @@ class Get_reading_list: public Network_task
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
+	protected:
+		/// See Network_task::prepare_request().
+		virtual QNetworkRequest	prepare_request(const QString& url);
+
 
 	signals:
-		/// Emits when next bunch of items gotten.
-		void	items_gotten(const Feed_items_list& items);
-
 		/// Emits when all reading list's items gotten.
 		void	reading_list_gotten(void);
 };

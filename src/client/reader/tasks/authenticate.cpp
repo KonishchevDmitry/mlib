@@ -18,6 +18,8 @@
 **************************************************************************/
 
 
+#include <QtCore/QUrl>
+
 #include <QtNetwork/QNetworkRequest>
 
 #include <src/common.hpp>
@@ -28,12 +30,29 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Authenticate::Authenticate(const QNetworkRequest& request_template, const QString& user, const QString& password, QObject* parent)
+Authenticate::Authenticate(Reader* reader, const QString& user, const QString& password, QObject* parent)
 :
-	Network_task(request_template, parent),
+	Network_task(reader, parent),
 	user(user),
 	password(password)
 {
+}
+
+
+
+QString Authenticate::get_auth_id(const QByteArray& reply)
+{
+	char auth_id_prefix[] = "Auth=";
+
+	Q_FOREACH(const QByteArray& line, reply.split('\n'))
+	{
+		QByteArray entry = line.trimmed();
+
+		if(entry.startsWith(auth_id_prefix))
+			return entry.mid(sizeof auth_id_prefix - 1);
+	}
+
+	M_THROW(tr("Server did not return Google Reader's authentication id."));
 }
 
 
@@ -45,56 +64,26 @@ void Authenticate::request_finished(const QString& error, const QByteArray& repl
 	try
 	{
 		// Checking for errors -->
-			if(!error.isEmpty())
+			if(this->throw_if_fatal_error(error))
 			{
-				if(this->to_many_tries())
-					M_THROW(error);
-				else
-				{
-					MLIB_D("Authentication request failed. Trying again...");
-					this->process();
-					return;
-				}
+				MLIB_D("Request failed. Trying again...");
+				this->process();
+				return;
 			}
 		// Checking for errors <--
 
-		QString sid;
+		// Getting Google Reader's authentication id
+		// Throws m::Exception.
+		QString auth_id = this->get_auth_id(reply);
+		MLIB_D("Auth id gotten: '%1'.", auth_id);
 
-		// Getting Google Reader's SID -->
-		{
-			char sid_prefix[] = "SID=";
-
-			Q_FOREACH(const QByteArray& line, reply.split('\n'))
-			{
-				QByteArray entry = line.trimmed();
-
-				if(entry.startsWith(sid_prefix))
-				{
-					sid = entry.mid(sizeof sid_prefix - 1);
-					break;
-				}
-			}
-
-			if(sid.isEmpty())
-				M_THROW(tr("Server did not return Google Reader session id."));
-		}
-		// Getting Google Reader's SID <--
-
-		emit this->authenticated(sid);
+		emit this->authenticated(auth_id);
 	}
 	catch(m::Exception& e)
 	{
 		MLIB_D("Authentication error. %1", EE(e));
 		emit this->error(_F( tr("Unable to login to Google Reader. %1"), EE(e) ));
 	}
-// TODO: -->
-//	Q_FOREACH(QByteArray header, reply->rawHeaderList())
-//		MLIB_D("%1: %2", header, reply->rawHeader(header));
-//	qDebug() << reply->readAll();
-//	QList<QNetworkCookie> cookies = QNetworkCookie::parseCookies(reply->rawHeader("Set-Cookie"));
-//	qDebug() << cookies;
-	//		this->request_template.setHeader(QNetworkRequest::CookieHeader, qVariantFromValue(cookies));
-// TODO: <--
 }
 
 
@@ -103,17 +92,19 @@ void Authenticate::process(void)
 {
 	MLIB_D("Logining to Google Reader...");
 
-	QNetworkRequest request = this->request_template;
+	QString post_request = _F(
+		"accountType=GOOGLE&"
+		"Email=%1&"
+		"Passwd=%2&"
+		"service=reader&"
+		"source=%3",
+		QUrl::toPercentEncoding(this->user),
+		QUrl::toPercentEncoding(this->password),
+		// TODO
+		"grov-0.1"
+	);
 
-	request.setUrl(QUrl("https://www.google.com/accounts/ClientLogin"));
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-	// TODO another fields
-	QString post_request =
-		"Email=" + QUrl::toPercentEncoding(this->user) + "&"
-		"Passwd=" + QUrl::toPercentEncoding(this->password);
-
-	this->post(request, post_request.toAscii());
+	this->post("https://www.google.com/accounts/ClientLogin", post_request.toAscii());
 }
 
 
