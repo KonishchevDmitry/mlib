@@ -19,10 +19,9 @@
 
 
 #include <src/common.hpp>
-// TODO
-#include <src/feed_item.hpp>
-#include <src/reader.hpp>
-#include <src/storage.hpp>
+
+#include "client/reader.hpp"
+#include "client/storage.hpp"
 
 #include "client.hpp"
 
@@ -36,7 +35,7 @@ Client::Client(const QString& user, const QString& password, QObject* parent)
 	Storage(parent)
 	// TODO: catch Storage exception
 {
-	this->reader = new Reader(this, user, password, this);
+	this->reader = new client::Reader(this, user, password, this);
 
 	connect(this->reader, SIGNAL(error(const QString&)),
 		this, SLOT(on_reader_error(const QString&)) );

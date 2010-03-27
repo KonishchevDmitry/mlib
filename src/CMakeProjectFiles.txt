@@ -1,39 +1,39 @@
 set(GROV_SOURCES
-	reader/task.cpp
-	reader/tasks/authenticate.cpp
-	reader/tasks/get_reading_list.cpp
-	reader/implementation.cpp
-	reader/network_task.cpp
-	storage.cpp
 	main_window.cpp
-	feeds_view.cpp
-	items_list_parser.cpp
-	reader.cpp
+	common/feed_item.cpp
+	common/feed_tree.cpp
+	client/reader/task.cpp
+	client/reader/tasks/items_list_parser.cpp
+	client/reader/tasks/authenticate.cpp
+	client/reader/tasks/get_reading_list.cpp
+	client/reader/implementation.cpp
+	client/reader/network_task.cpp
+	client/storage.cpp
+	client/reader.cpp
+	main_window/viewer/feeds_view.cpp
+	main_window/viewer/feeds_model.cpp
+	main_window/viewer.cpp
 	client.cpp
-	feed_item.cpp
-	viewer.cpp
 	main.cpp
-	feeds_model.cpp
-	feed_tree.cpp
 )
 
 set(GROV_MOC_SOURCES
-	reader/tasks/get_reading_list.hpp
-	reader/tasks/authenticate.hpp
-	reader/implementation.hpp
-	reader/network_task.hpp
-	reader/task.hpp
 	client.hpp
-	storage.hpp
-	viewer.hpp
-	feeds_view.hpp
-	reader.hpp
-	items_list_parser.hpp
+	client/reader/tasks/get_reading_list.hpp
+	client/reader/tasks/items_list_parser.hpp
+	client/reader/tasks/authenticate.hpp
+	client/reader/implementation.hpp
+	client/reader/network_task.hpp
+	client/reader/task.hpp
+	client/storage.hpp
+	client/reader.hpp
+	main_window/viewer.hpp
+	main_window/viewer/feeds_view.hpp
+	main_window/viewer/feeds_model.hpp
 	main_window.hpp
-	feeds_model.hpp
 )
 
 set(GROV_UIS
 	main_window.ui
-	viewer.ui
+	main_window/viewer.ui
 )

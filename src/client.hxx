@@ -21,8 +21,7 @@
 #ifndef GROV_HEADER_CLIENT_FWD
 #define GROV_HEADER_CLIENT_FWD
 
-namespace grov
-{
+namespace grov {
 	class Client;
 }
 

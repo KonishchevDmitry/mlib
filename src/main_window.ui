@@ -22,7 +22,7 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="grov::Viewer" name="viewer" native="true"/>
+     <widget class="grov::main_window::Viewer" name="viewer" native="true"/>
     </item>
    </layout>
   </widget>
@@ -106,9 +106,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>grov::Viewer</class>
+   <class>grov::main_window::Viewer</class>
    <extends>QWidget</extends>
-   <header>viewer.hpp</header>
+   <header location="global">src/main_window/viewer.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

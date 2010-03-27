@@ -18,59 +18,28 @@
 **************************************************************************/
 
 
-// TODO: rewrite
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_ITEMS_LIST_PARSER
+#define GROV_HEADER_CLIENT_READER_TASKS_ITEMS_LIST_PARSER
 
-#include <QtGui/QApplication>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
-// TODO
-#include <QtCore/QTextCodec>
+#include <src/common.hpp>
+#include <src/common/feed_item.hxx>
 
-#include <mlib/core.hpp>
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
+namespace grov { namespace client { namespace reader { namespace tasks {
 
-using namespace grov;
 
-int main(int argc, char *argv[])
+/// Parses a Google Reader feeds' items list.
+class Items_list_parser: public QObject
 {
-	QApplication app(argc, argv);
+	Q_OBJECT
 
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-
-// TODO: GUI messages
-MLIB_D("Starting application...");
-
-//QLocale::setDefault(QLocale::system());
-
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
+	public:
+		/// @throw m::Exception.
+		Feed_items_list	parse(const QByteArray& data);
+};
 
 
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
+}}}}
 
-
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
-
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
-
-	return app.exec();
-}
+#endif
 

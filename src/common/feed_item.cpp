@@ -18,59 +18,30 @@
 **************************************************************************/
 
 
-// TODO: rewrite
+#include <src/common.hpp>
 
-#include <QtGui/QApplication>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
-// TODO
-#include <QtCore/QTextCodec>
+#include "feed_item.hpp"
 
-#include <mlib/core.hpp>
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
+namespace grov {
 
-using namespace grov;
 
-int main(int argc, char *argv[])
+Feed_item::Feed_item(void)
+:
+	id(-1)
 {
-	QApplication app(argc, argv);
-
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-
-// TODO: GUI messages
-MLIB_D("Starting application...");
-
-//QLocale::setDefault(QLocale::system());
-
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
+}
 
 
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
+
+Feed_item::Feed_item(Big_id id, const QString& title, const QString& summary)
+:
+	id(id),
+	title(title),
+	summary(summary)
+{
+}
 
 
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
-
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
-
-	return app.exec();
 }
 

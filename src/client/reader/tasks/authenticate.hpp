@@ -18,59 +18,54 @@
 **************************************************************************/
 
 
-// TODO: rewrite
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_AUTHENTICATE
+#define GROV_HEADER_CLIENT_READER_TASKS_AUTHENTICATE
 
-#include <QtGui/QApplication>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
-// TODO
-#include <QtCore/QTextCodec>
 
-#include <mlib/core.hpp>
+class QNetworkRequest;
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
+#include <src/common.hpp>
 
-using namespace grov;
+#include <src/client/reader/network_task.hpp>
 
-int main(int argc, char *argv[])
+#include "authenticate.hxx"
+
+
+namespace grov { namespace client { namespace reader { namespace tasks {
+
+
+/// Authenticates us at Google Reader.
+class Authenticate: public Network_task
 {
-	QApplication app(argc, argv);
+	Q_OBJECT
 
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-
-// TODO: GUI messages
-MLIB_D("Starting application...");
-
-//QLocale::setDefault(QLocale::system());
-
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
+	public:
+		Authenticate(const QNetworkRequest& request_template, const QString& user, const QString& password, QObject* parent = NULL);
 
 
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
+	private:
+		/// Google Reader's user name.
+		QString	user;
+
+		/// Google Reader's password.
+		QString	password;
 
 
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
+	public:
+		/// Processes the task.
+		virtual void	process(void);
 
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
+		/// See Network_task::request_finished().
+		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
-	return app.exec();
-}
+
+	signals:
+		/// This signal is emitted when we successfully login to Google Reader.
+		void	authenticated(const QString& sid);
+};
+
+
+}}}}
+
+#endif
 

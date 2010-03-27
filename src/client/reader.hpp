@@ -18,59 +18,53 @@
 **************************************************************************/
 
 
-// TODO: rewrite
+#ifndef GROV_HEADER_CLIENT_READER
+#define GROV_HEADER_CLIENT_READER
 
-#include <QtGui/QApplication>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
-// TODO
-#include <QtCore/QTextCodec>
+#include <src/common.hpp>
+#include <src/common/feed_item.hxx>
 
-#include <mlib/core.hpp>
+#include "storage.hxx"
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
+#include "reader/implementation.hxx"
 
-using namespace grov;
 
-int main(int argc, char *argv[])
+namespace grov { namespace client {
+
+
+/// Represents Google Reader as an asynchronous storage.
+class Reader: public QObject
 {
-	QApplication app(argc, argv);
+	Q_OBJECT
 
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-
-// TODO: GUI messages
-MLIB_D("Starting application...");
-
-//QLocale::setDefault(QLocale::system());
-
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
+	public:
+		Reader(client::Storage* storage, const QString& user, const QString& password, QObject* parent = NULL);
 
 
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
+	private:
+		/// Class implementation.
+		reader::Implementation*	impl;
 
 
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
+	public:
+		/// Gets reading list.
+		///
+		/// This is asynchronous operation. When it will be completed either
+		///  reading_list() or error() signal will be generated.
+		void	get_reading_list(void);
 
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
 
-	return app.exec();
-}
+	signals:
+		/// Request failed.
+		void	error(const QString& error);
+
+		/// Emits when all reading list's items gotten.
+		// TODO
+		void	reading_list_gotten(void);
+};
+
+
+}}
+
+#endif
 

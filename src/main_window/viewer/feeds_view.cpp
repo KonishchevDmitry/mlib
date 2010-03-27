@@ -18,59 +18,63 @@
 **************************************************************************/
 
 
-// TODO: rewrite
+#include <QtCore/QModelIndex>
 
-#include <QtGui/QApplication>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
-// TODO
-#include <QtCore/QTextCodec>
+#include <QtGui/QItemSelection>
+#include <QtGui/QItemSelectionModel>
 
-#include <mlib/core.hpp>
+#include <src/common.hpp>
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
+#include "feeds_model.hpp"
 
-using namespace grov;
+#include "feeds_view.hpp"
 
-int main(int argc, char *argv[])
+
+namespace grov { namespace main_window { namespace viewer {
+
+
+Feeds_view::Feeds_view(QWidget *parent)
+:
+	QTreeView(parent),
+	storage(NULL)
 {
-	QApplication app(argc, argv);
-
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-
-// TODO: GUI messages
-MLIB_D("Starting application...");
-
-//QLocale::setDefault(QLocale::system());
-
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
-
-
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
-
-
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
-
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
-
-	return app.exec();
 }
+
+
+
+void Feeds_view::connect_to_storage(client::Storage* storage)
+{
+	MLIB_A(!this->storage);
+
+	this->storage = storage;
+	this->model = new Feeds_model(this->storage, this);
+	this->setModel(this->model);
+	this->selection = this->selectionModel();
+
+	connect(this->selection, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
+		this, SLOT(selection_changed(const QItemSelection&, const QItemSelection&)) );
+}
+
+
+
+void Feeds_view::selection_changed(const QItemSelection& selected, const QItemSelection& deselected)
+{
+	QModelIndexList selected_indexes = selected.indexes();
+
+	if(selected_indexes.isEmpty())
+		emit unselected();
+	else
+	{
+		const QModelIndex& index = selected_indexes.at(0);
+
+		if(index.data(Feeds_model::ROLE_IS_FEED).toBool())
+			emit feed_selected(m::qvariant_to_big_id(index.data(Feeds_model::ROLE_ID)));
+		else
+			emit label_selected(m::qvariant_to_big_id(index.data(Feeds_model::ROLE_ID)));
+	}
+}
+
+
+}}}
+
 

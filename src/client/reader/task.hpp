@@ -18,59 +18,52 @@
 **************************************************************************/
 
 
-// TODO: rewrite
+#ifndef GROV_HEADER_CLIENT_READER_TASK
+#define GROV_HEADER_CLIENT_READER_TASK
 
-#include <QtGui/QApplication>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
-// TODO
-#include <QtCore/QTextCodec>
+#include <src/common.hpp>
 
-#include <mlib/core.hpp>
+#include "task.hxx"
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
 
-using namespace grov;
+namespace grov { namespace client { namespace reader {
 
-int main(int argc, char *argv[])
+
+/// Base class for all tasks that we need to process.
+class Task: public QObject
 {
-	QApplication app(argc, argv);
+	Q_OBJECT
 
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-
-// TODO: GUI messages
-MLIB_D("Starting application...");
-
-//QLocale::setDefault(QLocale::system());
-
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
+	public:
+		Task(QObject* parent = NULL);
 
 
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
+	private:
+		/// Was task cancelled.
+		bool			is_cancelled;
 
 
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
+	public:
+		/// Returns true if task was cancelled.
+		bool			cancelled(void);
 
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
+		/// Processes the task.
+		virtual void	process(void) = 0;
 
-	return app.exec();
-}
+
+	signals:
+		/// This signal tasks emits when processing fails.
+		void	error(const QString& message);
+
+
+	public slots:
+		/// Cancels the task.
+		void			cancel(void);
+
+};
+
+
+}}}
+
+#endif
 

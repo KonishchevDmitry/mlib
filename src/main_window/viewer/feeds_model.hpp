@@ -17,70 +17,69 @@
 *                                                                         *
 **************************************************************************/
 
+// TODO
 
-#ifndef GROV_HEADER_CLIENT
-#define GROV_HEADER_CLIENT
+#ifndef GROV_HEADER_MAIN_WINDOW_VIEWER_FEEDS_MODEL
+#define GROV_HEADER_MAIN_WINDOW_VIEWER_FEEDS_MODEL
+
+#include <QtCore/QAbstractItemModel>
 
 #include <src/common.hpp>
-#include <src/common/feed_item.hxx>
+#include <src/common/feed_tree.hpp>
 
-#include "client/reader.hxx"
-#include "client/storage.hpp"
-
-#include "client.hxx"
+#include <src/client/storage.hxx>
 
 
-namespace grov {
+namespace grov { namespace main_window { namespace viewer {
 
 
-/// Represents our Google Reader offline client.
-class Client: public client::Storage
+class Feeds_model: public QAbstractItemModel
 {
 	Q_OBJECT
 
 	public:
-		/// Mode in which client currently working.
-		enum Mode {
-			/// When we have no Google Reader's data.
-			MODE_NONE,
+		enum {
+			/// Is tree item a feed or a label.
+			ROLE_IS_FEED = Qt::UserRole,
 
-			/// When we downloaded Google Reader's data and working in offline
-			/// mode.
-			MODE_OFFLINE
+			/// Feed's or label's id.
+			ROLE_ID
 		};
 
 
 	public:
-		Client(const QString& user, const QString& password, QObject* parent = NULL);
+		Feeds_model(client::Storage* storage, QObject *parent = 0);
 
 
 	private:
-		/// Our Google Reader abstraction.
-		client::Reader*	reader;
+		/// All offline data.
+		client::Storage*	storage;
+
+		/// Current feed tree.
+		Feed_tree			feed_tree;
 
 
 	public:
-		/// Downloads all items that user did not read.
-		///
-		/// This is asynchronous operation.
-		void			download(void);
+		virtual int				columnCount(const QModelIndex& parent) const;
+		virtual QVariant		data(const QModelIndex&, int role) const;
+		virtual Qt::ItemFlags	flags(const QModelIndex& index) const;
+		virtual QVariant		headerData(int section, Qt::Orientation orientation, int role) const;
+		virtual QModelIndex		index(int row, int column, const QModelIndex& parent) const;
+		virtual QModelIndex		parent(const QModelIndex& index) const;
+		virtual int				rowCount(const QModelIndex& parent) const;
 
-
-	signals:
-		/// Called when current mode changed.
-		void			mode_changed(Client::Mode mode);
+	private:
+		// Returns Feed_tree_item by QModelIndex.
+		const Feed_tree_item*	get(const QModelIndex& index) const;
 
 
 	private slots:
-		/// On reader request error.
-		virtual void	on_reader_error(const QString& error);
-
-		/// On reader request error.
-		virtual void	on_reading_list(void);
+		/// Emitted when feeds tree changed in DB.
+		void	on_feed_tree_changed(const Feed_tree& feed_tree);
 };
 
 
-}
+}}}
 
 #endif
 

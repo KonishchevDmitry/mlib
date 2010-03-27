@@ -18,59 +18,50 @@
 **************************************************************************/
 
 
-// TODO: rewrite
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_READING_LIST
+#define GROV_HEADER_CLIENT_READER_TASKS_GET_READING_LIST
 
-#include <QtGui/QApplication>
-#include <QtCore/QLibraryInfo>
-#include <QtCore/QLocale>
-#include <QtCore/QTranslator>
-// TODO
-#include <QtCore/QTextCodec>
 
-#include <mlib/core.hpp>
+class QNetworkRequest;
 
-// TODO
-#include "main_window.hpp"
-#include "client.hpp"
+#include <src/common.hpp>
+#include <src/common/feed_item.hpp>
 
-using namespace grov;
+#include <src/client/reader/network_task.hpp>
 
-int main(int argc, char *argv[])
+#include "get_reading_list.hxx"
+
+
+namespace grov { namespace client { namespace reader { namespace tasks {
+
+
+/// Gets Google Reader reading list.
+class Get_reading_list: public Network_task
 {
-	QApplication app(argc, argv);
+	Q_OBJECT
 
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-
-// TODO: GUI messages
-MLIB_D("Starting application...");
-
-//QLocale::setDefault(QLocale::system());
-
-// TODO
-QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
-// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-// -->
-QTranslator qtTranslator;
-qtTranslator.load("qt_" + QLocale::system().name(),
-QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-app.installTranslator(&qtTranslator);
+	public:
+		Get_reading_list(const QNetworkRequest& request_template, QObject* parent = NULL);
 
 
-QTranslator myappTranslator;
-myappTranslator.load("lang/grov_" + QLocale::system().name());
-app.installTranslator(&myappTranslator);
-// <--
+	public:
+		/// Processes the task.
+		virtual void	process(void);
+
+		/// See Network_task::request_finished().
+		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
 
-	Main_window w(argv[1], argv[2]);
-	w.show();
-	//w.download();
+	signals:
+		/// Emits when next bunch of items gotten.
+		void	items_gotten(const Feed_items_list& items);
 
-	//Reader reader(argv[1], argv[2]);
-	//Client client(argv[1], argv[2]);
-	//client.download();
+		/// Emits when all reading list's items gotten.
+		void	reading_list_gotten(void);
+};
 
-	return app.exec();
-}
+
+}}}}
+
+#endif
 
