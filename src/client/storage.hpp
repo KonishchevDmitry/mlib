@@ -28,6 +28,8 @@
 class QSqlDatabase;
 class QSqlQuery;
 
+#include <QtCore/QHash>
+
 #include <src/common.hpp>
 #include <src/common/feed_item.hxx>
 #include <src/common/feed_tree.hxx>
@@ -90,6 +92,9 @@ class Storage: public QObject
 		/// Current query that user processes on the database.
 		std::auto_ptr<QSqlQuery>		current_query;
 
+		// TODO:
+		QHash<Big_id, bool>				current_query_star_cache;
+
 
 		/// Cache of items' ids that needs to be marked as read.
 		QList<Big_id>					readed_items_cache;
@@ -126,6 +131,11 @@ class Storage: public QObject
 
 		/// Sets current source to a feed with id == \a id.
 		void		set_current_source_to_label(Big_id id);
+
+		/// Adds or removes star from item.
+		///
+		/// @throw m::Exception.
+		void		star(Big_id id, bool is);
 
 	protected:
 		/// Deletes all storage's data.

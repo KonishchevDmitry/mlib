@@ -168,7 +168,8 @@ Storage::Storage(QObject* parent)
 						"feed_id INTEGER,"
 						"title TEXT,"
 						"summary TEXT,"
-						"read DEFAULT 0"
+						"read DEFAULT 0, "
+						"starred DEFAULT 0" // TODO
 					")"
 				);
 				this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
@@ -203,6 +204,7 @@ Storage::Storage(QObject* parent)
 
 Storage::~Storage(void)
 {
+	// TODO: flush cache, etc
 }
 
 
@@ -400,7 +402,7 @@ void Storage::create_current_query(void)
 		case SOURCE_FEED:
 			query = this->prepare(
 				"SELECT "
-					"id, title, summary "
+					"id, title, summary, starred "
 				"FROM "
 					"items "
 				"WHERE "
@@ -412,7 +414,7 @@ void Storage::create_current_query(void)
 		case SOURCE_LABEL:
 			query = this->prepare(
 				"SELECT "
-					"id, title, summary "
+					"id, title, summary, starred "
 				"FROM "
 					"items, labels_to_items "
 				"WHERE "
@@ -553,23 +555,27 @@ Feed_item Storage::get_item(bool next)
 			this->create_current_query();
 
 		bool exists;
+		QSqlQuery* query = this->current_query.get();
 
 		if(next)
-			exists = this->current_query->next();
+			exists = query->next();
 		else
 		{
-			exists = this->current_query->previous();
+			exists = query->previous();
 
 			if(!exists)
-				exists = this->current_query->next();
+				exists = query->next();
 		}
 
 		if(exists)
 		{
+			Big_id id = m::qvariant_to_big_id(query->value(0));
+
 			return Feed_item(
-				m::qvariant_to_big_id(this->current_query->value(0)),
-				this->current_query->value(1).toString(),
-				this->current_query->value(2).toString()
+				id,
+				query->value(1).toString(),
+				query->value(2).toString(),
+				this->current_query_star_cache.value(id, query->value(3).toBool())
 			);
 		}
 		else
@@ -617,6 +623,8 @@ bool Storage::has_items(void)
 
 void Storage::mark_as_read(Big_id id)
 {
+	MLIB_D("Marking as read item [%1]...", id);
+
 	this->readed_items_cache << id;
 
 	if(readed_items_cache.size() > 10)
@@ -642,6 +650,7 @@ void Storage::reset(void)
 {
 	MLIB_D("Reseting...");
 	this->current_query.reset();
+	this->current_query_star_cache.clear();
 }
 
 
@@ -660,6 +669,32 @@ void Storage::set_current_source_to_label(Big_id id)
 	this->current_source = SOURCE_LABEL;
 	this->current_source_id = id;
 	this->reset();
+}
+
+
+
+void Storage::star(Big_id id, bool is)
+{
+	MLIB_D("Starring(%1) item [%2]...", is, id);
+
+	try
+	{
+		this->exec(_F(
+			"UPDATE "
+				"items "
+			"SET "
+				"starred = %1 "
+			"WHERE "
+				"id = %2",
+			is, id
+		));
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Database error:"), EE(e) ));
+	}
+
+	this->current_query_star_cache[id] = is;
 }
 
 

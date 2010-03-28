@@ -92,6 +92,9 @@ class Viewer: public QWidget
 		/// Called when user selects a label.
 		void	label_selected(Big_id id);
 
+		/// Called when user stars/unstars an item.
+		void	on_star_check_box_stateChanged(int state);
+
 		/// Sets items view widget to "Please select a label or a feed" state.
 		void	set_no_selected_feed(void);
 };

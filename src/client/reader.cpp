@@ -47,10 +47,14 @@ Reader::Reader(Storage* storage, const QString& user, const QString& password, Q
 
 void Reader::add_google_reader_task(Task_type type)
 {
+	bool no_tasks = this->pending_gr_tasks.empty();
+
+	this->pending_gr_tasks.enqueue(type);
+
 	// Even if we are already authenticated, the authentication could go out of
 	// date. So we start authentication process every time we have no pending
 	// tasks.
-	if(this->pending_gr_tasks.empty())
+	if(no_tasks)
 	{
 		reader::tasks::Authenticate* task = new reader::tasks::Authenticate(
 			this, this->user, this->password, this );
@@ -60,8 +64,6 @@ void Reader::add_google_reader_task(Task_type type)
 
 		this->process_task(task);
 	}
-
-	this->pending_gr_tasks.enqueue(type);
 }
 
 

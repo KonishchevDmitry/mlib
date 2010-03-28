@@ -31,6 +31,7 @@ Task::Task(QObject* parent)
 	QObject(parent),
 	is_cancelled(false)
 {
+	// TODO: delete after process
 }
 
 

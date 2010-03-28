@@ -18,6 +18,9 @@
 **************************************************************************/
 
 
+// TODO
+#include <QtCore/QFile>
+
 #include <QtNetwork/QNetworkRequest>
 
 #include <src/common.hpp>
@@ -50,6 +53,14 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 	{
 		Feed_items_list items;
 
+		// TODO
+//		{
+//			QFile reading_list("reading_list");
+//			reading_list.open(QIODevice::Append);
+//			reading_list.write(reply);
+//			reading_list.close();
+//		}
+
 		try
 		{
 			// Checking for errors -->
@@ -80,12 +91,16 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 		// Throws m::Exception
 		this->reader->storage->add_items(items);
 
+#if !OFFLINE_DEVELOPMENT
 		// TODO
 		if(this->continuation_code.isEmpty() || items.empty())
+#endif
 			emit this->reading_list_gotten();
+#if !OFFLINE_DEVELOPMENT
 		else
 			// TODO max number limit
 			this->process();
+#endif
 	}
 	catch(m::Exception& e)
 	{
@@ -106,6 +121,15 @@ QNetworkRequest Get_reading_list::prepare_request(const QString& url)
 
 void Get_reading_list::process(void)
 {
+// TODO
+#if OFFLINE_DEVELOPMENT
+	QFile reading_list("reading_list");
+	reading_list.open(QIODevice::ReadOnly);
+	QByteArray reply = reading_list.readAll();
+	reading_list.close();
+
+	this->request_finished("", reply);
+#else
 	MLIB_D("Getting Google Reader's reading list...");
 
 	// TODO: more xt
@@ -115,6 +139,7 @@ void Get_reading_list::process(void)
 		query += "&c=" + this->continuation_code;
 
 	this->get(query);
+#endif
 }
 
 

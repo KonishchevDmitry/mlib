@@ -38,7 +38,9 @@ Viewer::Viewer(QWidget *parent)
 	current_item_id(-1)
 {
 	ui->setupUi(this);
+	ui->star_check_box->addAction(ui->star_action);
 	this->set_no_selected_feed();
+
 }
 
 
@@ -138,9 +140,24 @@ void Viewer::label_selected(Big_id id)
 
 
 
+void Viewer::on_star_check_box_stateChanged(int state)
+{
+	try
+	{
+		this->storage->star(this->current_item_id, state);
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_W(tr("Unable to star feed's item"), EE(e));
+	}
+}
+
+
+
 void Viewer::reset_current_item(void)
 {
 	this->current_item_id = -1;
+	ui->controls_box->setVisible(false);
 }
 
 
@@ -158,6 +175,11 @@ void Viewer::set_current_item(const Feed_item& item)
 	ui->items_view->setHtml(html);
 
 	this->current_item_id = item.id;
+
+	ui->star_check_box->blockSignals(true);
+	ui->star_check_box->setChecked(item.starred);
+	ui->star_check_box->blockSignals(false);
+	ui->controls_box->setVisible(true);
 }
 
 

@@ -34,7 +34,7 @@ class Feed_item
 {
 	public:
 		Feed_item(void);
-		Feed_item(Big_id id, const QString& title, const QString& summary);
+		Feed_item(Big_id id, const QString& title, const QString& summary, bool starred);
 
 
 	public:
@@ -47,6 +47,7 @@ class Feed_item
 		QString		feed_name;
 		QString		feed_uri;
 		QStringList	labels;
+		bool		starred;
 };
 
 

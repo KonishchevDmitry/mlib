@@ -90,6 +90,11 @@ void Authenticate::request_finished(const QString& error, const QByteArray& repl
 
 void Authenticate::process(void)
 {
+// TODO:
+#if OFFLINE_DEVELOPMENT
+	emit authenticated("");
+	return;
+#else
 	MLIB_D("Logining to Google Reader...");
 
 	QString post_request = _F(
@@ -105,6 +110,7 @@ void Authenticate::process(void)
 	);
 
 	this->post("https://www.google.com/accounts/ClientLogin", post_request.toAscii());
+#endif
 }
 
 

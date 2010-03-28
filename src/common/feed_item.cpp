@@ -28,17 +28,19 @@ namespace grov {
 
 Feed_item::Feed_item(void)
 :
-	id(-1)
+	id(-1),
+	starred(false)
 {
 }
 
 
 
-Feed_item::Feed_item(Big_id id, const QString& title, const QString& summary)
+Feed_item::Feed_item(Big_id id, const QString& title, const QString& summary, bool starred)
 :
 	id(id),
 	title(title),
-	summary(summary)
+	summary(summary),
+	starred(starred)
 {
 }
 
