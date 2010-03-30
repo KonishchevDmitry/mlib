@@ -20,6 +20,7 @@
 
 #include <QtGui/QMainWindow>
 #include <QtGui/QMessageBox>
+#include <QtGui/QTextDocument>
 
 #include <src/common.hpp>
 #include <src/main.hpp>
@@ -57,6 +58,7 @@ void Messenger::on_message(const char* file, int line, m::Message_type type, QSt
 			icon = QMessageBox::Information;
 			break;
 
+		case m::MESSAGE_TYPE_SILENT_WARNING:
 		case m::MESSAGE_TYPE_WARNING:
 			icon = QMessageBox::Warning;
 			break;
@@ -81,10 +83,8 @@ void Messenger::on_message(const char* file, int line, m::Message_type type, QSt
 	QMessageBox message_box(icon, window_title, message, QMessageBox::Ok, get_main_window());
 
 	message_box.setTextFormat(Qt::RichText);
-	// TODO: remove tags from string
-	message_box.setText("<b>" + title + "</b>");
-	// TODO: remove tags from string
-	message_box.setInformativeText(message);
+	message_box.setText("<b>" + Qt::escape(title) + "</b>");
+	message_box.setInformativeText(Qt::escape(message));
 
 	if(type == m::MESSAGE_TYPE_ERROR)
 	{
@@ -93,8 +93,7 @@ void Messenger::on_message(const char* file, int line, m::Message_type type, QSt
 		debug += _F("%1 %2\n\n", GROV_APP_NAME, get_version());
 		debug += _F( tr("Error happened at %1:%2. Please contact to developer."), file, line );
 
-		// TODO: remove tags from string
-		message_box.setDetailedText(debug);
+		message_box.setDetailedText(Qt::escape(debug));
 	}
 
 	message_box.setDefaultButton(QMessageBox::Ok);

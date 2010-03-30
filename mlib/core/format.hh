@@ -17,16 +17,18 @@
 *                                                                         *
 **************************************************************************/
 
+
+#if MLIB_DEVELOP_MODE
+	#include <cstdio>
+	#include <cstdlib>
+#endif
+
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_enum.hpp>
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_same.hpp>
 
 #include <QtCore/QTextStream>
-
-// TODO
-#include <assert.h>
-#include <iostream>
 
 #include <mlib/core/types.hpp>
 
@@ -57,8 +59,20 @@ namespace format_aux {
 	template <class Value>
 	QString convert_to_string(const Value& value, const boost::false_type&)
 	{
-		// TODO: remove
-		assert(false);
+	#if MLIB_DEVELOP_MODE
+		// We must try to provide optimal conversion functions for all types we
+		// using. So this check allows us to be sure that we not forget about
+		// any significant type.
+		{
+			QTextStream stream(stderr);
+			stream
+				<< "This code (" << __FILE__ << ':' << __LINE__ << ") "
+				<< "must not be reached in the developer mode. So aborting..."
+				<< endl;
+			abort();
+		}
+	#endif
+
 		QString string;
 		QTextStream stream(&string);
 		stream << value;

@@ -444,7 +444,8 @@ void Storage::exec(QSqlQuery& query)
 	MLIB_DV("Executing query '%1'...", query.lastQuery());
 
 	if(!query.exec())
-		M_THROW(query.lastError().databaseText());
+		// TODO: may be databaseText()?
+		M_THROW(query.lastError().driverText());
 }
 
 

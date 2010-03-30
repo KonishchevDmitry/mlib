@@ -34,7 +34,6 @@ Client::Client(const QString& user, const QString& password, QObject* parent)
 :
 	Storage(parent),
 	mode(MODE_NONE)
-	// TODO: catch Storage exception
 {
 	// Throws m::Exception
 	if(this->has_items())
@@ -43,16 +42,17 @@ Client::Client(const QString& user, const QString& password, QObject* parent)
 	this->reader = new client::Reader(this, user, password, this);
 
 	connect(this->reader, SIGNAL(error(const QString&)),
-		this, SLOT(on_reader_error(const QString&)) );
+		this, SLOT(reader_error(const QString&)) );
 
 	connect(this->reader, SIGNAL(reading_list_gotten()),
-		this, SLOT(on_reading_list()) );
+		this, SLOT(offline_data_gotten()) );
 }
 
 
 
 void Client::change_mode(Mode mode)
 {
+	// TODO: write current mode to the DB
 	this->mode = mode;
 	emit this->mode_changed(mode);
 }
@@ -83,16 +83,24 @@ void Client::discard_offline_data(void)
 
 
 
-void Client::go_offline(void)
+void Client::offline_data_gotten(void)
 {
-	MLIB_A(this->mode == MODE_NONE);
-	this->change_mode(MODE_GOING_OFFLINE);
-	this->reader->get_reading_list();
+	MLIB_A(this->mode == MODE_GOING_OFFLINE);
+	this->change_mode(MODE_OFFLINE);
 }
 
 
 
-void Client::on_reader_error(const QString& message)
+void Client::go_offline(void)
+{
+	MLIB_A(this->mode == MODE_NONE);
+	this->change_mode(MODE_GOING_OFFLINE);
+	this->reader->get_offline_data();
+}
+
+
+
+void Client::reader_error(const QString& message)
 {
 	Mode new_mode;
 	QString title;
@@ -100,10 +108,20 @@ void Client::on_reader_error(const QString& message)
 	switch(this->mode)
 	{
 		case MODE_GOING_OFFLINE:
-			// TODO: clear all data
+		{
+			try
+			{
+				this->clear();
+			}
+			catch(m::Exception& e)
+			{
+				MLIB_SW(tr("Discarding all offline data failed"), EE(e));
+			}
+
 			new_mode = MODE_NONE;
 			title = tr("Unable to go offline");
-			break;
+		}
+		break;
 
 		default:
 			MLIB_LE();
@@ -112,15 +130,6 @@ void Client::on_reader_error(const QString& message)
 
 	MLIB_W(title, message);
 	this->change_mode(new_mode);
-}
-
-
-
-// TODO
-void Client::on_reading_list(void)
-{
-	MLIB_A(this->mode == MODE_GOING_OFFLINE);
-	this->change_mode(MODE_OFFLINE);
 }
 
 

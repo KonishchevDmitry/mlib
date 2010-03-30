@@ -17,7 +17,6 @@
 *                                                                         *
 **************************************************************************/
 
-// TODO
 
 #ifndef GROV_HEADER_MAIN_WINDOW_VIEWER_FEEDS_MODEL
 #define GROV_HEADER_MAIN_WINDOW_VIEWER_FEEDS_MODEL
@@ -33,6 +32,7 @@
 namespace grov { namespace main_window { namespace viewer {
 
 
+/// Model that represents feeds and labels tree.
 class Feeds_model: public QAbstractItemModel
 {
 	Q_OBJECT
@@ -59,6 +59,7 @@ class Feeds_model: public QAbstractItemModel
 		Feed_tree			feed_tree;
 
 
+	// QAbstractItemModel interface.
 	public:
 		virtual int				columnCount(const QModelIndex& parent) const;
 		virtual QVariant		data(const QModelIndex&, int role) const;

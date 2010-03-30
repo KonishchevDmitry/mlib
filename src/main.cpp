@@ -275,6 +275,9 @@ int main(int argc, char *argv[])
 	process_command_line_options(app);
 
 	m::set_message_handler(m::MESSAGE_TYPE_INFO, &message_handler);
+#if DEVELOP_MODE
+	m::set_message_handler(m::MESSAGE_TYPE_SILENT_WARNING, &message_handler);
+#endif
 	m::set_message_handler(m::MESSAGE_TYPE_WARNING, &message_handler);
 	m::set_message_handler(m::MESSAGE_TYPE_ERROR, &message_handler);
 
@@ -317,10 +320,18 @@ int main(int argc, char *argv[])
 	}
 	// Loading translations <--
 
-	// Creating main window
-	// TODO app.setWindowIcon();
-	MAIN_WINDOW.reset(new grov::Main_window(argv[1], argv[2]));
-	MAIN_WINDOW->show();
+	// Creating the main window -->
+		try
+		{
+			MAIN_WINDOW.reset(new grov::Main_window(argv[1], argv[2]));
+			MAIN_WINDOW->show();
+		}
+		catch(m::Exception& e)
+		{
+			MLIB_W(_F(QApplication::tr("Unable to start %1"), GROV_APP_NAME), EE(e));
+			exit(EXIT_FAILURE);
+		}
+	// Creating the main window <--
 
 	// Ending work -->
 	{

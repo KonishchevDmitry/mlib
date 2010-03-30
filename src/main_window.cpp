@@ -36,7 +36,7 @@ Main_window::Main_window(const QString user, const QString password, QWidget *pa
     ui->setupUi(this);
 
 	// Client -->
-		// TODO
+		// Throws m::Exception
 		this->client = new Client(user, password, this);
 
 		connect(this->client, SIGNAL(mode_changed(Client::Mode)),

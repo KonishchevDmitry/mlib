@@ -17,7 +17,6 @@
 *                                                                         *
 **************************************************************************/
 
-// TODO
 
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QModelIndex>
@@ -130,11 +129,10 @@ const Feed_tree_item* Feeds_model::get(const QModelIndex& index) const
 
 QVariant Feeds_model::headerData(int section, Qt::Orientation orientation, int role) const
 {
-// TODO
-// if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-//	 return rootItem->data(section);
-//
-	return tr("Subscriptions");
+	if(orientation == Qt::Horizontal && role == Qt::DisplayRole)
+		return tr("Subscriptions");
+	else
+		return QVariant();
 }
 
 
