@@ -52,7 +52,7 @@ Client::Client(const QString& user, const QString& password, QObject* parent)
 
 void Client::change_mode(Mode mode)
 {
-	// TODO: write current mode to the DB
+	// TODO: write current mode to the DB to save as from DB clean errors and call clear before mode changes
 	this->mode = mode;
 	emit this->mode_changed(mode);
 }
@@ -73,12 +73,13 @@ void Client::discard_offline_data(void)
 	try
 	{
 		this->clear();
-		this->change_mode(MODE_NONE);
 	}
 	catch(m::Exception& e)
 	{
 		MLIB_W(tr("Discarding all offline data failed"), EE(e));
 	}
+
+	this->change_mode(MODE_NONE);
 }
 
 

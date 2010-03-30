@@ -25,6 +25,9 @@ class QMainWindow;
 
 namespace grov {
 
+	/// Returns directory in which application saves all user-specified files.
+	QString			get_app_home_dir(void);
+
 	/// Returns main window or NULL if it had not been created yet.
 	QMainWindow*	get_main_window(void);
 

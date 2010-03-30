@@ -38,22 +38,14 @@ class Task: public QObject
 		Task(QObject* parent = NULL);
 
 
-	private:
-		/// Was task cancelled.
-		bool			is_cancelled;
-
-
 	public:
-		/// Returns true if task was cancelled.
-		bool			cancelled(void);
-
 		/// Processes the task.
 		virtual void	process(void) = 0;
 
 
 	signals:
 		/// This signal tasks emits when processing fails.
-		void	error(const QString& message);
+		void			error(const QString& message);
 
 
 	public slots:

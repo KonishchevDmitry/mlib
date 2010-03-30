@@ -51,7 +51,7 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 
 	try
 	{
-		Feed_items_list items;
+		Gr_feed_item_list items;
 
 		// TODO
 //		{

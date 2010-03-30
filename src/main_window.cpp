@@ -28,6 +28,8 @@
 namespace grov {
 
 
+// TODO: quit signal that destroys main window an than stops main loop so all
+// messages will be displayed
 Main_window::Main_window(const QString user, const QString password, QWidget *parent)
 :
 	QMainWindow(parent),

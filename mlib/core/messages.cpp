@@ -122,7 +122,12 @@ void print_message(QTextStream& stream, const char* file, int line, Message_type
 	stream << MESSAGES_PREFIXES[type];
 
 	if(!title.isEmpty())
-		stream << title << ". ";
+	{
+		if(type == MESSAGE_TYPE_DEBUG)
+			stream << '[' << title << "] ";
+		else
+			stream << title << ". ";
+	}
 
 	stream << message << endl;
 }

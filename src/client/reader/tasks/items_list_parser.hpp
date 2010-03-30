@@ -39,7 +39,7 @@ class Items_list_parser: public QObject
 		/// code in \a data.
 		///
 		/// @throw m::Exception.
-		Feed_items_list	parse(const QByteArray& data, QString* continuation_code);
+		Gr_feed_item_list	parse(const QByteArray& data, QString* continuation_code);
 };
 
 

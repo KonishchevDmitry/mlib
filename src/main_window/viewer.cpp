@@ -40,7 +40,6 @@ Viewer::Viewer(QWidget *parent)
 	ui->setupUi(this);
 	ui->star_check_box->addAction(ui->star_action);
 	this->set_no_selected_feed();
-
 }
 
 
@@ -75,12 +74,12 @@ void Viewer::feed_selected(Big_id id)
 {
 	this->storage->set_current_source_to_feed(id);
 	this->reset_current_item();
-	this->go_to_next_item();
+	this->go_to_next_item(true);
 }
 
 
 
-void Viewer::go_to_next_item(void)
+void Viewer::go_to_next_item(bool source_changed)
 {
 	try
 	{
@@ -89,13 +88,16 @@ void Viewer::go_to_next_item(void)
 	}
 	catch(m::Exception& e)
 	{
+		if(source_changed)
+			this->set_no_selected_feed();
+
 		MLIB_W(tr("Unable to mark feed's item as read"), EE(e));
 		return;
 	}
 
 	try
 	{
-		Feed_item item = this->storage->get_next_item();
+		Db_feed_item item = this->storage->get_next_item();
 		this->set_current_item(item);
 	}
 	catch(client::Storage::No_more_items&)
@@ -108,6 +110,9 @@ void Viewer::go_to_next_item(void)
 	}
 	catch(m::Exception& e)
 	{
+		if(source_changed)
+			this->set_no_selected_feed();
+
 		MLIB_W(tr("Unable to fetch feed's item"), EE(e));
 	}
 }
@@ -118,7 +123,7 @@ void Viewer::go_to_previous_item(void)
 {
 	try
 	{
-		Feed_item item = this->storage->get_previous_item();
+		Db_feed_item item = this->storage->get_previous_item();
 		this->set_current_item(item);
 	}
 	catch(client::Storage::No_more_items&) { }
@@ -135,7 +140,7 @@ void Viewer::label_selected(Big_id id)
 {
 	this->storage->set_current_source_to_label(id);
 	this->reset_current_item();
-	this->go_to_next_item();
+	this->go_to_next_item(true);
 }
 
 
@@ -148,6 +153,11 @@ void Viewer::on_star_check_box_stateChanged(int state)
 	}
 	catch(m::Exception& e)
 	{
+		// Giving back old value
+		ui->star_check_box->blockSignals(true);
+		ui->star_check_box->setChecked(!state);
+		ui->star_check_box->blockSignals(false);
+
 		MLIB_W(tr("Unable to star feed's item"), EE(e));
 	}
 }
@@ -162,13 +172,13 @@ void Viewer::reset_current_item(void)
 
 
 
-void Viewer::set_current_item(const Feed_item& item)
+void Viewer::set_current_item(const Db_feed_item& item)
 {
 	QString html;
 
 	html += "<html><body>";
 	if(!item.title.isEmpty())
-		html += "<h1>" + item.title + "</h1>";
+		html += "<h1 style='font-size: 14pt'>" + item.title + "</h1>";
 	html += item.summary;
 	html += "</body></html>";
 

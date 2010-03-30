@@ -57,7 +57,7 @@ QString pretty_add_message(QString prefix, QString message)
 			{
 				if(prefix.endsWith(':'))
 					prefix[prefix.size() - 1] = '.';
-				else
+				else if(!prefix.endsWith('.'))
 					prefix += '.';
 			}
 
@@ -68,10 +68,19 @@ QString pretty_add_message(QString prefix, QString message)
 	// One line
 	if(message.indexOf('\n') < 0)
 	{
-		// First letter is upper case
-		if(message.begin()->isUpper())
-			if(message.size() > 1 && message[1].category() == QChar::Letter_Lowercase)
-				*message.begin() = message.begin()->toLower();
+		if(prefix.endsWith('.'))
+		{
+			// First letter is upper case
+			if(message.begin()->isLower())
+				*message.begin() = message.begin()->toUpper();
+		}
+		else
+		{
+			// First letter is upper case
+			if(message.begin()->isUpper())
+				if(message.size() > 1 && message[1].category() == QChar::Letter_Lowercase)
+					*message.begin() = message.begin()->toLower();
+		}
 
 		prefix += " " + message;
 
@@ -81,7 +90,7 @@ QString pretty_add_message(QString prefix, QString message)
 	// Many lines
 	else
 	{
-		if(!prefix.endsWith(':'))
+		if(!prefix.endsWith(':') && !prefix.endsWith('.'))
 			prefix[prefix.size() - 1] = '.';
 
 		prefix += '\n' + message;

@@ -236,6 +236,17 @@ namespace grov { namespace {
 namespace grov {
 
 
+QString get_app_home_dir(void)
+{
+	#ifdef Q_OS_UNIX
+		return QDir::home().filePath("." GROV_APP_UNIX_NAME);
+	#else
+		return QDir::home().filePath(GROV_APP_NAME);
+	#endif
+}
+
+
+
 QMainWindow* get_main_window(void)
 {
 	return MAIN_WINDOW.get();

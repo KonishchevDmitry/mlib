@@ -32,22 +32,49 @@ namespace grov {
 /// Represents a RSS feed item.
 class Feed_item
 {
-	public:
+	protected:
 		Feed_item(void);
-		Feed_item(Big_id id, const QString& title, const QString& summary, bool starred);
+		Feed_item(const QString& title, const QString& summary);
 
 
 	public:
-		Big_id		id;
-
+		/// Title.
 		QString		title;
-		QString		summary;
 
+		/// Summary text.
+		QString		summary;
+};
+
+
+/// Represents a RSS feed item gotten from Google Reader's.
+class Gr_feed_item: public Feed_item
+{
 		// TODO
+	public:
 		QString		feed_name;
 		QString		feed_uri;
 		QStringList	labels;
-		bool		starred;
+};
+
+
+/// Represents a RSS feed item gotten from ours DB.
+class Db_feed_item: public Feed_item
+{
+	public:
+		Db_feed_item(void);
+		// TODO: read
+		Db_feed_item(Big_id id, const QString& title, const QString& summary, bool starred);
+
+
+	public:
+		/// Item's id in our DB.
+		Big_id	id;
+
+		/// Is item read or unread.
+		bool	read;
+
+		/// Is item starred.
+		bool	starred;
 };
 
 
