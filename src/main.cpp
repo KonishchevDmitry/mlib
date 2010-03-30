@@ -18,54 +18,320 @@
 **************************************************************************/
 
 
+#include <cstdlib>
+#include <cstdio>
+
+#include <boost/scoped_ptr.hpp>
+
+#include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QLocale>
+#include <QtCore/QProcess>
+#include <QtCore/QTextCodec>
+#include <QtCore/QTextStream>
 #include <QtCore/QTranslator>
 
 #include <QtGui/QApplication>
-// TODO
-#include <QtCore/QTextCodec>
 
 #include <src/client.hpp>
 #include <src/common.hpp>
 #include <src/main_window.hpp>
 
+#include <tools/messenger.hpp>
 
-// TODO: GUI messages
+#include "main.hpp"
+
+
+namespace grov { namespace {
+
+
+	/// Application's main window.
+	boost::scoped_ptr<Main_window> MAIN_WINDOW;
+
+	/// Application's executable's file path.
+	QString APP_BINARY_PATH;
+
+	/// Object that displays messages to the user.
+	tools::Messenger MESSENGER;
+
+
+
+	/// Returns application's installation directory absolute path or empty
+	/// string if we could not determine it.
+	QString	get_install_dir(void);
+
+	/// Shows messages to the user.
+	void	message_handler(const char* file, int line, m::Message_type type, const QString& title, const QString& message);
+
+	/// Parses and processes command line options.
+	void	process_command_line_options(const QCoreApplication& app);
+
+
+
+	QString get_install_dir(void)
+	{
+		size_t bin_dir_depth = 0;
+
+		// Getting binaries' directory depth relative to installation
+		// directory.
+		// -->
+		{
+			QDir bin_dir = QDir::cleanPath(GROV_APP_BIN_DIR);
+
+			while(bin_dir.dirName() != "." && bin_dir.dirName() != "..")
+			{
+				bin_dir_depth++;
+				bin_dir = QDir::cleanPath(bin_dir.filePath(".."));
+
+				// If something goes wrong
+				if(bin_dir_depth > 1000)
+				{
+					MLIB_SW(QApplication::tr("Unable to determine application's installation directory"),
+						_F( QApplication::tr("Invalid application's binaries' directory path '%1'."), GROV_APP_BIN_DIR ) );
+					return "";
+				}
+			}
+		}
+		// <--
+
+		// Getting installation directory path -->
+		{
+			QDir install_dir(APP_BINARY_PATH);
+
+			// One additional operation for the binary file name
+			do {
+				if(!install_dir.cdUp())
+				{
+					MLIB_SW(QApplication::tr("Unable to determine application's installation directory"),
+						_F( QApplication::tr("Invalid application's binaries' directory path '%1' or gotten application's binary path '%2'."), GROV_APP_BIN_DIR, APP_BINARY_PATH ) );
+					return "";
+				}
+			} while(bin_dir_depth--);
+
+			return install_dir.path();
+		}
+		// Getting installation directory path <--
+	}
+
+
+
+	void message_handler(const char* file, int line, m::Message_type type, const QString& title, const QString& message)
+	{
+		if(type == m::MESSAGE_TYPE_ERROR)
+		{
+			QStringList args;
+
+			args << "--error-mode";
+			args << file;
+			args << QString::number(line);
+			args << title;
+			args << message;
+
+			QProcess::startDetached(APP_BINARY_PATH, args);
+			m::default_message_handler(file, line, type, title, message);
+		}
+		else
+		{
+			m::default_message_handler(file, line, type, title, message);
+			MESSENGER.show(file, line, type, title, message);
+		}
+	}
+
+
+
+	void process_command_line_options(const QCoreApplication& app)
+	{
+		QStringList args = app.arguments();
+
+		if(args.size() >= 2 && args.at(1) == "--error-mode")
+		{
+			if(args.size() == 6)
+			{
+				MESSENGER.show(
+					args.at(2).toLocal8Bit().data(),
+					args.at(3).toInt(),
+					m::MESSAGE_TYPE_ERROR,
+					args.at(4),
+					args.at(5)
+				);
+			}
+			else
+				MESSENGER.show("", 0, m::MESSAGE_TYPE_ERROR, "", QApplication::tr("Unknown error."));
+
+			std::exit(EXIT_FAILURE);
+		}
+		else
+		{
+			bool first_arg = true;
+			bool debug = false;
+			bool verbose = false;
+
+			Q_FOREACH(const QString& arg, args)
+			{
+				if(first_arg)
+				{
+					first_arg = false;
+					continue;
+				}
+
+				if(arg == "--debug")
+					debug = true;
+				else if(arg == "--help")
+				{
+					QTextStream stream(stdout);
+					stream << _F(QApplication::tr(
+							"Usage: %1 [OPTION]...\n"
+							"\n"
+							"Options:\n"
+							"  --help     show this help message\n"
+							"  --debug    turn on debug messages\n"
+							"  --verbose  turn on verbose debug messages\n"
+							"  --version  print application version and exit\n"
+					), GROV_APP_UNIX_NAME) << endl;
+					exit(EXIT_SUCCESS);
+				}
+				else if(arg == "--verbose")
+					verbose = true;
+				else if(arg == "--version")
+				{
+					QTextStream stream(stdout);
+					stream << GROV_APP_NAME << " " << get_version() << endl;
+					exit(EXIT_SUCCESS);
+				}
+				else
+				{
+					MLIB_W(_F( QApplication::tr("Invalid command line option '%1'"), arg ),
+						_F( QApplication::tr("Please run '%2 --help' to view all available options."), GROV_APP_UNIX_NAME ) );
+					exit(EXIT_FAILURE);
+				}
+			}
+
+			if(debug)
+			{
+				if(verbose)
+					m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
+				else
+					m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
+			}
+			else if(verbose)
+			{
+				MLIB_W(QApplication::tr(
+					"Invalid command line options: --verbose must be specified in conjunction with --debug." ));
+				exit(EXIT_FAILURE);
+			}
+		#if DEVELOP_MODE
+			else
+			{
+				m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
+				//m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
+			}
+		#endif
+		}
+	}
+
+
+}}
+
+
+namespace grov {
+
+
+QMainWindow* get_main_window(void)
+{
+	return MAIN_WINDOW.get();
+}
+
+
+
+QString get_version(void)
+{
+	QString version = QString::number(GROV_VERSION_MAJOR) + '.' + QString::number(GROV_VERSION_MINOR);
+
+	if(GROV_VERSION_PATCH)
+		version += "." + QString::number(GROV_VERSION_PATCH);
+
+	return version;
+}
+
+
+}
+
+
+
 int main(int argc, char *argv[])
 {
+	using namespace grov;
+
 	QApplication app(argc, argv);
 
-	// TODO
-	m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
+	// Configuring application -->
+		QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
 
-	MLIB_D("Starting application...");
+		app.setApplicationName(GROV_APP_NAME);
+		APP_BINARY_PATH = QDir(app.applicationFilePath()).absolutePath();
+	// Configuring application <--
 
-	//QLocale::setDefault(QLocale::system());
+	// Processing command line arguments
+	process_command_line_options(app);
 
-	// TODO
-	QTextCodec::setCodecForCStrings ( QTextCodec::codecForLocale());
+	m::set_message_handler(m::MESSAGE_TYPE_INFO, &message_handler);
+	m::set_message_handler(m::MESSAGE_TYPE_WARNING, &message_handler);
+	m::set_message_handler(m::MESSAGE_TYPE_ERROR, &message_handler);
 
-	// TODO: http://qt.nokia.com/doc/4.6/internationalization.html
-	// -->
-		QTranslator qtTranslator;
-		qtTranslator.load("qt_" + QLocale::system().name(),
-		QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-		app.installTranslator(&qtTranslator);
+	MLIB_D("Starting the application...");
+
+	QString install_dir = get_install_dir();
+
+	QTranslator qt_translator;
+	QTranslator app_translator;
+	QTranslator mlib_translator;
+
+	// Loading translations -->
+	{
+		bool is;
+
+		is = qt_translator.load("qt_" + QLocale::system().name(),
+			QLibraryInfo::location(QLibraryInfo::TranslationsPath) );
+		if(is)
+			app.installTranslator(&qt_translator);
+		else
+			MLIB_D("Qt's translations for '%1' did not found.", QLocale::system().name());
 
 
-		QTranslator myappTranslator;
-		myappTranslator.load("lang/grov_" + QLocale::system().name());
-		app.installTranslator(&myappTranslator);
-	// <--
+		if(!install_dir.isEmpty())
+		{
+			is = app_translator.load(_F("%1_%2", GROV_APP_NAME, QLocale::system().name()),
+				QDir(install_dir).absoluteFilePath(GROV_APP_TRANSLATIONS_DIR) );
+			if(is)
+				app.installTranslator(&app_translator);
+			else
+				MLIB_D("Application's translations for '%1' did not found.", QLocale::system().name());
 
+			is = mlib_translator.load("mlib_" + QLocale::system().name(),
+				QDir(install_dir).absoluteFilePath(GROV_APP_TRANSLATIONS_DIR) );
+			if(is)
+				app.installTranslator(&mlib_translator);
+			else
+				MLIB_D("MLib's translations for '%1' did not found.", QLocale::system().name());
+		}
+	}
+	// Loading translations <--
 
-	grov::Main_window main_window(argv[1], argv[2]);
-	main_window.show();
+	// Creating main window
+	// TODO app.setWindowIcon();
+	MAIN_WINDOW.reset(new grov::Main_window(argv[1], argv[2]));
+	MAIN_WINDOW->show();
 
-	int exit_code = app.exec();
-	MLIB_D("Exiting with code %1...", exit_code);
-	return exit_code;
+	// Ending work -->
+	{
+		int exit_code = app.exec();
+
+		MLIB_D("Destroying the main window...");
+		MAIN_WINDOW.reset();
+
+		MLIB_D("Exiting with code %1...", exit_code);
+		return exit_code;
+	}
+	// Ending work <--
 }
 

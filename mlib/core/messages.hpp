@@ -91,7 +91,7 @@ class QTextStream;
 #define MLIB_E(args...) _MLIB_SHOW_MESSAGE(::m::MESSAGE_TYPE_ERROR, no_return, args)
 
 /// Logical error.
-#define MLIB_LE() MLIB_E(::m::_F( QObject::tr("Logical error at %1:%2. Please contact to developer."), __FILE__, __LINE__ ))
+#define MLIB_LE() MLIB_E(QObject::tr("Logical error."))
 
 /// Assert.
 #define MLIB_A(assertion, args...) ({ if(!(assertion)) MLIB_LE(); })
@@ -144,9 +144,12 @@ enum Debug_level
 
 
 /// Type of custom function for message printing.
-typedef void (*Message_handler)(const char*, int, const QString&, const QString&);
+typedef void (*Message_handler)(const char*, int, Message_type type, const QString&, const QString&);
 
 
+
+/// MLib's default message handler.
+void		default_message_handler(const char* file, int line, Message_type type, const QString& title, const QString& message);
 
 /// Returns current debug level.
 Debug_level	get_debug_level(void);
@@ -157,11 +160,11 @@ void		print_message(QTextStream& stream, const char* file, int line, Message_typ
 /// Sets the debug level.
 void		set_debug_level(Debug_level level);
 
-/// Sets messages' handler.
+/// Sets message handler.
 ///
 /// \attention
 /// Error message handler must terminate the program.
-void		set_messages_handler(Message_type type, Message_handler handler);
+void		set_message_handler(Message_type type, Message_handler handler);
 
 
 }

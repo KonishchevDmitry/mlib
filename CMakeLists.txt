@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 2.6)
 
 
-# Program version -->
-	set(GROV_VERSION_MAJOR 0)
-	set(GROV_VERSION_MINOR 1)
-	set(GROV_VERSION_PATCH 0)
-# Program version <--
+# Application's properties -->
+	set(APP_NAME grov)
+	set(APP_UNIX_NAME grov)
+
+	set(APP_VERSION_MAJOR 0)
+	set(APP_VERSION_MINOR 1)
+	set(APP_VERSION_PATCH 0)
+
+	set(APP_BIN_DIR bin)
+	set(APP_TRANSLATIONS_DIR share/${APP_UNIX_NAME}/translations)
+# Application's properties <--
 
 
 # Build type -->
@@ -23,6 +29,7 @@ cmake_minimum_required(VERSION 2.6)
 
 # Configuring MLib -->
 	set(MLIB_APP_MLIB_PARENT_DIR ${PROJECT_SOURCE_DIR})
+	set(MLIB_APP_TRANSLATIONS_DIR ${APP_TRANSLATIONS_DIR})
 
 	set(MLIB_APP_QT_MODULES QtCore QtGui QtNetwork QtSql QtWebkit QtXml)
 	set(MLIB_ENABLE_ALIASES TRUE)

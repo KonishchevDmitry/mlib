@@ -18,12 +18,18 @@
 **************************************************************************/
 
 
-#include <mlib/core.hpp>
+class QMainWindow;
 
-#include <src/config.hpp>
+#include <src/common.hpp>
 
-// TODO
-#if DEVELOP_MODE
-	#define OFFLINE_DEVELOPMENT 1
-#endif
+
+namespace grov {
+
+	/// Returns main window or NULL if it had not been created yet.
+	QMainWindow*	get_main_window(void);
+
+	/// Returns a string with program version.
+	QString			get_version(void);
+
+}
 

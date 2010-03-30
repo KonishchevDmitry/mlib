@@ -1,4 +1,28 @@
-#define GROV_VERSION_MAJOR @GROV_VERSION_MAJOR@
-#define GROV_VERSION_MINOR @GROV_VERSION_MINOR@
-#define GROV_VERSION_PATCH @GROV_VERSION_PATCH@
+#ifndef GROV_HEADER_CONFIG
+#define GROV_HEADER_CONFIG
+
+/// Application name.
+#define GROV_APP_NAME "@APP_NAME@"
+
+/// Application binary file name.
+#define GROV_APP_UNIX_NAME "@APP_UNIX_NAME@"
+
+
+/// Application major version.
+#define GROV_VERSION_MAJOR @APP_VERSION_MAJOR@
+
+/// Application minor version.
+#define GROV_VERSION_MINOR @APP_VERSION_MINOR@
+
+/// Application patch version.
+#define GROV_VERSION_PATCH @APP_VERSION_PATCH@
+
+
+/// Application's binaries' directory (relative to install prefix).
+#define GROV_APP_BIN_DIR "@APP_BIN_DIR@"
+
+/// Application's translations' directory (relative to install prefix).
+#define GROV_APP_TRANSLATIONS_DIR "@APP_TRANSLATIONS_DIR@"
+
+#endif
 

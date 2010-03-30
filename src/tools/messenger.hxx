@@ -18,12 +18,12 @@
 **************************************************************************/
 
 
-#include <mlib/core.hpp>
+#ifndef GROV_HEADER_TOOLS_MESSENGER_FWD
+#define GROV_HEADER_TOOLS_MESSENGER_FWD
 
-#include <src/config.hpp>
+namespace grov { namespace tools {
+	class Messenger;
+}}
 
-// TODO
-#if DEVELOP_MODE
-	#define OFFLINE_DEVELOPMENT 1
 #endif
 

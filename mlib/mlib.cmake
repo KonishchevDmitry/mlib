@@ -6,7 +6,8 @@
 # be called twice).
 #
 # Application must set:
-#  MLIB_APP_MLIB_PARENT_DIR - directory in which MLib located.
+#  MLIB_APP_MLIB_PARENT_DIR - directory in which MLib is located.
+#  MLIB_APP_TRANSLATIONS_DIR - directory for *.qm files (relative to install prefix).
 #
 # Application may set:
 #  MLIB_APP_QT_MODULES - Qt modules that application use.
