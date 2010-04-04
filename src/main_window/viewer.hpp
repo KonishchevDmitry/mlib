@@ -60,7 +60,7 @@ class Viewer: public QWidget
 
 		/// Item that is being displayed at this time or invalid item if not
 		/// item is being displayed at this time.
-		Feed_item			current_item;
+		Db_feed_item		current_item;
 
 
 	public:

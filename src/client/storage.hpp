@@ -124,7 +124,7 @@ class Storage: public QObject
 		/// Marks item as read.
 		///
 		/// @throw m::Exception.
-		void		mark_as_read(const Feed_item& item);
+		void			mark_as_read(const Db_feed_item& item);
 
 		/// Sets current source to a feed with id == \a id.
 		void			set_current_source_to_feed(Big_id id);

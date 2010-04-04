@@ -41,20 +41,6 @@ Feed_item::Feed_item(const QString& title, const QString& summary)
 
 
 
-void Feed_item::set_invalid(void)
-{
-	this->id = -1;
-}
-
-
-
-bool Feed_item::valid(void)
-{
-	return this->id >= 0;
-}
-
-
-
 Db_feed_item::Db_feed_item(void)
 :
 	id(-1)
@@ -63,12 +49,27 @@ Db_feed_item::Db_feed_item(void)
 
 
 
-Db_feed_item::Db_feed_item(Big_id id, const QString& title, const QString& summary, bool starred)
+Db_feed_item::Db_feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred)
 :
 	Feed_item(title, summary),
 	id(id),
+	feed_id(id),
 	starred(starred)
 {
+}
+
+
+
+void Db_feed_item::set_invalid(void)
+{
+	this->id = -1;
+}
+
+
+
+bool Db_feed_item::valid(void)
+{
+	return this->id >= 0;
 }
 
 

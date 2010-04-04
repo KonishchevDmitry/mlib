@@ -395,7 +395,8 @@ void Storage::clear(void)
 		this->exec("INSERT INTO labels (name) VALUES ('starred')");
 
 		MLIB_D("Vacuuming database...");
-		this->exec("VACUUM");
+		// TODO
+//		this->exec("VACUUM");
 
 		transaction.commit();
 		MLIB_D("Offline data cleaned.");
@@ -629,7 +630,7 @@ Db_feed_item Storage::get_item(bool next)
 		{
 			Big_id id = m::qvariant_to_big_id(query->value(0));
 
-			return Db_feed_item(
+			Db_feed_item item(
 				id, m::qvariant_to_big_id(query->value(1)),
 				query->value(2).toString(),
 				query->value(3).toString(),
@@ -683,7 +684,7 @@ bool Storage::has_items(void)
 
 
 
-void Storage::mark_as_read(const Feed_item& item)
+void Storage::mark_as_read(const Db_feed_item& item)
 {
 	MLIB_D("Marking item [%1] as read...", item.id);
 

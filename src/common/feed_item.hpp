@@ -43,14 +43,6 @@ class Feed_item
 
 		/// Summary text.
 		QString		summary;
-
-
-	public:
-		/// Marks the item as invalid item.
-		void	set_invalid(void);
-
-		/// Return false if the item is invalid item.
-		bool	valid(void);
 };
 
 
@@ -59,6 +51,7 @@ class Gr_feed_item: public Feed_item
 {
 		// TODO
 	public:
+		QString		gr_id;
 		QString		feed_name;
 		QString		feed_uri;
 		QStringList	labels;
@@ -71,18 +64,29 @@ class Db_feed_item: public Feed_item
 	public:
 		Db_feed_item(void);
 		// TODO: read
-		Db_feed_item(Big_id id, const QString& title, const QString& summary, bool starred);
+		Db_feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred);
 
 
 	public:
 		/// Item's id in our DB.
 		Big_id	id;
 
+		/// Item's feed id.
+		Big_id	feed_id;
+
 		/// Is item read or unread.
 		bool	read;
 
 		/// Is item starred.
 		bool	starred;
+
+
+	public:
+		/// Marks the item as invalid item.
+		void	set_invalid(void);
+
+		/// Return false if the item is invalid item.
+		bool	valid(void);
 };
 
 

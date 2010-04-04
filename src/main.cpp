@@ -283,7 +283,12 @@ int main(int argc, char *argv[])
 	// Configuring application <--
 
 	// Processing command line arguments
-	process_command_line_options(app);
+	// TODO
+//	process_command_line_options(app);
+	// TODO
+	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
+	// TODO
+	//m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
 
 	m::set_message_handler(m::MESSAGE_TYPE_INFO, &message_handler);
 #if DEVELOP_MODE
