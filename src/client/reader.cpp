@@ -99,19 +99,11 @@ void Reader::authenticated(const QString& auth_id)
 
 
 
-void Reader::get_reading_list(void)
+void Reader::get_offline_data(void)
 {
 	MLIB_D("Adding 'get reading list' task...");
 	this->add_google_reader_task(TASK_TYPE_GET_READING_LIST);
 }
-
-
-
-//void Reader::items_gotten(const Feed_items_list& items)
-//{
-//	// TODO: exception
-//	this->storage->add_items(items);
-//}
 
 
 

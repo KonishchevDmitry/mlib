@@ -1,6 +1,6 @@
 /**************************************************************************
 *                                                                         *
-*   grov - Google Reader offline viewer                                   *
+*   MLib - library of some useful things for internal usage               *
 *                                                                         *
 *   Copyright (C) 2010, Dmitry Konishchev                                 *
 *   http://konishchevdmitry.blogspot.com/                                 *
@@ -12,50 +12,27 @@
 *                                                                         *
 *   This program is distributed in the hope that it will be useful,       *
 *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASK
-#define GROV_HEADER_CLIENT_READER_TASK
-
-#include <src/common.hpp>
-
-#include "task.hxx"
+namespace m {
 
 
-namespace grov { namespace client { namespace reader {
-
-
-/// Base class for all tasks that we need to process.
-class Task: public QObject
+const QString& Exception::string(void) const
 {
-	Q_OBJECT
-
-	public:
-		Task(QObject* parent = NULL);
+	return this->error;
+}
 
 
-	public:
-		/// Processes the task.
-		virtual void	process(void) = 0;
+
+const QString& EE(const m::Exception& e)
+{
+	return e.string();
+}
 
 
-	signals:
-		/// This signal tasks emits when processing fails.
-		void			error(const QString& message);
-
-
-	public slots:
-		/// Cancels the task.
-		void			cancel(void);
-
-};
-
-
-}}}
-
-#endif
+}
 

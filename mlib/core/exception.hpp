@@ -17,11 +17,9 @@
 *                                                                         *
 **************************************************************************/
 
-// TODO: rewrite
+
 #ifndef MLIB_HEADER_CORE_EXCEPTION
 #define MLIB_HEADER_CORE_EXCEPTION
-
-#include <exception>
 
 #include <QString>
 
@@ -30,30 +28,42 @@
 
 #define M_THROW(args...) throw m::Exception(__FILE__, __LINE__, _F(args))
 
+
 namespace m {
 
-class Exception: public std::exception
+
+/// Convenient for using and debugging exception class.
+class Exception
 {
 	public:
 		Exception(const char* file, int line, const QString& error);
-		virtual ~Exception(void) throw() {}
 
 
 	private:
+		/// Error string.
 		QString	error;
 
 
 	public:
-		virtual const char*	what(void) throw();
-
 		/// Returns an error string;
-		const QString&		string(void) const;
+		inline const QString&	string(void) const;
 };
+
+
+
+// Same as std::exception::what(), but returns a QString and may be formats an
+// exception message.
+inline const QString&	EE(const m::Exception& e);
+
 
 }
 
-// TODO
-inline QString EE(const m::Exception& e) { return e.string(); }
+
+#include "exception.hh"
+
+#if MLIB_ENABLE_ALIASES
+	using m::EE;
+#endif
 
 #endif
 

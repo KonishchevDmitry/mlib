@@ -30,9 +30,8 @@
 
 namespace m {
 
-namespace
-{
 
+namespace {
 
 	const char* MESSAGES_PREFIXES[MESSAGE_TYPES_NUMBER] = {
 		"D: ",
@@ -42,53 +41,7 @@ namespace
 		"E: "
 	};
 
-
-
-	void	debug_message_handler(const char* file, int line, const QString& title, const QString& message);
-	void	info_message_handler(const char* file, int line, const QString& title, const QString& message);
-	void	warning_message_handler(const char* file, int line, const QString& title, const QString& message);
-	void	error_message_handler(const char* file, int line, const QString& title, const QString& message);
-
-
-
-	void debug_message_handler(const char* file, int line, const QString& title, const QString& message)
-	{
-		QTextStream stream(stdout);
-		print_message(stream, file, line, MESSAGE_TYPE_DEBUG, title, message);
-	}
-
-
-
-	void info_message_handler(const char* file, int line, const QString& title, const QString& message)
-	{
-		QTextStream stream(stdout);
-		print_message(stream, file, line, MESSAGE_TYPE_INFO, title, message);
-	}
-
-
-
-	void warning_message_handler(const char* file, int line, const QString& title, const QString& message)
-	{
-		QTextStream stream(stderr);
-		print_message(stream, file, line, MESSAGE_TYPE_WARNING, title, message);
-	}
-
-
-
-	void error_message_handler(const char* file, int line, const QString& title, const QString& message)
-	{
-		QTextStream stream(stderr);
-		print_message(stream, file, line, MESSAGE_TYPE_ERROR, title, message);
-	#if MLIB_DEVELOP_MODE
-		std::abort();
-	#else
-		std::exit(EXIT_FAILURE);
-	#endif
-	}
-
-
 }
-
 
 
 namespace messages_aux
@@ -97,13 +50,49 @@ namespace messages_aux
 	Meta_object FAKE_METAOBJECT;
 
 
-	Message_handler MESSAGES_HANDLERS[MESSAGE_TYPES_NUMBER] = {
-		&debug_message_handler,
-		&info_message_handler,
-		&warning_message_handler,
-		&warning_message_handler,
-		&error_message_handler
+	Message_handler MESSAGE_HANDLERS[MESSAGE_TYPES_NUMBER] = {
+		&default_message_handler,
+		&default_message_handler,
+		&default_message_handler,
+		&default_message_handler,
+		&default_message_handler
 	};
+}
+
+
+
+void default_message_handler(const char* file, int line, Message_type type, const QString& title, const QString& message)
+{
+	switch(type)
+	{
+		case MESSAGE_TYPE_DEBUG:
+		case MESSAGE_TYPE_INFO:
+		{
+			QTextStream stream(stdout);
+			print_message(stream, file, line, type, title, message);
+		}
+		break;
+
+		case MESSAGE_TYPE_SILENT_WARNING:
+		case MESSAGE_TYPE_WARNING:
+		{
+			QTextStream stream(stderr);
+			print_message(stream, file, line, type, title, message);
+		}
+		break;
+
+		default:
+		{
+			QTextStream stream(stderr);
+			print_message(stream, file, line, type, title, message);
+		#if MLIB_DEVELOP_MODE
+			std::abort();
+		#else
+			std::exit(EXIT_FAILURE);
+		#endif
+		}
+		break;
+	}
 }
 
 
@@ -133,7 +122,12 @@ void print_message(QTextStream& stream, const char* file, int line, Message_type
 	stream << MESSAGES_PREFIXES[type];
 
 	if(!title.isEmpty())
-		stream << '[' << title << "] ";
+	{
+		if(type == MESSAGE_TYPE_DEBUG)
+			stream << '[' << title << "] ";
+		else
+			stream << title << ". ";
+	}
 
 	stream << message << endl;
 }
@@ -147,9 +141,9 @@ void set_debug_level(Debug_level level)
 
 
 
-void set_messages_handler(Message_type type, Message_handler handler)
+void set_message_handler(Message_type type, Message_handler handler)
 {
-	messages_aux::MESSAGES_HANDLERS[type] = handler;
+	messages_aux::MESSAGE_HANDLERS[type] = handler;
 }
 
 

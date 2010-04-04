@@ -55,6 +55,7 @@ class Client: public client::Storage
 
 
 	public:
+		/// @throw m::Exception
 		Client(const QString& user, const QString& password, QObject* parent = NULL);
 
 
@@ -89,11 +90,11 @@ class Client: public client::Storage
 
 
 	private slots:
-		/// On reader request error.
-		virtual void	on_reader_error(const QString& message);
+		/// Called when we get all offline data.
+		void	offline_data_gotten(void);
 
-		/// On reader request error.
-		virtual void	on_reading_list(void);
+		/// Called when reader request failed.
+		void	reader_error(const QString& message);
 };
 
 

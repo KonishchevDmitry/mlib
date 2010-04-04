@@ -30,7 +30,7 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-QList<Feed_item> Items_list_parser::parse(const QByteArray& data, QString* continuation_code)
+Gr_feed_item_list Items_list_parser::parse(const QByteArray& data, QString* continuation_code)
 {
 	MLIB_DV("Parsing feeds' items list:");
 
@@ -49,7 +49,7 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data, QString* conti
 
 	// Parsing XML document -->
 	{
-		Feed_items_list items;
+		Gr_feed_item_list items;
 
 		QDomElement root = xml.documentElement();
 
@@ -78,7 +78,7 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data, QString* conti
 		for(int entry_id = 0; entry_id < entries.size(); entry_id++)
 		{
 			QDomNode entry = entries.item(entry_id);
-			Feed_item item;
+			Gr_feed_item item;
 
 			if(entry_id)
 				MLIB_DV("");

@@ -85,7 +85,7 @@ class Reader: public QObject
 		///
 		/// This is asynchronous operation. When it will be completed either
 		/// reading_list() or error() signal will be generated.
-		void	get_reading_list(void);
+		void	get_offline_data(void);
 
 	private:
 		/// Adds Google Reader's task (task, that needs Google Reader login).

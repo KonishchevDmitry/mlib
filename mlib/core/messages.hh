@@ -37,7 +37,7 @@ namespace m { namespace messages_aux {
 
 
 	extern Debug_level DEBUG_LEVEL;
-	extern Message_handler MESSAGES_HANDLERS[MESSAGE_TYPES_NUMBER];
+	extern Message_handler MESSAGE_HANDLERS[MESSAGE_TYPES_NUMBER];
 	extern Meta_object FAKE_METAOBJECT;
 
 
@@ -51,7 +51,7 @@ namespace m { namespace messages_aux {
 
 	inline void show_message_helper_no_return(const char* file, int line, Message_type type, const QString& message)
 	{
-		(*MESSAGES_HANDLERS[type])(file, line, QString(), message);
+		(*MESSAGE_HANDLERS[type])(file, line, type, QString(), message);
 
 		// To guarantee that error message terminate the program.
 		abort();
@@ -61,7 +61,7 @@ namespace m { namespace messages_aux {
 
 	inline void show_message_helper_no_return(const char* file, int line, Message_type type, const QString& title, const QString& message)
 	{
-		(*MESSAGES_HANDLERS[type])(file, line, title, message);
+		(*MESSAGE_HANDLERS[type])(file, line, type, title, message);
 
 		// To guarantee that error message terminate the program.
 		abort();
@@ -71,14 +71,14 @@ namespace m { namespace messages_aux {
 
 	inline void show_message_helper_return(const char* file, int line, Message_type type, const QString& message)
 	{
-		(*MESSAGES_HANDLERS[type])(file, line, QString(), message);
+		(*MESSAGE_HANDLERS[type])(file, line, type, QString(), message);
 	}
 
 
 
 	inline void show_message_helper_return(const char* file, int line, Message_type type, const QString& title, const QString& message)
 	{
-		(*MESSAGES_HANDLERS[type])(file, line, title, message);
+		(*MESSAGE_HANDLERS[type])(file, line, type, title, message);
 	}
 
 

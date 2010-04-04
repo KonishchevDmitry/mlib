@@ -27,21 +27,15 @@ namespace grov {
 
 
 Feed_item::Feed_item(void)
-:
-	id(-1),
-	starred(false)
 {
 }
 
 
 
-Feed_item::Feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred)
+Feed_item::Feed_item(const QString& title, const QString& summary)
 :
-	id(id),
-	feed_id(feed_id),
 	title(title),
-	summary(summary),
-	starred(starred)
+	summary(summary)
 {
 }
 
@@ -53,9 +47,28 @@ void Feed_item::set_invalid(void)
 }
 
 
+
 bool Feed_item::valid(void)
 {
 	return this->id >= 0;
+}
+
+
+
+Db_feed_item::Db_feed_item(void)
+:
+	id(-1)
+{
+}
+
+
+
+Db_feed_item::Db_feed_item(Big_id id, const QString& title, const QString& summary, bool starred)
+:
+	Feed_item(title, summary),
+	id(id),
+	starred(starred)
+{
 }
 
 

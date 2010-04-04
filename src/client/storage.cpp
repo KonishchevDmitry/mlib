@@ -18,6 +18,7 @@
 **************************************************************************/
 
 
+#include <QtCore/QDir>
 #include <QtCore/QHash>
 #include <QtCore/QSet>
 #include <QtCore/QVariant>
@@ -29,6 +30,8 @@
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 #include <src/common/feed_tree.hpp>
+
+#include <src/main.hpp>
 
 #include "storage.hpp"
 
@@ -117,9 +120,14 @@ Storage::Storage(QObject* parent)
 	db(new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE"))),
 	current_source(SOURCE_NONE)
 {
+	QString app_home_dir = get_app_home_dir();
+
+	// Application's home directory
+	if(!QDir("").mkpath(app_home_dir))
+		M_THROW(tr("Can't create directory '%1."), app_home_dir);
+
 	// Opening database -->
-		// TODO
-		this->db->setDatabaseName("grov.db");
+		this->db->setDatabaseName(QDir(app_home_dir).filePath(GROV_APP_UNIX_NAME ".db"));
 
 		MLIB_D("Opening database '%1'...", this->db->databaseName());
 
@@ -207,13 +215,22 @@ Storage::Storage(QObject* parent)
 
 Storage::~Storage(void)
 {
-	// TODO: flush cache, etc
+	try
+	{
+		this->flush_cache();
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_W(tr("Error while closing database"), EE(e));
+	}
+
+	this->reset();
 }
 
 
 
 // TODO: add test throw
-void Storage::add_items(const Feed_items_list& items)
+void Storage::add_items(const Gr_feed_item_list& items)
 {
 	MLIB_D("Adding %1 items to DB...", items.size());
 
@@ -269,7 +286,7 @@ void Storage::add_items(const Feed_items_list& items)
 				"INSERT INTO labels_to_items (label_id, item_id) values (:label_id, :item_id)" );
 
 
-			Q_FOREACH(const Feed_item& item, items)
+			Q_FOREACH(const Gr_feed_item& item, items)
 			{
 				Big_id feed_id;
 
@@ -359,13 +376,13 @@ void Storage::add_items(const Feed_items_list& items)
 
 
 void Storage::clear(void)
-// TODO: VACUUM
 {
 	this->reset();
 	this->clear_cache();
 
 	try
 	{
+		MLIB_D("Cleaning offline data...");
 		Scoped_transaction transaction(*this->db);
 
 		this->exec("DELETE FROM feeds");
@@ -377,7 +394,11 @@ void Storage::clear(void)
 		// Starred items is a special label - it must always exists.
 		this->exec("INSERT INTO labels (name) VALUES ('starred')");
 
+		MLIB_D("Vacuuming database...");
+		this->exec("VACUUM");
+
 		transaction.commit();
+		MLIB_D("Offline data cleaned.");
 	}
 	catch(m::Exception& e)
 	{
@@ -457,7 +478,8 @@ void Storage::exec(QSqlQuery& query)
 	MLIB_DV("Executing query '%1'...", query.lastQuery());
 
 	if(!query.exec())
-		M_THROW(query.lastError().databaseText());
+		// TODO: may be databaseText()?
+		M_THROW(query.lastError().driverText());
 }
 
 
@@ -500,7 +522,7 @@ void Storage::flush_cache(void)
 	}
 	catch(m::Exception& e)
 	{
-		M_THROW(PAM( tr("Unable to mark feed's item(s) as read:", "", !this->readed_items_cache.isEmpty()), EE(e) ));
+		M_THROW(PAM( tr("Error while flushing changes' cache to the database:"), EE(e) ));
 	}
 
 	this->readed_items_cache.clear();
@@ -578,7 +600,7 @@ Feed_tree Storage::get_feed_tree(void)
 
 
 
-Feed_item Storage::get_item(bool next)
+Db_feed_item Storage::get_item(bool next)
 {
 	MLIB_D("Getting next(%1) item...", next);
 
@@ -607,7 +629,7 @@ Feed_item Storage::get_item(bool next)
 		{
 			Big_id id = m::qvariant_to_big_id(query->value(0));
 
-			Feed_item item(
+			return Db_feed_item(
 				id, m::qvariant_to_big_id(query->value(1)),
 				query->value(2).toString(),
 				query->value(3).toString(),
@@ -624,13 +646,13 @@ Feed_item Storage::get_item(bool next)
 	catch(m::Exception& e)
 	{
 		this->reset();
-		M_THROW(PAM( tr("Unable to query a feed's item from the database:"), EE(e) ));
+		M_THROW(PAM( tr("Unable to query a feed's item from the database."), EE(e) ));
 	}
 }
 
 
 
-Feed_item Storage::get_next_item(void)
+Db_feed_item Storage::get_next_item(void)
 {
 	// Throws m::Exception
 	return this->get_item(true);
@@ -638,7 +660,7 @@ Feed_item Storage::get_next_item(void)
 
 
 
-Feed_item Storage::get_previous_item(void)
+Db_feed_item Storage::get_previous_item(void)
 {
 	// Throws m::Exception
 	return this->get_item(false);

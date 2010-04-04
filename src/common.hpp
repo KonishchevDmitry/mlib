@@ -20,6 +20,8 @@
 
 #include <mlib/core.hpp>
 
+#include <src/config.hpp>
+
 // TODO
 #if DEVELOP_MODE
 	#define OFFLINE_DEVELOPMENT 1

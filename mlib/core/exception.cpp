@@ -17,37 +17,23 @@
 *                                                                         *
 **************************************************************************/
 
-// TODO: rewrite
+
 #include <mlib/core/messages.hpp>
 
 #include "exception.hpp"
 
+
 namespace m {
 
-	Exception::Exception(const char* file, int line, const QString& error)
-	:
-		error(error)
-	{
-		QString error_string = _F("Exception: %1", error);
-		// TODO: make as MLIB_DV
-		_MLIB_SHOW_MESSAGE_FROM(file, line, MESSAGE_TYPE_DEBUG, return, error_string);
-	}
 
+Exception::Exception(const char* file, int line, const QString& error)
+:
+	error(error)
+{
+	QString message = _F("Exception: %1", error);
+	_MLIB_SHOW_MESSAGE_FROM(file, line, MESSAGE_TYPE_DEBUG, return, message);
+}
 
-
-	const char* Exception::what(void) throw()
-	{
-	// TODO
-		MLIB_E("error");
-		return NULL;
-	}
-
-
-
-	const QString& Exception::string(void) const
-	{
-		return this->error;
-	}
 
 }
 

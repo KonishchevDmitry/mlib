@@ -20,6 +20,7 @@
 
 #include <QtCore/QModelIndex>
 
+#include <QtGui/QHeaderView>
 #include <QtGui/QItemSelection>
 #include <QtGui/QItemSelectionModel>
 

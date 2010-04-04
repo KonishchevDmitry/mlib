@@ -18,44 +18,12 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASK
-#define GROV_HEADER_CLIENT_READER_TASK
+#ifndef GROV_HEADER_TOOLS_MESSENGER_FWD
+#define GROV_HEADER_TOOLS_MESSENGER_FWD
 
-#include <src/common.hpp>
-
-#include "task.hxx"
-
-
-namespace grov { namespace client { namespace reader {
-
-
-/// Base class for all tasks that we need to process.
-class Task: public QObject
-{
-	Q_OBJECT
-
-	public:
-		Task(QObject* parent = NULL);
-
-
-	public:
-		/// Processes the task.
-		virtual void	process(void) = 0;
-
-
-	signals:
-		/// This signal tasks emits when processing fails.
-		void			error(const QString& message);
-
-
-	public slots:
-		/// Cancels the task.
-		void			cancel(void);
-
-};
-
-
-}}}
+namespace grov { namespace tools {
+	class Messenger;
+}}
 
 #endif
 

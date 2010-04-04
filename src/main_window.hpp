@@ -40,6 +40,7 @@ class Main_window: public QMainWindow
 	Q_OBJECT
 
 	public:
+		/// @throw m::Exception
 		Main_window(const QString user, const QString password, QWidget *parent = 0);
 		~Main_window(void);
 

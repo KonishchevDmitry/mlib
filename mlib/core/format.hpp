@@ -17,6 +17,7 @@
 *                                                                         *
 **************************************************************************/
 
+
 #ifndef MLIB_HEADER_CORE_FORMAT
 #define MLIB_HEADER_CORE_FORMAT
 
@@ -106,6 +107,12 @@ QString			create_sentence_from(QString string);
 /// Unable to complete task. Can't open files for reading:
 /// Unable to open file foo.png: I/O error.
 /// Unable to open file bar.png: I/O error.
+///
+///
+/// prefix == "Unable to complete task."
+///
+/// message == "Connection timed out":
+/// Unable to complete task. Connection timed out.
 /// </pre>
 QString			pretty_add_message(QString prefix, QString message);
 

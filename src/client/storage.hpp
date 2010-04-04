@@ -104,22 +104,22 @@ class Storage: public QObject
 		/// Adds items to the storage.
 		///
 		/// @throw m::Exception.
-		void		add_items(const Feed_items_list& items);
+		void			add_items(const Gr_feed_item_list& items);
 
 		/// Returns current feed tree.
 		///
 		/// @throw m::Exception.
-		Feed_tree	get_feed_tree(void);
+		Feed_tree		get_feed_tree(void);
 
 		/// Returns next feeds' item.
 		///
 		/// @throw m::Exception, No_more_items, No_selected_items.
-		Feed_item	get_next_item(void);
+		Db_feed_item	get_next_item(void);
 
 		/// Returns previous feeds' item.
 		///
 		/// @throw m::Exception, No_more_items, No_selected_items.
-		Feed_item	get_previous_item(void);
+		Db_feed_item	get_previous_item(void);
 
 		/// Marks item as read.
 		///
@@ -127,67 +127,67 @@ class Storage: public QObject
 		void		mark_as_read(const Feed_item& item);
 
 		/// Sets current source to a feed with id == \a id.
-		void		set_current_source_to_feed(Big_id id);
+		void			set_current_source_to_feed(Big_id id);
 
 		/// Sets current source to a feed with id == \a id.
-		void		set_current_source_to_label(Big_id id);
+		void			set_current_source_to_label(Big_id id);
 
 		/// Adds or removes star from item.
 		///
 		/// @throw m::Exception.
-		void		star(Big_id id, bool is);
+		void			star(Big_id id, bool is);
 
 	protected:
 		/// Deletes all storage's data.
 		///
 		/// @throw m::Exception.
-		void		clear(void);
+		void			clear(void);
 
 		/// Checks whether storage has any items.
 		///
 		/// @throw m::Exception.
-		bool		has_items(void);
+		bool			has_items(void);
 
 	private:
 		/// Deletes all cached data.
-		void		clear_cache(void);
+		void			clear_cache(void);
 
 		/// Creates a query that will be used to display items requested by
 		/// user.
 		///
 		/// @throw m::Exception.
-		void		create_current_query(void);
+		void			create_current_query(void);
 
 		/// TODO: use outside
 		/// TODO: by timer
 		/// Flushs all cached data.
 		///
 		/// @throw m::Exception, No_more_items.
-		void		flush_cache(void);
+		void			flush_cache(void);
 
 		/// Returns item corresponding to current_query.
 		///
 		/// @throw m::Exception, No_more_items.
-		Feed_item	get_item(bool next);
+		Db_feed_item	get_item(bool next);
 
 		/// Executes a query.
 		///
 		/// @throw m::Exception.
-		void		exec(QSqlQuery& query);
+		void			exec(QSqlQuery& query);
 
 		/// Executes a query.
 		///
 		/// @throw m::Exception.
-		QSqlQuery	exec(const QString& query_string);
+		QSqlQuery		exec(const QString& query_string);
 
 		/// Prepares SQL query for execution.
 		///
 		/// @throw m::Exception.
-		QSqlQuery	prepare(const QString& string);
+		QSqlQuery		prepare(const QString& string);
 
 		/// Resets current internal state - current position for
 		/// get_next_item() and get_previous_item(), etc.
-		void		reset(void);
+		void			reset(void);
 
 
 	signals:

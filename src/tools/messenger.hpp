@@ -18,44 +18,43 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASK
-#define GROV_HEADER_CLIENT_READER_TASK
+#ifndef GROV_HEADER_TOOLS_MESSENGER
+#define GROV_HEADER_TOOLS_MESSENGER
 
 #include <src/common.hpp>
 
-#include "task.hxx"
+#include "messenger.hxx"
 
 
-namespace grov { namespace client { namespace reader {
+namespace grov { namespace tools {
 
 
-/// Base class for all tasks that we need to process.
-class Task: public QObject
+/// Shows messages to the user.
+class Messenger: public QObject
 {
 	Q_OBJECT
 
 	public:
-		Task(QObject* parent = NULL);
+		Messenger(QObject* parent = NULL);
 
 
 	public:
-		/// Processes the task.
-		virtual void	process(void) = 0;
+		/// Shows a message.
+		void	show(const char* file, int line, m::Message_type type, const QString& title, const QString& message);
 
 
 	signals:
-		/// This signal tasks emits when processing fails.
-		void			error(const QString& message);
+		/// Shows a message.
+		void	message(const char* file, int line, m::Message_type type, QString title, const QString& message);
 
 
-	public slots:
-		/// Cancels the task.
-		void			cancel(void);
-
+	private slots:
+		/// Called when we get a message.
+		void	on_message(const char* file, int line, m::Message_type type, QString title, const QString& message);
 };
 
 
-}}}
+}}
 
 #endif
 

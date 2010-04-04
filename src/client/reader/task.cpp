@@ -28,8 +28,7 @@ namespace grov { namespace client { namespace reader {
 
 Task::Task(QObject* parent)
 :
-	QObject(parent),
-	is_cancelled(false)
+	QObject(parent)
 {
 	// TODO: delete after process
 }
@@ -40,14 +39,8 @@ void Task::cancel(void)
 {
 	// TODO: realize
 	MLIB_D("Task [%1] is cancelled.", this);
-	this->is_cancelled = true;
-}
-
-
-
-bool Task::cancelled(void)
-{
-	return this->is_cancelled;
+	this->disconnect(NULL, NULL, this, NULL);
+	this->deleteLater();
 }
 
 

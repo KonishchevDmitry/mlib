@@ -5,19 +5,23 @@
 
 update()
 {(
-	set -e
-
 	project_path="$1"
 	project_name="$2"
+	project_uppercase_name=$(echo -n "$project_name" | awk '{ print toupper($0) }')
 
 	cd "$project_path"
 
 	(
-		echo "set(${project_name}_SOURCES"
+		for lang in ru
+		do
+			lupdate . -noobsolete -ts translations/${project_name}_${lang}.ts
+		done
+
+		echo "set(${project_uppercase_name}_SOURCES"
 			find -name '*.cpp' | sed 's/^\.\//\t/'
 		echo ')'
 		echo ''
-		echo "set(${project_name}_MOC_SOURCES"
+		echo "set(${project_uppercase_name}_MOC_SOURCES"
 			for file in $(find -name '*.hpp')
 			do
 				if grep -F Q_OBJECT "$file" > /dev/null
@@ -27,12 +31,19 @@ update()
 			done | sed 's/^\.\//\t/'
 		echo ')'
 		echo ''
-		echo "set(${project_name}_UIS"
+		echo "set(${project_uppercase_name}_TRANSLATIONS"
+			find -name '*.ts' | sed 's/^\.\//\t/'
+		echo ')'
+		echo ''
+		echo "set(${project_uppercase_name}_UIS"
 			find -name '*.ui' | sed 's/^\.\//\t/'
 		echo ')'
 	) > "CMakeProjectFiles.txt"
 )}
 
-update mlib MLIB
-update src GROV
+
+set -e
+
+update mlib mlib
+update src grov
 

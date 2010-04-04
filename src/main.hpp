@@ -18,44 +18,21 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASK
-#define GROV_HEADER_CLIENT_READER_TASK
+class QMainWindow;
 
 #include <src/common.hpp>
 
-#include "task.hxx"
 
+namespace grov {
 
-namespace grov { namespace client { namespace reader {
+	/// Returns directory in which application saves all user-specified files.
+	QString			get_app_home_dir(void);
 
+	/// Returns main window or NULL if it had not been created yet.
+	QMainWindow*	get_main_window(void);
 
-/// Base class for all tasks that we need to process.
-class Task: public QObject
-{
-	Q_OBJECT
+	/// Returns a string with program version.
+	QString			get_version(void);
 
-	public:
-		Task(QObject* parent = NULL);
-
-
-	public:
-		/// Processes the task.
-		virtual void	process(void) = 0;
-
-
-	signals:
-		/// This signal tasks emits when processing fails.
-		void			error(const QString& message);
-
-
-	public slots:
-		/// Cancels the task.
-		void			cancel(void);
-
-};
-
-
-}}}
-
-#endif
+}
 

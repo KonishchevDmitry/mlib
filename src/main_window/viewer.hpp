@@ -72,15 +72,18 @@ class Viewer: public QWidget
 		void	reset_current_item(void);
 
 		/// Sets current feed item.
-		void	set_current_item(const Feed_item& item);
+		void	set_current_item(const Db_feed_item& item);
 
 		/// Displays "There is no more unread items" message instead of item.
 		void	set_no_more_items(void);
 
 
 	public slots:
-		/// When user clicks "Next feed item" button.
-		void	go_to_next_item(void);
+		/// When user clicks "Next feed item" button (or when he changes
+		/// current feed or label).
+		///
+		/// @param source_changed - is this a feed or label changed event.
+		void	go_to_next_item(bool source_changed = false);
 
 		/// When user clicks "Previous feed item" button.
 		void	go_to_previous_item(void);
