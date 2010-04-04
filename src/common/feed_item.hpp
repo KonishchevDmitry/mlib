@@ -32,13 +32,18 @@ namespace grov {
 /// Represents a RSS feed item.
 class Feed_item
 {
+// TODO: split to 2 classes
 	public:
 		Feed_item(void);
-		Feed_item(Big_id id, const QString& title, const QString& summary, bool starred);
+		Feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred);
 
 
 	public:
 		Big_id		id;
+		/// Google Reader's id.
+		QString		gr_id;
+
+		Big_id		feed_id;
 
 		QString		title;
 		QString		summary;
@@ -48,6 +53,14 @@ class Feed_item
 		QString		feed_uri;
 		QStringList	labels;
 		bool		starred;
+
+
+	public:
+		/// Marks the item as invalid item.
+		void	set_invalid(void);
+
+		/// Return false if the item is invalid item.
+		bool	valid(void);
 };
 
 

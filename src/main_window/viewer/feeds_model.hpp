@@ -23,6 +23,7 @@
 #define GROV_HEADER_MAIN_WINDOW_VIEWER_FEEDS_MODEL
 
 #include <QtCore/QAbstractItemModel>
+#include <QtCore/QHash>
 
 #include <src/common.hpp>
 #include <src/common/feed_tree.hpp>
@@ -59,6 +60,18 @@ class Feeds_model: public QAbstractItemModel
 		Feed_tree			feed_tree;
 
 
+		/// Contains pointers to Feed_tree_items that represents labels.
+		QHash<Big_id, Feed_tree_item*>					labels;
+
+		/// Contains pointers to Feed_tree_items that represents feeds in
+		/// labels.
+		QHash< Big_id, QHash<Big_id, Feed_tree_item*> >	labels_feeds;
+
+		/// Contains pointers to Feed_tree_items that represents feeds without
+		/// labels.
+		QHash<Big_id, Feed_tree_item*>					lonely_feeds;
+
+
 	public:
 		virtual int				columnCount(const QModelIndex& parent) const;
 		virtual QVariant		data(const QModelIndex&, int role) const;
@@ -72,10 +85,19 @@ class Feeds_model: public QAbstractItemModel
 		// Returns Feed_tree_item by QModelIndex.
 		const Feed_tree_item*	get(const QModelIndex& index) const;
 
+		/// Updates pointers to feeds and labels.
+		void					update_feed_tree_map(void);
+
+		/// Updates pointers to feeds and labels for item.
+		void					update_feed_tree_item_map(Feed_tree_item* item);
+
 
 	private slots:
 		/// Called when feeds tree changed in DB.
 		void	feed_tree_changed(void);
+
+		/// Called when an item is marked as read/unread.
+		void	item_marked_as_read(const QList<Big_id>& label_ids, Big_id feed_id, bool read);
 };
 
 

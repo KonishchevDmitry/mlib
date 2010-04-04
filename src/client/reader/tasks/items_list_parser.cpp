@@ -83,6 +83,14 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data, QString* conti
 			if(entry_id)
 				MLIB_DV("");
 
+			// Google Reader's id -->
+				item.gr_id = entry.firstChildElement("id").text();
+				MLIB_DV("Google Reader's id: '%1'.", item.gr_id);
+
+				if(item.gr_id.isEmpty())
+					M_THROW(tr("Gotten item with empty id."));
+			// Google Reader's id <--
+
 			// Title and summary -->
 				item.title = entry.firstChildElement("title").text();
 				MLIB_DV("Title: '%1'.", item.title);
@@ -156,7 +164,7 @@ QList<Feed_item> Items_list_parser::parse(const QByteArray& data, QString* conti
 					QString label = categories.item(category_id).toElement().attribute("label");
 
 // TODO
-					if(!label.isEmpty()/* && label != "reading-list" && label != "fresh"*/)
+					if(!label.isEmpty() && label != "reading-list" && label != "fresh")
 					{
 						MLIB_DV("\t%1", label);
 						labels << label;

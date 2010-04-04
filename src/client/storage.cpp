@@ -135,6 +135,7 @@ Storage::Storage(QObject* parent)
 	// Creating all tables -->
 		if(this->db->tables().empty())
 		{
+		// TODO: selects and indexes optimization
 			try
 			{
 				Scoped_transaction transaction(*this->db);
@@ -165,11 +166,13 @@ Storage::Storage(QObject* parent)
 				this->exec(
 					"CREATE TABLE items("
 						"id INTEGER PRIMARY KEY,"
+						"gr_id TEXT,"
 						"feed_id INTEGER,"
 						"title TEXT,"
 						"summary TEXT,"
-						"read DEFAULT 0, "
-						"starred DEFAULT 0" // TODO
+						"read DEFAULT 0,"
+						"starred DEFAULT 0," // TODO
+						"changes DEFAULT 0" // TODO
 					")"
 				);
 				this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
@@ -216,6 +219,7 @@ void Storage::add_items(const Feed_items_list& items)
 
 	try
 	{
+		#warning QMap?
 		QHash<QString, Big_id> feeds;
 		QHash<QString, Big_id> labels;
 		QHash< Big_id, QSet<Big_id> > labels_to_feeds;
@@ -246,8 +250,8 @@ void Storage::add_items(const Feed_items_list& items)
 		// Adding items -->
 		{
 			QSqlQuery insert_item_query = this->prepare(
-				"INSERT INTO items (feed_id, title, summary) "
-					"values (:feed_id, :title, :summary)"
+				"INSERT INTO items (gr_id, feed_id, title, summary, starred) "
+					"values (:gr_id, :feed_id, :title, :summary, :starred)"
 			);
 
 
@@ -287,9 +291,11 @@ void Storage::add_items(const Feed_items_list& items)
 				}
 				// Feed <--
 
+				insert_item_query.bindValue(":gr_id", item.gr_id);
 				insert_item_query.bindValue(":feed_id", feed_id);
 				insert_item_query.bindValue(":title", item.title);
 				insert_item_query.bindValue(":summary", item.summary);
+				insert_item_query.bindValue(":starred", item.labels.contains("starred") == true);
 				this->exec(insert_item_query);
 
 				Big_id item_id = m::qvariant_to_big_id(insert_item_query.lastInsertId());
@@ -368,6 +374,9 @@ void Storage::clear(void)
 		this->exec("DELETE FROM labels_to_items");
 		this->exec("DELETE FROM labels_to_feeds");
 
+		// Starred items is a special label - it must always exists.
+		this->exec("INSERT INTO labels (name) VALUES ('starred')");
+
 		transaction.commit();
 	}
 	catch(m::Exception& e)
@@ -402,25 +411,29 @@ void Storage::create_current_query(void)
 		case SOURCE_FEED:
 			query = this->prepare(
 				"SELECT "
-					"id, title, summary, starred "
+					"id, feed_id, title, summary, starred "
 				"FROM "
 					"items "
 				"WHERE "
 					"feed_id = :source_id AND "
-					"read = 0"
+					"read = 0 "
+				"ORDER BY "
+					"id"
 			);
 			break;
 
 		case SOURCE_LABEL:
 			query = this->prepare(
 				"SELECT "
-					"id, title, summary, starred "
+					"id, feed_id, title, summary, starred "
 				"FROM "
 					"items, labels_to_items "
 				"WHERE "
 					"label_id = :source_id AND "
 					"items.id = item_id AND "
-					"read = 0"
+					"read = 0 "
+				"ORDER BY "
+					"id"
 			);
 			break;
 
@@ -498,6 +511,8 @@ void Storage::flush_cache(void)
 // TODO: feeds without labels
 Feed_tree Storage::get_feed_tree(void)
 {
+	MLIB_D("Getting feed tree...");
+
 	// Throws m::Exception
 	this->flush_cache();
 
@@ -517,6 +532,15 @@ Feed_tree Storage::get_feed_tree(void)
 				"label_id = :label_id AND feeds.id = feed_id"
 		);
 
+		QSqlQuery labels_feeds_items_query = this->prepare(
+			"SELECT "
+				"COUNT(*) "
+			"FROM "
+				"labels_to_items, items "
+			"WHERE "
+				"item_id = items.id AND feed_id = :feed_id AND read = 0"
+		);
+
 		while(labels_query.next())
 		{
 			Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
@@ -530,9 +554,19 @@ Feed_tree Storage::get_feed_tree(void)
 			{
 				Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
 				QString feed_name = labels_feeds_query.value(1).toString();
-				label->add_feed(feed_id, feed_name);
+
+				labels_feeds_items_query.bindValue(":feed_id", feed_id);
+				this->exec(labels_feeds_items_query);
+				if(!labels_feeds_items_query.next())
+					M_THROW(tr("Query did not return a value."));
+
+				Feed_tree_item* feed = label->add_feed(feed_id, feed_name);
+				feed->unread_items += m::qvariant_to_big_id(labels_feeds_items_query.value(0));
+				label->unread_items += feed->unread_items;
 			}
 		}
+
+		MLIB_D("Feed tree gotten.");
 
 		return feed_tree;
 	}
@@ -546,6 +580,8 @@ Feed_tree Storage::get_feed_tree(void)
 
 Feed_item Storage::get_item(bool next)
 {
+	MLIB_D("Getting next(%1) item...", next);
+
 	if(this->current_source == SOURCE_NONE)
 		throw No_selected_items();
 
@@ -571,12 +607,16 @@ Feed_item Storage::get_item(bool next)
 		{
 			Big_id id = m::qvariant_to_big_id(query->value(0));
 
-			return Feed_item(
-				id,
-				query->value(1).toString(),
+			Feed_item item(
+				id, m::qvariant_to_big_id(query->value(1)),
 				query->value(2).toString(),
-				this->current_query_star_cache.value(id, query->value(3).toBool())
+				query->value(3).toString(),
+				this->current_query_star_cache.value(id, query->value(4).toBool())
 			);
+
+			MLIB_D("Item gotten.");
+
+			return item;
 		}
 		else
 			throw No_more_items();
@@ -621,15 +661,20 @@ bool Storage::has_items(void)
 
 
 
-void Storage::mark_as_read(Big_id id)
+void Storage::mark_as_read(const Feed_item& item)
 {
-	MLIB_D("Marking as read item [%1]...", id);
+	MLIB_D("Marking item [%1] as read...", item.id);
 
-	this->readed_items_cache << id;
+	this->readed_items_cache << item.id;
 
 	if(readed_items_cache.size() > 10)
 		// Throws m::Exception
 		this->flush_cache();
+
+	// TODO
+	emit this->item_marked_as_read(QList<Big_id>(), item.feed_id, true);
+
+	MLIB_D("Item [%1] marked as read.", item.id);
 }
 
 

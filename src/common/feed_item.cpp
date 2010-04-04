@@ -35,13 +35,27 @@ Feed_item::Feed_item(void)
 
 
 
-Feed_item::Feed_item(Big_id id, const QString& title, const QString& summary, bool starred)
+Feed_item::Feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred)
 :
 	id(id),
+	feed_id(feed_id),
 	title(title),
 	summary(summary),
 	starred(starred)
 {
+}
+
+
+
+void Feed_item::set_invalid(void)
+{
+	this->id = -1;
+}
+
+
+bool Feed_item::valid(void)
+{
+	return this->id >= 0;
 }
 
 

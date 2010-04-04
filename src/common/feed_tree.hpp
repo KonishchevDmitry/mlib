@@ -58,6 +58,10 @@ class Feed_tree_item
 		Feed_tree_item(Feed_tree_item* parent, Type type, Big_id id, const QString& name);
 
 
+	public:
+		/// Number of unread items.
+		Big_id			unread_items;
+
 	private:
 		/// Parent item.
 		Feed_tree_item*	parent;
@@ -93,6 +97,9 @@ class Feed_tree_item
 		size_t					count(void) const;
 
 		/// Returns item's child.
+		Feed_tree_item*			get_child(size_t id);
+
+		/// Returns item's child.
 		const Feed_tree_item*	get_child(size_t id) const;
 
 		/// Returns item's child's id.
@@ -105,10 +112,19 @@ class Feed_tree_item
 		const QString&			get_name(void) const;
 
 		/// Returns a parent item.
+		Feed_tree_item*			get_parent(void);
+
+		/// Returns a parent item.
 		const Feed_tree_item*	get_parent(void) const;
 
 		/// Is this item a feed?
 		bool					is_feed(void) const;
+
+		/// Is this item a label?
+		bool					is_label(void) const;
+
+		/// Is this item a root?
+		bool					is_root(void) const;
 
 	private:
 		/// Adds an item to this item.

@@ -141,7 +141,7 @@ void Network_task::on_finished(void)
 //		);
 
 		reply_data = reply->readAll();
-		MLIB_DV("Request reply:\n%1", reply_data);
+		MLIB_D("Request reply:\n%1", reply_data);
 	}
 	catch(m::Exception& e)
 	{
@@ -166,8 +166,8 @@ void Network_task::on_timeout(void)
 
 void Network_task::post(const QString& url, const QByteArray& data)
 {
-	MLIB_D("Processing a HTTP POST to '%1'...", url);
-	QNetworkRequest request(url);
+	MLIB_D("Processing a HTTP POST to '%1' with data '%2'...", url, data);
+	QNetworkRequest request = this->prepare_request(url);
 	// TODO
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 	this->process_reply(this->manager->post(request, data));

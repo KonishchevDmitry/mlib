@@ -24,7 +24,7 @@
 #include <QtGui/QWidget>
 
 #include <src/common.hpp>
-#include <src/common/feed_item.hxx>
+#include <src/common/feed_item.hpp>
 
 #include <src/client/storage.hxx>
 
@@ -58,9 +58,9 @@ class Viewer: public QWidget
 		client::Storage*	storage;
 
 
-		/// Id of item that is being displayed at this time or -1 if no item
-		/// is being displayed at this time.
-		Big_id				current_item_id;
+		/// Item that is being displayed at this time or invalid item if not
+		/// item is being displayed at this time.
+		Feed_item			current_item;
 
 
 	public:
@@ -68,7 +68,7 @@ class Viewer: public QWidget
 		void	connect_to_storage(client::Storage* storage);
 
 	private:
-		/// Sets current_item_id to -1.
+		/// Sets current_item.id to -1.
 		void	reset_current_item(void);
 
 		/// Sets current feed item.

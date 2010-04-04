@@ -43,6 +43,9 @@ Feeds_model::Feeds_model(client::Storage* storage, QObject *parent)
 	connect(this->storage, SIGNAL(feed_tree_changed()),
 		this, SLOT(feed_tree_changed()) );
 
+	connect(this->storage, SIGNAL(item_marked_as_read(const QList<Big_id>&, Big_id, bool)),
+		this, SLOT(item_marked_as_read(const QList<Big_id>&, Big_id, bool)) );
+
 	this->feed_tree_changed();
 }
 
@@ -65,7 +68,7 @@ QVariant Feeds_model::data(const QModelIndex& index, int role) const
 	switch(role)
 	{
 		case Qt::DisplayRole:
-			return item->get_name();
+			return item->get_name() + " (" + QString::number(item->unread_items) + ')';
 			break;
 
 		case ROLE_IS_FEED:
@@ -102,11 +105,15 @@ void Feeds_model::feed_tree_changed(void)
 		MLIB_W(tr("Error while updating subscription list"), EE(e) );
 	}
 
+	this->update_feed_tree_map();
+
 	if(this->feed_tree.count())
 	{
 		this->beginInsertRows(QModelIndex(), 0, this->feed_tree.count() - 1);
 		this->endInsertRows();
 	}
+
+	MLIB_D("Feed tree updated.");
 }
 
 
@@ -157,6 +164,50 @@ QModelIndex Feeds_model::index(int row, int column, const QModelIndex& parent) c
 
 
 
+void Feeds_model::item_marked_as_read(const QList<Big_id>& label_ids, Big_id feed_id, bool read)
+{
+	MLIB_D("Feed's [%1] item's read status changed. Updating model...", feed_id);
+
+	Feed_tree_item* feed_item;
+
+	if(( feed_item = this->lonely_feeds.value(feed_id, NULL) ))
+	{
+		feed_item->unread_items += ( read ? -1 : 1 );
+
+		Feed_tree_item* parent = feed_item->get_parent();
+		QModelIndex index = this->index(parent->get_child_id(feed_item), 0, QModelIndex());
+		this->changePersistentIndex(index, index);
+	}
+
+	// TODO
+	typedef QHash<Big_id, Feed_tree_item*> Label;
+	Q_FOREACH(const Label& label, this->labels_feeds)
+	{
+		if(label.contains(feed_id))
+			if(( feed_item = label.value(feed_id, NULL) ))
+			{
+			MLIB_D("Updating feed [%1]...", feed_id);
+				feed_item->unread_items += ( read ? -1 : 1 );
+
+				Feed_tree_item* parent = feed_item->get_parent();
+				QModelIndex index = this->index(
+					parent->get_child_id(feed_item), 0,
+					this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex())
+				);
+				emit this->dataChanged(index, index);
+//				this->changePersistentIndex(index, index);
+//				this->changePersistentIndex(
+//					this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex()),
+//					this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex())
+//				);
+			}
+	}
+
+	MLIB_D("Model updated.");
+}
+
+
+
 QModelIndex Feeds_model::parent(const QModelIndex& index) const
 {
 	if(index.isValid())
@@ -185,6 +236,44 @@ int Feeds_model::rowCount(const QModelIndex& parent) const
 		tree = &this->feed_tree;
 
 	return tree->count();
+}
+
+
+
+void Feeds_model::update_feed_tree_map(void)
+{
+	this->labels.clear();
+	this->labels_feeds.clear();
+	this->lonely_feeds.clear();
+	this->update_feed_tree_item_map(&this->feed_tree);
+}
+
+
+
+void Feeds_model::update_feed_tree_item_map(Feed_tree_item* item)
+{
+	Big_id item_id = item->get_id();
+	size_t children_count = item->count();
+
+	if(item->is_label())
+		this->labels[item_id] = item;
+
+	for(size_t child_id = 0; child_id < children_count; child_id++)
+	{
+		Feed_tree_item* child = item->get_child(child_id);
+
+		if(item->is_label())
+			this->labels_feeds[item_id][child->get_id()] = child;
+		else if(item->is_root())
+		{
+			if(child->is_feed())
+				this->lonely_feeds[child->get_id()] = child;
+			else
+				this->update_feed_tree_item_map(child);
+		}
+		else
+			MLIB_LE();
+	}
 }
 
 

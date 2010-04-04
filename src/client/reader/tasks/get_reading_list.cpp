@@ -133,11 +133,17 @@ void Get_reading_list::process(void)
 	MLIB_D("Getting Google Reader's reading list...");
 
 	// TODO: more xt
-	QString query = "https://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=1000&xt=user/-/state/com.google/read";
+	QString query = "https://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=1000&r=o&xt=user/-/state/com.google/read";
 
 	if(!this->continuation_code.isEmpty())
 		query += "&c=" + this->continuation_code;
 
+// TODO:
+//	this->post("https://www.google.com/reader/api/0/edit-tag?client=contact:konishchev",
+//	//"a=user%2F14394675015157700687%2Fstate%2Fcom.google%2Fstarred&async=true&s=feed%2Fhttp%3A%2F%2Fwww.opennet.ru%2Fopennews%2Fopennews_mini.rss&i=tag%3Agoogle.com%2C2005%3Areader%2Fitem%2F0e114e09b80a285c&pos=0&T=6CoOqycBAAA.GONvLRCRL9agdExKsQJdhQ.n-UQldYDsiz58ao-SZDdpA"
+//	"a=user%2F-%2Fstate%2Fcom.google%2Fstarred&async=true&s=feed%2Fhttp%3A%2F%2Fwww.opennet.ru%2Fopennews%2Fopennews_mini.rss&i=tag%3Agoogle.com%2C2005%3Areader%2Fitem%2F0e114e09b80a285c&T=9ysSqycBAAA.GONvLRCRL9agdExKsQJdhQ.ZuwUM5_HhNb9_D0H7Pxh9g"
+//	//"i=" + QUrl::toPercentEncoding("tag:google.com,2005:reader/item/8e6564550a865a10") + "&a=" + QUrl::toPercentEncoding("user/14394675015157700687/state/com.google/starred")
+//	);
 	this->get(query);
 #endif
 }

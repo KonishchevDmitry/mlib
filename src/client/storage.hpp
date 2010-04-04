@@ -124,7 +124,7 @@ class Storage: public QObject
 		/// Marks item as read.
 		///
 		/// @throw m::Exception.
-		void		mark_as_read(Big_id id);
+		void		mark_as_read(const Feed_item& item);
 
 		/// Sets current source to a feed with id == \a id.
 		void		set_current_source_to_feed(Big_id id);
@@ -193,6 +193,9 @@ class Storage: public QObject
 	signals:
 		/// Emitted when feeds tree changed.
 		void	feed_tree_changed(void);
+
+		/// Called when an item is marked as read/unread.
+		void	item_marked_as_read(const QList<Big_id>& label_ids, Big_id feed_id, bool read);
 };
 
 }}

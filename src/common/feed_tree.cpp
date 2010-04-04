@@ -28,6 +28,8 @@ namespace grov {
 
 Feed_tree_item::Feed_tree_item(Feed_tree_item* parent, Type type, Big_id id, const QString& name)
 :
+	// TODO
+	unread_items(0),
 	parent(parent),
 	type(type),
 	id(id),
@@ -82,6 +84,13 @@ Feed_tree Feed_tree::create(void)
 
 
 
+Feed_tree_item* Feed_tree_item::get_child(size_t id)
+{
+	return this->children[id].get();
+}
+
+
+
 const Feed_tree_item* Feed_tree_item::get_child(size_t id) const
 {
 	return this->children[id].get();
@@ -120,6 +129,13 @@ const QString& Feed_tree_item::get_name(void) const
 
 
 
+Feed_tree_item* Feed_tree_item::get_parent(void)
+{
+	return this->parent;
+}
+
+
+
 const Feed_tree_item* Feed_tree_item::get_parent(void) const
 {
 	return this->parent;
@@ -130,6 +146,20 @@ const Feed_tree_item* Feed_tree_item::get_parent(void) const
 bool Feed_tree_item::is_feed(void) const
 {
 	return this->type == TYPE_FEED;
+}
+
+
+
+bool Feed_tree_item::is_label(void) const
+{
+	return this->type == TYPE_LABEL;
+}
+
+
+
+bool Feed_tree_item::is_root(void) const
+{
+	return this->type == TYPE_ROOT;
 }
 
 
@@ -151,6 +181,7 @@ Feed_tree_item& Feed_tree_item::operator=(const Feed_tree_item& other)
 	this->type = other.type;
 	this->id = other.id;
 	this->name = other.name;
+	this->unread_items = other.unread_items;
 	this->children = children;
 
 	return *this;

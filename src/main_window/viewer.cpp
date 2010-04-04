@@ -34,8 +34,7 @@ Viewer::Viewer(QWidget *parent)
 :
 	QWidget(parent),
     ui(new Ui::Viewer),
-	storage(NULL),
-	current_item_id(-1)
+	storage(NULL)
 {
 	ui->setupUi(this);
 	ui->star_check_box->addAction(ui->star_action);
@@ -84,8 +83,8 @@ void Viewer::go_to_next_item(void)
 {
 	try
 	{
-		if(this->current_item_id >= 0)
-			this->storage->mark_as_read(this->current_item_id);
+		if(this->current_item.valid())
+			this->storage->mark_as_read(this->current_item);
 	}
 	catch(m::Exception& e)
 	{
@@ -144,7 +143,7 @@ void Viewer::on_star_check_box_stateChanged(int state)
 {
 	try
 	{
-		this->storage->star(this->current_item_id, state);
+		this->storage->star(this->current_item.id, state);
 	}
 	catch(m::Exception& e)
 	{
@@ -156,7 +155,7 @@ void Viewer::on_star_check_box_stateChanged(int state)
 
 void Viewer::reset_current_item(void)
 {
-	this->current_item_id = -1;
+	this->current_item.set_invalid();
 	ui->controls_box->setVisible(false);
 }
 
@@ -174,7 +173,7 @@ void Viewer::set_current_item(const Feed_item& item)
 
 	ui->items_view->setHtml(html);
 
-	this->current_item_id = item.id;
+	this->current_item = item;
 
 	ui->star_check_box->blockSignals(true);
 	ui->star_check_box->setChecked(item.starred);
