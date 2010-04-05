@@ -1,8 +1,8 @@
 set(MLIB_SOURCES
-	core/format.cpp
-	core/messages.cpp
 	core/types.cpp
 	core/exception.cpp
+	core/messages.cpp
+	core/format.cpp
 )
 
 set(MLIB_MOC_SOURCES

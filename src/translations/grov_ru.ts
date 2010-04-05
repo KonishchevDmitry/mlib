@@ -51,11 +51,16 @@ Options:
         <source>Invalid command line options: --verbose must be specified in conjunction with --debug.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../main.cpp" line="347"/>
+        <source>Unable to start %1</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/messenger.cpp" line="68"/>
+        <location filename="../tools/messenger.cpp" line="70"/>
         <source>Application critical error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -63,12 +68,13 @@ Options:
 <context>
     <name>grov::Client</name>
     <message>
-        <location filename="../client.cpp" line="80"/>
+        <location filename="../client.cpp" line="79"/>
+        <location filename="../client.cpp" line="119"/>
         <source>Discarding all offline data failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client.cpp" line="105"/>
+        <location filename="../client.cpp" line="123"/>
         <source>Unable to go offline</source>
         <translation type="unfinished"></translation>
     </message>
@@ -81,68 +87,68 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="40"/>
+        <location filename="../main_window.ui" line="43"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="49"/>
+        <location filename="../main_window.ui" line="52"/>
         <source>&amp;Feed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="59"/>
+        <location filename="../main_window.ui" line="62"/>
         <source>&amp;Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="62"/>
+        <location filename="../main_window.ui" line="65"/>
         <source>Ctrl+Q</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="70"/>
+        <location filename="../main_window.ui" line="73"/>
         <source>Go &amp;offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="73"/>
-        <location filename="../main_window.ui" line="84"/>
+        <location filename="../main_window.ui" line="76"/>
+        <location filename="../main_window.ui" line="87"/>
         <source>Ctrl+O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="81"/>
+        <location filename="../main_window.ui" line="84"/>
         <source>&amp;Flush offline data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="89"/>
+        <location filename="../main_window.ui" line="92"/>
         <source>&amp;Next item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="92"/>
+        <location filename="../main_window.ui" line="95"/>
         <source>J</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="97"/>
+        <location filename="../main_window.ui" line="100"/>
         <source>&amp;Previous item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="100"/>
+        <location filename="../main_window.ui" line="103"/>
         <source>K</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="105"/>
+        <location filename="../main_window.ui" line="108"/>
         <source>&amp;Discard all offline data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.ui" line="108"/>
+        <location filename="../main_window.ui" line="111"/>
         <source>Ctrl+D</source>
         <translation type="unfinished"></translation>
     </message>
@@ -150,59 +156,72 @@ Options:
 <context>
     <name>grov::client::Storage</name>
     <message>
-        <location filename="../client/storage.cpp" line="89"/>
+        <location filename="../client/storage.cpp" line="92"/>
         <source>Unable to rollback a transaction:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="129"/>
+        <location filename="../client/storage.cpp" line="127"/>
+        <source>Can&apos;t create directory &apos;%1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="137"/>
         <source>Unable to open database &apos;%1&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="197"/>
+        <location filename="../client/storage.cpp" line="208"/>
         <source>Unable to create table in the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="349"/>
+        <location filename="../client/storage.cpp" line="224"/>
+        <source>Error while closing database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="372"/>
         <source>Unable to add feeds&apos; items to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="375"/>
+        <location filename="../client/storage.cpp" line="406"/>
         <source>Unable to delete data from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="428"/>
+        <location filename="../client/storage.cpp" line="463"/>
         <source>Logical error (invalid item&apos;s source type).</source>
         <translation type="unfinished"></translation>
     </message>
-    <message numerus="yes">
-        <location filename="../client/storage.cpp" line="490"/>
-        <source>Unable to mark feed&apos;s item(s) as read:</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
+    <message>
+        <location filename="../client/storage.cpp" line="526"/>
+        <source>Error while flushing changes&apos; cache to the database:</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="541"/>
+        <location filename="../client/storage.cpp" line="584"/>
+        <source>Query did not return a value.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="650"/>
+        <source>Unable to query a feed&apos;s item from the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="598"/>
         <source>Unable to get feed tree from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="587"/>
-        <source>Unable to query a feed&apos;s item from the database:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../client/storage.cpp" line="618"/>
+        <location filename="../client/storage.cpp" line="681"/>
         <source>Unable to query feed&apos;s items from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="694"/>
+        <location filename="../client/storage.cpp" line="762"/>
         <source>Database error:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -234,6 +253,19 @@ Options:
     </message>
 </context>
 <context>
+    <name>grov::client::reader::tasks::Get_feed_list</name>
+    <message>
+        <location filename="../client/reader/tasks/get_feed_list.cpp" line="81"/>
+        <source>Parsing error:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/reader/tasks/get_feed_list.cpp" line="87"/>
+        <source>Unable to get Google Reader&apos;s reading list. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>grov::client::reader::tasks::Get_reading_list</name>
     <message>
         <location filename="../client/reader/tasks/get_reading_list.cpp" line="82"/>
@@ -247,24 +279,29 @@ Options:
     </message>
 </context>
 <context>
-    <name>grov::client::reader::tasks::Items_list_parser</name>
+    <name>grov::client::reader::tasks::Gr_xml_parser</name>
     <message>
-        <location filename="../client/reader/tasks/items_list_parser.cpp" line="57"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="57"/>
         <source>Invalid XML root element: &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/items_list_parser.cpp" line="96"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="91"/>
+        <source>Gotten item with empty id.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="104"/>
         <source>Gotten item with empty title and summary. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/items_list_parser.cpp" line="118"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="126"/>
         <source>Gotten item with invalid stream id &apos;%1&apos;. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/items_list_parser.cpp" line="136"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="144"/>
         <source>Gotten item with empty subscription name. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -272,28 +309,28 @@ Options:
 <context>
     <name>grov::main_window::Viewer</name>
     <message>
-        <location filename="../main_window/viewer.cpp" line="92"/>
+        <location filename="../main_window/viewer.cpp" line="93"/>
         <source>Unable to mark feed&apos;s item as read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="111"/>
-        <location filename="../main_window/viewer.cpp" line="128"/>
+        <location filename="../main_window/viewer.cpp" line="115"/>
+        <location filename="../main_window/viewer.cpp" line="132"/>
         <source>Unable to fetch feed&apos;s item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="151"/>
+        <location filename="../main_window/viewer.cpp" line="160"/>
         <source>Unable to star feed&apos;s item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="192"/>
+        <location filename="../main_window/viewer.cpp" line="201"/>
         <source>You have no unread items.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="207"/>
+        <location filename="../main_window/viewer.cpp" line="216"/>
         <source>Please select a label or a feed to view its items.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -303,23 +340,23 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.ui" line="62"/>
+        <location filename="../main_window/viewer.ui" line="65"/>
         <source>about:blank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.ui" line="92"/>
+        <location filename="../main_window/viewer.ui" line="95"/>
         <source>Star this item &lt;Ctrl-S&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.ui" line="95"/>
-        <location filename="../main_window/viewer.ui" line="109"/>
+        <location filename="../main_window/viewer.ui" line="98"/>
+        <location filename="../main_window/viewer.ui" line="112"/>
         <source>Star</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.ui" line="112"/>
+        <location filename="../main_window/viewer.ui" line="115"/>
         <source>Ctrl+S</source>
         <translation type="unfinished"></translation>
     </message>
@@ -327,12 +364,12 @@ Options:
 <context>
     <name>grov::main_window::viewer::Feeds_model</name>
     <message>
-        <location filename="../main_window/viewer/feeds_model.cpp" line="102"/>
+        <location filename="../main_window/viewer/feeds_model.cpp" line="104"/>
         <source>Error while updating subscription list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer/feeds_model.cpp" line="137"/>
+        <location filename="../main_window/viewer/feeds_model.cpp" line="140"/>
         <source>Subscriptions</source>
         <translation type="unfinished"></translation>
     </message>

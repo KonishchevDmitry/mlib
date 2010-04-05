@@ -31,6 +31,7 @@ class QSqlQuery;
 #include <QtCore/QHash>
 
 #include <src/common.hpp>
+#include <src/common/feed.hxx>
 #include <src/common/feed_item.hxx>
 #include <src/common/feed_tree.hxx>
 
@@ -101,6 +102,11 @@ class Storage: public QObject
 
 
 	public:
+		/// Adds feeds to the storage.
+		///
+		/// @throw m::Exception.
+		void			add_feeds(const Gr_feed_list& feeds);
+
 		/// Adds items to the storage.
 		///
 		/// @throw m::Exception.

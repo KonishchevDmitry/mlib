@@ -22,30 +22,37 @@
 #include <QtXml/QDomDocument>
 
 #include <src/common.hpp>
+#include <src/common/feed.hpp>
 #include <src/common/feed_item.hpp>
 
-#include "items_list_parser.hpp"
+#include "gr_xml_parser.hpp"
 
 
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Gr_feed_item_list Items_list_parser::parse(const QByteArray& data, QString* continuation_code)
+QDomDocument Gr_xml_parser::get_dom(const QByteArray& data)
+{
+	QDomDocument xml;
+	QString error;
+	int error_line;
+	int error_column;
+
+	if(!xml.setContent(data, false, &error, &error_line, &error_column))
+		M_THROW(CSF(_F( "%1 at %2:%3.", error, error_line, error_column )));
+
+	return xml;
+}
+
+
+
+// Check and clean
+Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* continuation_code)
 {
 	MLIB_DV("Parsing feeds' items list:");
 
-	QDomDocument xml;
-
-	// Building a DOM tree -->
-	{
-		QString error;
-		int error_line;
-		int error_column;
-
-		if(!xml.setContent(data, false, &error, &error_line, &error_column))
-			M_THROW(CSF(_F( "%1 at %2:%3.", error, error_line, error_column )));
-	}
-	// Building a DOM tree <--
+	// Throws m::Exception
+	QDomDocument xml = this->get_dom(data);
 
 	// Parsing XML document -->
 	{
@@ -110,11 +117,14 @@ Gr_feed_item_list Items_list_parser::parse(const QByteArray& data, QString* cont
 			{
 				QDomElement source_dom = entry.firstChildElement("source");
 
-				// Feed URI -->
+				// Feed's id -->
 				{
 					QString stream_id = source_dom.attribute("gr:stream-id");
 					MLIB_DV("Stream id: %1", stream_id);
 
+					// TODO: check
+					item.feed_gr_id = stream_id;
+					#if 0
 					QString stream_id_prefix = "feed/";
 					if(
 						!stream_id.startsWith(stream_id_prefix) ||
@@ -126,8 +136,9 @@ Gr_feed_item_list Items_list_parser::parse(const QByteArray& data, QString* cont
 						MLIB_SW(_F( tr("Gotten item with invalid stream id '%1'. Skipping it."), stream_id ));
 						continue;
 					}
+					#endif
 				}
-				// Feed URI <--
+				// Feed's id <--
 
 				// Feed name -->
 				{
@@ -164,7 +175,7 @@ Gr_feed_item_list Items_list_parser::parse(const QByteArray& data, QString* cont
 					QString label = categories.item(category_id).toElement().attribute("label");
 
 // TODO
-					if(!label.isEmpty() && label != "reading-list" && label != "fresh")
+					if(!label.isEmpty() /*&& label != "reading-list" && label != "fresh"*/)
 					{
 						MLIB_DV("\t%1", label);
 						labels << label;
@@ -182,6 +193,100 @@ Gr_feed_item_list Items_list_parser::parse(const QByteArray& data, QString* cont
 		return items;
 	}
 	// Parsing XML document <--
+}
+
+
+
+Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
+{
+	MLIB_DV("Parsing subscriptions list:");
+
+	// Throws m::Exception
+	QDomDocument xml = this->get_dom(data);
+
+	Gr_feed_list feeds;
+	QDomNode feed_node;
+
+	// Getting feed nodes -->
+	{
+		QDomElement root = xml.documentElement();
+		if(root.tagName() != "object")
+			M_THROW(tr("Invalid XML root element: '%1'."), root.tagName());
+
+		QDomNodeList lists = root.elementsByTagName("list");
+		for(int id = 0; id < lists.size(); id++)
+		{
+			QDomNode list = lists.item(id);
+
+			if(list.toElement().attribute("name") == "subscriptions")
+			{
+				feed_node = list.firstChild();
+				break;
+			}
+		}
+	}
+	// Getting feed nodes <--
+
+	// Parsing feed nodes -->
+		while(!feed_node.isNull())
+		{
+			Gr_feed feed;
+			QDomNode prop_node = feed_node.firstChild();
+
+			while(!prop_node.isNull())
+			{
+				QDomElement prop = prop_node.toElement();
+
+				if(prop.tagName() == "string")
+				{
+					if(prop.attribute("name") == "id")
+					{
+						feed.gr_id = prop.text();
+						MLIB_DV("Id: '%1'.", feed.gr_id);
+					}
+					else if(prop.attribute("name") == "title")
+					{
+						feed.name = prop.text();
+						MLIB_DV("Title: '%1'.", feed.name);
+					}
+				}
+				else if(prop.tagName() == "list" && prop.attribute("name") == "categories")
+				{
+					QDomNodeList categories = prop.elementsByTagName("string");
+
+					for(int id = 0; id < categories.size(); id++)
+					{
+						QDomElement category = categories.item(id).toElement();
+
+						if(category.tagName() == "string" && category.attribute("name") == "label")
+						{
+							QString label = category.text();
+							MLIB_DV("Label: '%1'.", label);
+							feed.labels << label;
+						}
+					}
+				}
+
+				prop_node = prop_node.nextSibling();
+			}
+
+			if(feed.gr_id.isEmpty())
+				M_THROW(tr("Given subscription has no id."));
+
+			if(feed.name.isEmpty())
+				feed.name = tr("(title unknown)");
+
+			feeds << feed;
+
+			feed_node = feed_node.nextSibling();
+
+			MLIB_DV("");
+		}
+	// Parsing feed nodes <--
+
+	MLIB_DV("Subscriptions list parsed.");
+
+	return feeds;
 }
 
 

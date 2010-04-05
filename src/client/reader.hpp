@@ -46,6 +46,9 @@ class Reader: public QObject
 	// TODO
 		/// Possible asynchronous tasks.
 		enum Task_type {
+			/// Get feed list (list of all user's feeds).
+		//	TASK_TYPE_GET_FEED_LIST,
+
 			/// Get reading list (list of items that user did not read).
 			TASK_TYPE_GET_READING_LIST
 		};

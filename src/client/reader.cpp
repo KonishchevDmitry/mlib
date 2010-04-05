@@ -23,6 +23,7 @@
 #include <src/common.hpp>
 
 #include "reader/tasks/authenticate.hpp"
+#include "reader/tasks/get_feed_list.hpp"
 #include "reader/tasks/get_reading_list.hpp"
 
 #include "reader.hpp"
@@ -78,6 +79,19 @@ void Reader::authenticated(const QString& auth_id)
 	{
 		switch(this->pending_gr_tasks.dequeue())
 		{
+//			case TASK_TYPE_GET_FEED_LIST:
+//			{
+//				reader::tasks::Get_feed_list* task =
+//					new reader::tasks::Get_feed_list(this, this);
+//
+//				#warning
+////				connect(task, SIGNAL(feed_list_gotten()),
+////					this, SIGNAL(reading_list_gotten()) );
+//
+//				this->process_task(task);
+//			}
+//			break;
+
 			case TASK_TYPE_GET_READING_LIST:
 			{
 				reader::tasks::Get_reading_list* task =
@@ -101,7 +115,9 @@ void Reader::authenticated(const QString& auth_id)
 
 void Reader::get_offline_data(void)
 {
+	// TODO
 	MLIB_D("Adding 'get reading list' task...");
+//	this->add_google_reader_task(TASK_TYPE_GET_FEED_LIST);
 	this->add_google_reader_task(TASK_TYPE_GET_READING_LIST);
 }
 

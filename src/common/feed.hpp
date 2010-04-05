@@ -18,78 +18,29 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_COMMON_FEED_ITEM
-#define GROV_HEADER_COMMON_FEED_ITEM
+#ifndef GROV_HEADER_COMMON_FEED
+#define GROV_HEADER_COMMON_FEED
 
 #include <src/common.hpp>
 
-#include "feed_item.hxx"
+#include "feed.hxx"
 
 
 namespace grov {
 
 
-/// Represents a RSS feed item.
-class Feed_item
+/// Represents a RSS feed gotten from Google Reader's subscription list.
+class Gr_feed
 {
-	protected:
-		Feed_item(void);
-		Feed_item(const QString& title, const QString& summary);
-
-
 	public:
-		/// Title.
-		QString		title;
-
-		/// Summary text.
-		QString		summary;
-};
-
-
-/// Represents a RSS feed item gotten from Google Reader's reading list.
-class Gr_feed_item: public Feed_item
-{
-		// TODO
-	public:
+		/// Feed's Google Reader id.
 		QString		gr_id;
-		QString		feed_gr_id;
-		// TODO: odd
-		QString		feed_name;
-		// TODO: odd
+
+		/// Feed name.
+		QString		name;
+
+		/// Feed's labels.
 		QStringList	labels;
-		// TODO: add starred, read
-};
-
-
-/// Represents a RSS feed item gotten from ours DB.
-class Db_feed_item: public Feed_item
-{
-	public:
-		Db_feed_item(void);
-		// TODO: read
-		Db_feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred);
-
-
-	public:
-		/// Item's id in our DB.
-		Big_id	id;
-
-		/// Item's feed id.
-		Big_id	feed_id;
-
-		/// Is item read or unread.
-		bool	read;
-
-		/// Is item starred.
-		bool	starred;
-
-
-	public:
-		/// Marks the item as invalid item.
-		void	set_invalid(void);
-
-		/// Return false if the item is invalid item.
-		bool	valid(void);
 };
 
 

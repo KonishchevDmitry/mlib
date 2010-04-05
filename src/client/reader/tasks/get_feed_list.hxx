@@ -18,31 +18,11 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASKS_ITEMS_LIST_PARSER
-#define GROV_HEADER_CLIENT_READER_TASKS_ITEMS_LIST_PARSER
-
-#include <src/common.hpp>
-#include <src/common/feed_item.hxx>
-
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST_FWD
+#define GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST_FWD
 
 namespace grov { namespace client { namespace reader { namespace tasks {
-
-
-/// Parses a Google Reader feeds' items list.
-class Items_list_parser: public QObject
-{
-	Q_OBJECT
-
-	public:
-		/// @param continuation_code - if not NULL, writes by pointer Google
-		/// Reader continuation code or empty string, if there is no continuation
-		/// code in \a data.
-		///
-		/// @throw m::Exception.
-		Gr_feed_item_list	parse(const QByteArray& data, QString* continuation_code);
-};
-
-
+	class Get_feed_list;
 }}}}
 
 #endif

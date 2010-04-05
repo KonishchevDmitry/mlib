@@ -18,82 +18,45 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_COMMON_FEED_ITEM
-#define GROV_HEADER_COMMON_FEED_ITEM
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
+#define GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
+
 
 #include <src/common.hpp>
 
-#include "feed_item.hxx"
+#include <src/client/reader.hxx>
+#include <src/client/reader/google_reader_task.hpp>
+
+#include "get_reading_list.hxx"
 
 
-namespace grov {
+namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-/// Represents a RSS feed item.
-class Feed_item
+/// Gets Google Reader's subscription list.
+class Get_feed_list: public Google_reader_task
 {
-	protected:
-		Feed_item(void);
-		Feed_item(const QString& title, const QString& summary);
+	Q_OBJECT
+
+	public:
+		Get_feed_list(Reader* reader, QObject* parent = NULL);
 
 
 	public:
-		/// Title.
-		QString		title;
+		/// Processes the task.
+		virtual void	process(void);
 
-		/// Summary text.
-		QString		summary;
+		/// See Network_task::request_finished().
+		virtual void	request_finished(const QString& error, const QByteArray& reply);
+
+
+	signals:
+		/// Emitted when we get all feeds.
+		void	feeds_gotten(void);
 };
 
 
-/// Represents a RSS feed item gotten from Google Reader's reading list.
-class Gr_feed_item: public Feed_item
-{
-		// TODO
-	public:
-		QString		gr_id;
-		QString		feed_gr_id;
-		// TODO: odd
-		QString		feed_name;
-		// TODO: odd
-		QStringList	labels;
-		// TODO: add starred, read
-};
-
-
-/// Represents a RSS feed item gotten from ours DB.
-class Db_feed_item: public Feed_item
-{
-	public:
-		Db_feed_item(void);
-		// TODO: read
-		Db_feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred);
-
-
-	public:
-		/// Item's id in our DB.
-		Big_id	id;
-
-		/// Item's feed id.
-		Big_id	feed_id;
-
-		/// Is item read or unread.
-		bool	read;
-
-		/// Is item starred.
-		bool	starred;
-
-
-	public:
-		/// Marks the item as invalid item.
-		void	set_invalid(void);
-
-		/// Return false if the item is invalid item.
-		bool	valid(void);
-};
-
-
-}
+}}}}
 
 #endif
 

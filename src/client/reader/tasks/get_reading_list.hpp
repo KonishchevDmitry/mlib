@@ -22,13 +22,13 @@
 #define GROV_HEADER_CLIENT_READER_TASKS_GET_READING_LIST
 
 
-class QNetworkRequest;
-
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 
 #include <src/client/reader.hxx>
-#include <src/client/reader/network_task.hpp>
+#include <src/client/reader/google_reader_task.hpp>
+
+#include "get_feed_list.hpp"
 
 #include "get_reading_list.hxx"
 
@@ -36,8 +36,8 @@ class QNetworkRequest;
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-/// Gets Google Reader reading list.
-class Get_reading_list: public Network_task
+/// Gets Google Reader's reading list.
+class Get_reading_list: public Google_reader_task
 {
 	Q_OBJECT
 
@@ -46,8 +46,11 @@ class Get_reading_list: public Network_task
 
 
 	private:
+		/// Task for getting feed list.
+		Get_feed_list*	get_feed_list_task;
+
 		/// Reading list continuation code.
-		QString	continuation_code;
+		QString			continuation_code;
 
 
 	public:
@@ -57,14 +60,15 @@ class Get_reading_list: public Network_task
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
-	protected:
-		/// See Network_task::prepare_request().
-		virtual QNetworkRequest	prepare_request(const QString& url);
-
 
 	signals:
 		/// Emits when all reading list's items gotten.
 		void	reading_list_gotten(void);
+
+
+	private slots:
+		/// Gets reading list.
+		void			get_reading_list(void);
 };
 
 

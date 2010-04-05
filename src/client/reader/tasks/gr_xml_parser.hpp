@@ -18,82 +18,47 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_COMMON_FEED_ITEM
-#define GROV_HEADER_COMMON_FEED_ITEM
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_GR_XML_PARSER
+#define GROV_HEADER_CLIENT_READER_TASKS_GR_XML_PARSER
+
+class QDomDocument;
 
 #include <src/common.hpp>
-
-#include "feed_item.hxx"
-
-
-namespace grov {
+#include <src/common/feed.hxx>
+#include <src/common/feed_item.hxx>
 
 
-/// Represents a RSS feed item.
-class Feed_item
+namespace grov { namespace client { namespace reader { namespace tasks {
+
+
+/// Parses Google Reader's XML replies.
+class Gr_xml_parser: public QObject
 {
-	protected:
-		Feed_item(void);
-		Feed_item(const QString& title, const QString& summary);
-
+	Q_OBJECT
 
 	public:
-		/// Title.
-		QString		title;
+		/// Parses a reading list.
+		///
+		/// @param continuation_code - if not NULL, writes by pointer Google
+		/// Reader continuation code or empty string, if there is no continuation
+		/// code in \a data.
+		///
+		/// @throw m::Exception.
+		Gr_feed_item_list	reading_list(const QByteArray& data, QString* continuation_code);
 
-		/// Summary text.
-		QString		summary;
+		/// Parses a subscription list.
+		Gr_feed_list		subscription_list(const QByteArray& data);
+
+
+	private:
+		/// Creates QDomDocument fom \a data.
+		///
+		/// @throw m::Exception.
+		static QDomDocument	get_dom(const QByteArray& data);
 };
 
 
-/// Represents a RSS feed item gotten from Google Reader's reading list.
-class Gr_feed_item: public Feed_item
-{
-		// TODO
-	public:
-		QString		gr_id;
-		QString		feed_gr_id;
-		// TODO: odd
-		QString		feed_name;
-		// TODO: odd
-		QStringList	labels;
-		// TODO: add starred, read
-};
-
-
-/// Represents a RSS feed item gotten from ours DB.
-class Db_feed_item: public Feed_item
-{
-	public:
-		Db_feed_item(void);
-		// TODO: read
-		Db_feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred);
-
-
-	public:
-		/// Item's id in our DB.
-		Big_id	id;
-
-		/// Item's feed id.
-		Big_id	feed_id;
-
-		/// Is item read or unread.
-		bool	read;
-
-		/// Is item starred.
-		bool	starred;
-
-
-	public:
-		/// Marks the item as invalid item.
-		void	set_invalid(void);
-
-		/// Return false if the item is invalid item.
-		bool	valid(void);
-};
-
-
-}
+}}}}
 
 #endif
 

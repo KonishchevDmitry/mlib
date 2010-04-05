@@ -28,6 +28,7 @@
 #include <QtSql/QSqlQuery>
 
 #include <src/common.hpp>
+#include <src/common/feed.hpp>
 #include <src/common/feed_item.hpp>
 #include <src/common/feed_tree.hpp>
 
@@ -159,8 +160,8 @@ Storage::Storage(QObject* parent)
 				this->exec(
 					"CREATE TABLE feeds("
 						"id INTEGER PRIMARY KEY,"
-						"name TEXT,"
-						"uri TEXT"
+						"gr_id TEXT,"
+						"name TEXT"
 					")"
 				);
 
@@ -185,13 +186,14 @@ Storage::Storage(QObject* parent)
 				);
 				this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
 
-				this->exec(
-					"CREATE TABLE labels_to_items("
-						"label_id INTEGER,"
-						"item_id INTEGER"
-					")"
-				);
-				this->exec("CREATE INDEX labels_to_items_label_id_idx ON labels_to_items(label_id)");
+// TODO
+//				this->exec(
+//					"CREATE TABLE labels_to_items("
+//						"label_id INTEGER,"
+//						"item_id INTEGER"
+//					")"
+//				);
+//				this->exec("CREATE INDEX labels_to_items_label_id_idx ON labels_to_items(label_id)");
 
 				this->exec(
 					"CREATE TABLE labels_to_feeds("
@@ -230,16 +232,99 @@ Storage::~Storage(void)
 
 
 // TODO: add test throw
+void Storage::add_feeds(const Gr_feed_list& feeds)
+{
+	MLIB_D("Adding %1 feeds to DB...", feeds.size());
+
+	// Just in case
+	QHash<QString, const Gr_feed*> uniq_feeds;
+	Q_FOREACH(const Gr_feed& feed, feeds)
+		uniq_feeds[feed.gr_id] = &feed;
+
+	QHash<QString, Big_id> labels;
+
+	try
+	{
+		// For SQLite it really speeds up many insertions.
+		Scoped_transaction transaction(*this->db);
+
+		// Adding feeds -->
+		{
+			QSqlQuery insert_feed_query = this->prepare(
+				"INSERT INTO feeds (gr_id, name) values (:gr_id, :name)" );
+
+			QSqlQuery insert_label_query = this->prepare(
+				"INSERT INTO labels (name) values (:name)" );
+
+			QSqlQuery insert_labels_to_feeds_query = this->prepare(
+				"INSERT INTO labels_to_feeds (label_id, feed_id) values (:label_id, :feed_id)" );
+
+			Q_FOREACH(const Gr_feed* feed, uniq_feeds)
+			{
+				Big_id feed_id;
+				QSet<Big_id> feed_labels;
+
+				// Feed -->
+					insert_feed_query.bindValue(":gr_id", feed->gr_id);
+					insert_feed_query.bindValue(":name", feed->name);
+					this->exec(insert_feed_query);
+					feed_id = m::qvariant_to_big_id(insert_feed_query.lastInsertId());
+				// Feed <--
+
+				// Labels -->
+					Q_FOREACH(const QString& label, feed->labels)
+					{
+						Big_id label_id = labels.value(label, -1);
+
+						// Adding label to DB -->
+							if(label_id < 0)
+							{
+								insert_label_query.bindValue(":name", label);
+								this->exec(insert_label_query);
+								label_id = m::qvariant_to_big_id(insert_label_query.lastInsertId());
+
+								labels[label] = label_id;
+							}
+						// Adding label to DB <--
+
+						// Labels to feeds -->
+							if(!feed_labels.contains(label_id))
+							{
+								insert_labels_to_feeds_query.bindValue(":label_id", label_id);
+								insert_labels_to_feeds_query.bindValue(":feed_id", feed_id);
+								this->exec(insert_labels_to_feeds_query);
+								feed_labels.insert(label_id);
+							}
+						// Labels to feeds <--
+					}
+				// Labels <--
+			}
+		}
+		// Adding feeds <--
+
+		transaction.commit();
+
+		// TODO: odd emits
+		emit feed_tree_changed();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to add feeds to the database:"), EE(e) ));
+	}
+
+	MLIB_D("Feeds has been successfully added to DB.");
+}
+
+
+
+// TODO: add test throw
 void Storage::add_items(const Gr_feed_item_list& items)
 {
 	MLIB_D("Adding %1 items to DB...", items.size());
 
 	try
 	{
-		#warning QMap?
 		QHash<QString, Big_id> feeds;
-		QHash<QString, Big_id> labels;
-		QHash< Big_id, QSet<Big_id> > labels_to_feeds;
 
 		// For SQLite it really speeds up many insertions.
 		Scoped_transaction transaction(*this->db);
@@ -247,22 +332,12 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		// Getting all known feeds -->
 		{
 			QSqlQuery query = this->exec(
-				"SELECT id, uri FROM feeds" );
+				"SELECT id, gr_id FROM feeds" );
 
 			while(query.next())
 				feeds[query.value(1).toString()] = m::qvariant_to_big_id(query.value(0));
 		}
 		// Getting all known feeds <--
-
-		// Getting all known labels -->
-		{
-			QSqlQuery query = this->exec(
-				"SELECT id, name FROM labels" );
-
-			while(query.next())
-				labels[query.value(1).toString()] = m::qvariant_to_big_id(query.value(0));
-		}
-		// Getting all known labels <--
 
 		// Adding items -->
 		{
@@ -271,42 +346,16 @@ void Storage::add_items(const Gr_feed_item_list& items)
 					"values (:gr_id, :feed_id, :title, :summary, :starred)"
 			);
 
-
-			QSqlQuery insert_feed_query = this->prepare(
-				"INSERT INTO feeds (name, uri) values (:name, :uri)" );
-
-			QSqlQuery insert_labels_to_feeds_query = this->prepare(
-				"INSERT INTO labels_to_feeds (label_id, feed_id) values (:label_id, :feed_id)" );
-
-
-			QSqlQuery insert_label_query = this->prepare(
-				"INSERT INTO labels (name) values (:name)" );
-
-			QSqlQuery insert_labels_to_items_query = this->prepare(
-				"INSERT INTO labels_to_items (label_id, item_id) values (:label_id, :item_id)" );
-
-
 			Q_FOREACH(const Gr_feed_item& item, items)
 			{
-				Big_id feed_id;
+				Big_id feed_id = feeds.value(item.feed_gr_id, -1);
 
-				// Feed -->
+				// TODO:
+				if(feed_id < 0)
 				{
-					MLIB_CONST_ITER_TYPE(feeds) iter = feeds.find(item.feed_uri);
-
-					if(iter == feeds.end())
-					{
-						insert_feed_query.bindValue(":name", item.feed_name);
-						insert_feed_query.bindValue(":uri", item.feed_uri);
-						this->exec(insert_feed_query);
-						feed_id = m::qvariant_to_big_id(insert_feed_query.lastInsertId());
-
-						feeds[item.feed_uri] = feed_id;
-					}
-					else
-						feed_id = iter.value();
+					MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					continue;
 				}
-				// Feed <--
 
 				insert_item_query.bindValue(":gr_id", item.gr_id);
 				insert_item_query.bindValue(":feed_id", feed_id);
@@ -314,50 +363,6 @@ void Storage::add_items(const Gr_feed_item_list& items)
 				insert_item_query.bindValue(":summary", item.summary);
 				insert_item_query.bindValue(":starred", item.labels.contains("starred") == true);
 				this->exec(insert_item_query);
-
-				Big_id item_id = m::qvariant_to_big_id(insert_item_query.lastInsertId());
-
-				// Labels -->
-					Q_FOREACH(const QString& label, item.labels)
-					{
-						Big_id label_id;
-						MLIB_CONST_ITER_TYPE(labels) iter = labels.find(label);
-
-						// Labels -->
-							if(iter == labels.end())
-							{
-								insert_label_query.bindValue(":name", label);
-								this->exec(insert_label_query);
-								label_id = m::qvariant_to_big_id(insert_label_query.lastInsertId());
-
-								labels[label] = label_id;
-							}
-							else
-								label_id = iter.value();
-						// Labels <--
-
-						// Labels to items -->
-							insert_labels_to_items_query.bindValue(":label_id", label_id);
-							insert_labels_to_items_query.bindValue(":item_id", item_id);
-							this->exec(insert_labels_to_items_query);
-						// Labels to items <--
-
-						// Labels to feeds -->
-						{
-							MLIB_CONST_ITER_TYPE(labels_to_feeds) iter = labels_to_feeds.find(label_id);
-
-							if(iter == labels_to_feeds.end() || !iter->contains(feed_id))
-							{
-								insert_labels_to_feeds_query.bindValue(":label_id", label_id);
-								insert_labels_to_feeds_query.bindValue(":feed_id", feed_id);
-								this->exec(insert_labels_to_feeds_query);
-
-								labels_to_feeds[label_id].insert(feed_id);
-							}
-						}
-						// Labels to feeds <--
-					}
-				// Labels <--
 			}
 		}
 		// Adding items <--
@@ -371,6 +376,8 @@ void Storage::add_items(const Gr_feed_item_list& items)
 	{
 		M_THROW(PAM( tr("Unable to add feeds' items to the database:"), EE(e) ));
 	}
+
+	MLIB_D("All items successfully added to DB.");
 }
 
 
@@ -388,7 +395,8 @@ void Storage::clear(void)
 		this->exec("DELETE FROM feeds");
 		this->exec("DELETE FROM labels");
 		this->exec("DELETE FROM items");
-		this->exec("DELETE FROM labels_to_items");
+		// TODO
+//		this->exec("DELETE FROM labels_to_items");
 		this->exec("DELETE FROM labels_to_feeds");
 
 		// Starred items is a special label - it must always exists.
@@ -449,10 +457,9 @@ void Storage::create_current_query(void)
 				"SELECT "
 					"id, feed_id, title, summary, starred "
 				"FROM "
-					"items, labels_to_items "
+					"items "
 				"WHERE "
-					"label_id = :source_id AND "
-					"items.id = item_id AND "
+					"feed_id in (SELECT feed_id FROM labels_to_feeds WHERE label_id = :source_id) AND "
 					"read = 0 "
 				"ORDER BY "
 					"id"
@@ -555,13 +562,13 @@ Feed_tree Storage::get_feed_tree(void)
 				"label_id = :label_id AND feeds.id = feed_id"
 		);
 
-		QSqlQuery labels_feeds_items_query = this->prepare(
+		QSqlQuery feeds_items_query = this->prepare(
 			"SELECT "
 				"COUNT(*) "
 			"FROM "
-				"labels_to_items, items "
+				"items "
 			"WHERE "
-				"item_id = items.id AND feed_id = :feed_id AND read = 0"
+				"feed_id = :feed_id AND read = 0"
 		);
 
 		while(labels_query.next())
@@ -578,13 +585,13 @@ Feed_tree Storage::get_feed_tree(void)
 				Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
 				QString feed_name = labels_feeds_query.value(1).toString();
 
-				labels_feeds_items_query.bindValue(":feed_id", feed_id);
-				this->exec(labels_feeds_items_query);
-				if(!labels_feeds_items_query.next())
+				feeds_items_query.bindValue(":feed_id", feed_id);
+				this->exec(feeds_items_query);
+				if(!feeds_items_query.next())
 					M_THROW(tr("Query did not return a value."));
 
 				Feed_tree_item* feed = label->add_feed(feed_id, feed_name);
-				feed->unread_items += m::qvariant_to_big_id(labels_feeds_items_query.value(0));
+				feed->unread_items += m::qvariant_to_big_id(feeds_items_query.value(0));
 				label->unread_items += feed->unread_items;
 			}
 		}
