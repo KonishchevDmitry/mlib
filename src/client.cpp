@@ -46,6 +46,9 @@ Client::Client(const QString& user, const QString& password, QObject* parent)
 
 	connect(this->reader, SIGNAL(reading_list_gotten()),
 		this, SLOT(offline_data_gotten()) );
+
+	connect(this->reader, SIGNAL(offline_data_flushed()),
+		this, SLOT(offline_data_flushed()) );
 }
 
 
@@ -84,10 +87,11 @@ void Client::discard_offline_data(void)
 
 
 
-void Client::offline_data_gotten(void)
+void Client::flush_offline_data(void)
 {
-	MLIB_A(this->mode == MODE_GOING_OFFLINE);
-	this->change_mode(MODE_OFFLINE);
+	MLIB_A(this->mode == MODE_OFFLINE);
+	this->change_mode(MODE_GOING_NONE);
+	this->reader->flush_offline_data();
 }
 
 
@@ -97,6 +101,23 @@ void Client::go_offline(void)
 	MLIB_A(this->mode == MODE_NONE);
 	this->change_mode(MODE_GOING_OFFLINE);
 	this->reader->get_offline_data();
+}
+
+
+
+void Client::offline_data_flushed(void)
+{
+	MLIB_A(this->mode == MODE_GOING_NONE);
+	this->change_mode(MODE_NONE);
+	// TODO: clear, etc
+}
+
+
+
+void Client::offline_data_gotten(void)
+{
+	MLIB_A(this->mode == MODE_GOING_OFFLINE);
+	this->change_mode(MODE_OFFLINE);
 }
 
 
@@ -121,6 +142,13 @@ void Client::reader_error(const QString& message)
 
 			new_mode = MODE_NONE;
 			title = tr("Unable to go offline");
+		}
+		break;
+
+		case MODE_GOING_NONE:
+		{
+			new_mode = MODE_OFFLINE;
+			title = tr("Error while flushing offline data");
 		}
 		break;
 

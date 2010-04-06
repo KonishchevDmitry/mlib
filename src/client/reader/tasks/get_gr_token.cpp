@@ -20,30 +20,69 @@
 
 #include <src/common.hpp>
 
-#include "task.hpp"
+#include "get_gr_token.hpp"
 
 
-namespace grov { namespace client { namespace reader {
+namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Task::Task(QObject* parent)
+Get_gr_token::Get_gr_token(Reader* reader, QObject* parent)
 :
-	QObject(parent)
+	Google_reader_task(reader, parent)
 {
-	// TODO: delete after process
 }
 
 
 
-void Task::cancel(void)
+void Get_gr_token::request_finished(const QString& error, const QByteArray& reply)
 {
-	// TODO: realize
-	// TODO: cancel callback to flush cached data
-	MLIB_D("Task [%1] is cancelled.", this);
-	this->disconnect(NULL, NULL, this, NULL);
-	this->deleteLater();
+	MLIB_D("Google Reader's API token request finished.");
+
+	try
+	{
+		try
+		{
+			// Checking for errors -->
+				if(this->throw_if_fatal_error(error))
+				{
+					MLIB_D("Request failed. Trying again...");
+					this->process();
+					return;
+				}
+			// Checking for errors <--
+
+			if(reply.isEmpty())
+				M_THROW(tr("Gotten empty token."));
+		}
+		catch(m::Exception& e)
+		{
+			M_THROW(PAM( tr("Unable to get Google Reader's API token."), EE(e) ));
+		}
+
+		MLIB_D("Gotten Google Reader's API token: '%1'.", reply);
+		emit this->token_gotten(reply);
+	}
+	catch(m::Exception& e)
+	{
+		emit this->error(EE(e));
+	}
 }
 
 
-}}}
+
+void Get_gr_token::process(void)
+{
+	MLIB_D("Getting Google Reader's API token...");
+
+#if OFFLINE_DEVELOPMENT
+	emit this->token_gotten("fake offline token");
+#else
+	// TODO: more params
+	QString query = "https://www.google.com/reader/api/0/token";
+	this->get(query);
+#endif
+}
+
+
+}}}}
 

@@ -18,8 +18,8 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_READING_LIST
-#define GROV_HEADER_CLIENT_READER_TASKS_GET_READING_LIST
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_FLUSH_OFFLINE_DATA
+#define GROV_HEADER_CLIENT_READER_TASKS_FLUSH_OFFLINE_DATA
 
 
 #include <src/common.hpp>
@@ -28,29 +28,39 @@
 #include <src/client/reader.hxx>
 #include <src/client/reader/google_reader_task.hpp>
 
-#include "get_feed_list.hxx"
-
-#include "get_reading_list.hxx"
+#include "flush_offline_data.hxx"
 
 
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-/// Gets Google Reader's reading list.
-class Get_reading_list: public Google_reader_task
+/// Flushes all offline data (sends all saved user actions to Google Reader).
+class Flush_offline_data: public Google_reader_task
 {
 	Q_OBJECT
 
 	public:
-		Get_reading_list(Reader* reader, QObject* parent = NULL);
+		Flush_offline_data(Reader* reader, QObject* parent = NULL);
 
 
 	private:
-		/// Task for getting feed list.
-		Get_feed_list*	get_feed_list_task;
+		/// Google Reader's API token.
+		QString					token;
 
-		/// Reading list continuation code.
-		QString			continuation_code;
+		/// Items that had been changed by user.
+		Changed_feed_item_list	changed_items;
+
+
+		/// Points to the first item which needs synchronization with the
+		/// database.
+		Changed_feed_item_list::const_iterator	changed_items_db;
+
+		/// Points to the first item which changes has not been flushed to
+		/// Google Reader.
+		Changed_feed_item_list::const_iterator	changed_items_flush;
+
+		/// Points to the end of changed_items.
+		Changed_feed_item_list::const_iterator	changed_items_end;
 
 
 	public:
@@ -60,15 +70,24 @@ class Get_reading_list: public Google_reader_task
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
+		/// Synchronizes flushes with database.
+		///
+		/// @throw m::Exception.
+		void			sync_with_db(void);
+
+	private:
+		/// Flushes all offline data.
+		void	flush(void);
+
 
 	signals:
-		/// Emits when all reading list's items gotten.
-		void	reading_list_gotten(void);
+		/// Emited when all offline data flushed.
+		void	flushed(void);
 
 
 	private slots:
-		/// Gets reading list.
-		void			get_reading_list(void);
+		/// Google Reader's API token gotten.
+		void	token_gotten(const QString& token);
 };
 
 

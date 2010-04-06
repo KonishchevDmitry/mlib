@@ -180,8 +180,9 @@ Storage::Storage(QObject* parent)
 						"title TEXT,"
 						"summary TEXT,"
 						"read DEFAULT 0,"
+						"orig_read DEFAULT 0," // TODO
 						"starred DEFAULT 0," // TODO
-						"changes DEFAULT 0" // TODO
+						"orig_starred DEFAULT 0" // TODO
 					")"
 				);
 				this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
@@ -676,6 +677,50 @@ Db_feed_item Storage::get_previous_item(void)
 
 
 
+Changed_feed_item_list Storage::get_user_changes(void)
+{
+	MLIB_D("Getting user changes...");
+
+	Changed_feed_item_list items;
+
+	try
+	{
+		QSqlQuery query;
+
+		query = this->exec("SELECT id, gr_id, read FROM items WHERE orig_read != read");
+		while(query.next())
+		{
+			items << Changed_feed_item(
+				m::qvariant_to_big_id(query.value(0)),
+				query.value(1).toString(),
+				Changed_feed_item::PROPERTY_READ,
+				query.value(2).toBool()
+			);
+		}
+
+		query = this->exec("SELECT id, gr_id, starred FROM items WHERE orig_starred != starred");
+		while(query.next())
+		{
+			items << Changed_feed_item(
+				m::qvariant_to_big_id(query.value(0)),
+				query.value(1).toString(),
+				Changed_feed_item::PROPERTY_STARRED,
+				query.value(2).toBool()
+			);
+		}
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to get user changes that he made to the items:"), EE(e) ));
+	}
+
+	MLIB_D("User changes gotten.");
+
+	return items;
+}
+
+
+
 bool Storage::has_items(void)
 {
 	try
@@ -705,6 +750,72 @@ void Storage::mark_as_read(const Db_feed_item& item)
 	emit this->item_marked_as_read(QList<Big_id>(), item.feed_id, true);
 
 	MLIB_D("Item [%1] marked as read.", item.id);
+}
+
+
+
+void Storage::mark_changes_as_flushed(Changed_feed_item_list::const_iterator begin, Changed_feed_item_list::const_iterator end)
+{
+	MLIB_D("Marking %1 user changes as flushed...", end - begin);
+
+	try
+	{
+		// For SQLite it really speeds up many updates.
+		Scoped_transaction transaction(*this->db);
+
+		QSqlQuery read_query = this->prepare(
+			"UPDATE "
+				"items "
+			"SET "
+				"orig_read = :value "
+			"WHERE "
+				"id = :id"
+		);
+
+		QSqlQuery star_query = this->prepare(
+			"UPDATE "
+				"items "
+			"SET "
+				"orig_starred = :value "
+			"WHERE "
+				"id = :id"
+		);
+
+		while(begin != end)
+		{
+			const Changed_feed_item& item = *begin;
+			QSqlQuery* query;
+
+			switch(item.property)
+			{
+				case Changed_feed_item::PROPERTY_READ:
+					query = &read_query;
+					break;
+
+				case Changed_feed_item::PROPERTY_STARRED:
+					query = &star_query;
+					break;
+
+				default:
+					MLIB_LE();
+					break;
+			}
+
+			query->bindValue(":id", item.id);
+			query->bindValue(":value", item.value);
+			this->exec(*query);
+
+			++begin;
+		}
+
+		transaction.commit();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Error while synchronizing flushed to Google Reader changes with the database:"), EE(e) ));
+	}
+
+	MLIB_D("Changes had been successfully marked as flushed.");
 }
 
 

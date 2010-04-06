@@ -69,12 +69,12 @@ Options:
     <name>grov::Client</name>
     <message>
         <location filename="../client.cpp" line="79"/>
-        <location filename="../client.cpp" line="119"/>
+        <location filename="../client.cpp" line="129"/>
         <source>Discarding all offline data failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client.cpp" line="123"/>
+        <location filename="../client.cpp" line="133"/>
         <source>Unable to go offline</source>
         <translation type="unfinished"></translation>
     </message>
@@ -156,72 +156,77 @@ Options:
 <context>
     <name>grov::client::Storage</name>
     <message>
-        <location filename="../client/storage.cpp" line="92"/>
+        <location filename="../client/storage.cpp" line="93"/>
         <source>Unable to rollback a transaction:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="127"/>
+        <location filename="../client/storage.cpp" line="128"/>
         <source>Can&apos;t create directory &apos;%1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="137"/>
+        <location filename="../client/storage.cpp" line="138"/>
         <source>Unable to open database &apos;%1&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="208"/>
+        <location filename="../client/storage.cpp" line="210"/>
         <source>Unable to create table in the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="224"/>
+        <location filename="../client/storage.cpp" line="226"/>
         <source>Error while closing database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="372"/>
+        <location filename="../client/storage.cpp" line="312"/>
+        <source>Unable to add feeds to the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="377"/>
         <source>Unable to add feeds&apos; items to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="406"/>
+        <location filename="../client/storage.cpp" line="414"/>
         <source>Unable to delete data from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="463"/>
+        <location filename="../client/storage.cpp" line="470"/>
         <source>Logical error (invalid item&apos;s source type).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="526"/>
+        <location filename="../client/storage.cpp" line="533"/>
         <source>Error while flushing changes&apos; cache to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="584"/>
+        <location filename="../client/storage.cpp" line="591"/>
         <source>Query did not return a value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="650"/>
+        <location filename="../client/storage.cpp" line="657"/>
         <source>Unable to query a feed&apos;s item from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="598"/>
+        <location filename="../client/storage.cpp" line="605"/>
         <source>Unable to get feed tree from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="681"/>
+        <location filename="../client/storage.cpp" line="688"/>
         <source>Unable to query feed&apos;s items from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="762"/>
+        <location filename="../client/storage.cpp" line="769"/>
         <source>Database error:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -255,25 +260,40 @@ Options:
 <context>
     <name>grov::client::reader::tasks::Get_feed_list</name>
     <message>
-        <location filename="../client/reader/tasks/get_feed_list.cpp" line="81"/>
+        <location filename="../client/reader/tasks/get_feed_list.cpp" line="80"/>
         <source>Parsing error:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_feed_list.cpp" line="87"/>
-        <source>Unable to get Google Reader&apos;s reading list. %1</source>
+        <location filename="../client/reader/tasks/get_feed_list.cpp" line="86"/>
+        <source>Unable to get Google Reader&apos;s subscription list. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>grov::client::reader::tasks::Get_gr_token</name>
+    <message>
+        <location filename="../client/reader/tasks/get_gr_token.cpp" line="55"/>
+        <source>Gotten empty token.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/reader/tasks/get_gr_token.cpp" line="59"/>
+        <source>Unable to get Google Reader&apos;s API token.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>grov::client::reader::tasks::Get_reading_list</name>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="82"/>
+        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="113"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="113"/>
         <source>Parsing error:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="88"/>
+        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="119"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="119"/>
         <source>Unable to get Google Reader&apos;s reading list. %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -281,28 +301,39 @@ Options:
 <context>
     <name>grov::client::reader::tasks::Gr_xml_parser</name>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="57"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="64"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="214"/>
         <source>Invalid XML root element: &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="91"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="98"/>
         <source>Gotten item with empty id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="104"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="111"/>
         <source>Gotten item with empty title and summary. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="126"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="136"/>
         <source>Gotten item with invalid stream id &apos;%1&apos;. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="144"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="155"/>
         <source>Gotten item with empty subscription name. Skipping it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="274"/>
+        <source>Given subscription has no id.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="277"/>
+        <source>(title unknown)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

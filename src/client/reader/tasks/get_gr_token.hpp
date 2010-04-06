@@ -18,32 +18,45 @@
 **************************************************************************/
 
 
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
+#define GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
+
+
 #include <src/common.hpp>
 
-#include "task.hpp"
+#include <src/client/reader.hxx>
+#include <src/client/reader/google_reader_task.hpp>
+
+#include "get_gr_token.hxx"
 
 
-namespace grov { namespace client { namespace reader {
+namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Task::Task(QObject* parent)
-:
-	QObject(parent)
+/// Gets Google Reader's API token.
+class Get_gr_token: public Google_reader_task
 {
-	// TODO: delete after process
-}
+	Q_OBJECT
+
+	public:
+		Get_gr_token(Reader* reader, QObject* parent = NULL);
 
 
+	public:
+		/// Processes the task.
+		virtual void	process(void);
 
-void Task::cancel(void)
-{
-	// TODO: realize
-	// TODO: cancel callback to flush cached data
-	MLIB_D("Task [%1] is cancelled.", this);
-	this->disconnect(NULL, NULL, this, NULL);
-	this->deleteLater();
-}
+		/// See Network_task::request_finished().
+		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
 
-}}}
+	signals:
+		/// Emitted when we get token.
+		void	token_gotten(const QString& token);
+};
+
+
+}}}}
+
+#endif
 

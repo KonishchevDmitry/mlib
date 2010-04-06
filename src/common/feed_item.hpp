@@ -29,7 +29,7 @@
 namespace grov {
 
 
-/// Represents a RSS feed item.
+/// Represents a RSS feed's item.
 class Feed_item
 {
 	protected:
@@ -46,7 +46,40 @@ class Feed_item
 };
 
 
-/// Represents a RSS feed item gotten from Google Reader's reading list.
+/// Represents a RSS feed's item that had been changed.
+class Changed_feed_item
+{
+	public:
+		/// Item property that had been changed.
+		enum Changed_property {
+			/// Read status of item.
+			PROPERTY_READ,
+
+			/// Starred status of item.
+			PROPERTY_STARRED
+		};
+
+
+	public:
+		Changed_feed_item(Big_id id, const QString& gr_id, Changed_property property, bool value);
+
+
+	public:
+		/// Item's id.
+		Big_id				id;
+
+		/// Item's Google Reader id.
+		QString				gr_id;
+
+		/// Property that had been changed.
+		Changed_property	property;
+
+		/// Value to which an item's property had been changed.
+		bool				value;
+};
+
+
+/// Represents a RSS feed's item gotten from Google Reader's reading list.
 class Gr_feed_item: public Feed_item
 {
 		// TODO
@@ -61,7 +94,7 @@ class Gr_feed_item: public Feed_item
 };
 
 
-/// Represents a RSS feed item gotten from ours DB.
+/// Represents a RSS feed's item gotten from ours DB.
 class Db_feed_item: public Feed_item
 {
 	public:

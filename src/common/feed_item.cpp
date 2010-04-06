@@ -41,6 +41,17 @@ Feed_item::Feed_item(const QString& title, const QString& summary)
 
 
 
+Changed_feed_item::Changed_feed_item(Big_id id, const QString& gr_id, Changed_property property, bool value)
+:
+	id(id),
+	gr_id(gr_id),
+	property(property),
+	value(value)
+{
+}
+
+
+
 Db_feed_item::Db_feed_item(void)
 :
 	id(-1)

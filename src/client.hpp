@@ -50,7 +50,11 @@ class Client: public client::Storage
 
 			/// When we downloaded Google Reader's data and working in offline
 			/// mode.
-			MODE_OFFLINE
+			MODE_OFFLINE,
+
+			/// When we are flushing all user changes to Google Reader's data at
+			/// this moment to go to initial mode.
+			MODE_GOING_NONE
 		};
 
 
@@ -74,6 +78,12 @@ class Client: public client::Storage
 		/// Deletes all offline data and goes to mode MODE_NONE.
 		void			discard_offline_data(void);
 
+		/// Flushes all offline data (sends all saved user actions to Google
+		/// Reader).
+		///
+		/// This is asynchronous operation.
+		void			flush_offline_data(void);
+
 		/// Goes to offline mode.
 		///
 		/// This is asynchronous operation.
@@ -90,6 +100,9 @@ class Client: public client::Storage
 
 
 	private slots:
+		/// Called when we flush all offline data.
+		void	offline_data_flushed(void);
+
 		/// Called when we get all offline data.
 		void	offline_data_gotten(void);
 

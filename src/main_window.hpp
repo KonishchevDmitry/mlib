@@ -60,6 +60,9 @@ class Main_window: public QMainWindow
 		/// When user clicks "Discard all offline data" button.
 		void	on_discard_all_offline_data_action_activated(void);
 
+		/// When user clicks "Flush offline data" button.
+		void	on_flush_offline_data_action_activated(void);
+
 		/// When user clicks "Go offline" button.
 		void	on_go_offline_action_activated(void);
 };

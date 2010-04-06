@@ -29,6 +29,7 @@
 #include <src/client/reader.hpp>
 #include <src/client/storage.hpp>
 
+#include "get_feed_list.hpp"
 #include "gr_xml_parser.hpp"
 
 #include "get_reading_list.hpp"

@@ -25,6 +25,9 @@
 
 namespace grov {
 
+	class Changed_feed_item;
+	typedef QList<Changed_feed_item> Changed_feed_item_list;
+
 	class Gr_feed_item;
 	typedef QList<Gr_feed_item> Gr_feed_item_list;
 

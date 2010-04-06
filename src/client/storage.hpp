@@ -32,7 +32,7 @@ class QSqlQuery;
 
 #include <src/common.hpp>
 #include <src/common/feed.hxx>
-#include <src/common/feed_item.hxx>
+#include <src/common/feed_item.hpp>
 #include <src/common/feed_tree.hxx>
 
 #include "storage.hxx"
@@ -105,43 +105,53 @@ class Storage: public QObject
 		/// Adds feeds to the storage.
 		///
 		/// @throw m::Exception.
-		void			add_feeds(const Gr_feed_list& feeds);
+		void					add_feeds(const Gr_feed_list& feeds);
 
 		/// Adds items to the storage.
 		///
 		/// @throw m::Exception.
-		void			add_items(const Gr_feed_item_list& items);
+		void					add_items(const Gr_feed_item_list& items);
 
 		/// Returns current feed tree.
 		///
 		/// @throw m::Exception.
-		Feed_tree		get_feed_tree(void);
+		Feed_tree				get_feed_tree(void);
 
 		/// Returns next feeds' item.
 		///
 		/// @throw m::Exception, No_more_items, No_selected_items.
-		Db_feed_item	get_next_item(void);
+		Db_feed_item			get_next_item(void);
 
 		/// Returns previous feeds' item.
 		///
 		/// @throw m::Exception, No_more_items, No_selected_items.
-		Db_feed_item	get_previous_item(void);
+		Db_feed_item			get_previous_item(void);
+
+		/// Returns user changes that he made to the items.
+		///
+		/// @throw m::Exception.
+		Changed_feed_item_list	get_user_changes(void);
 
 		/// Marks item as read.
 		///
 		/// @throw m::Exception.
-		void			mark_as_read(const Db_feed_item& item);
+		void					mark_as_read(const Db_feed_item& item);
+
+		/// Marks user changes as flushed to Google Reader.
+		///
+		/// @throw m::Exception.
+		void					mark_changes_as_flushed(Changed_feed_item_list::const_iterator begin, Changed_feed_item_list::const_iterator end);
 
 		/// Sets current source to a feed with id == \a id.
-		void			set_current_source_to_feed(Big_id id);
+		void					set_current_source_to_feed(Big_id id);
 
 		/// Sets current source to a feed with id == \a id.
-		void			set_current_source_to_label(Big_id id);
+		void					set_current_source_to_label(Big_id id);
 
 		/// Adds or removes star from item.
 		///
 		/// @throw m::Exception.
-		void			star(Big_id id, bool is);
+		void					star(Big_id id, bool is);
 
 	protected:
 		/// Deletes all storage's data.

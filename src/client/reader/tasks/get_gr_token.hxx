@@ -18,32 +18,12 @@
 **************************************************************************/
 
 
-#include <src/common.hpp>
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_GR_TOKEN_FWD
+#define GROV_HEADER_CLIENT_READER_TASKS_GET_GR_TOKEN_FWD
 
-#include "task.hpp"
+namespace grov { namespace client { namespace reader { namespace tasks {
+	class Get_gr_token;
+}}}}
 
-
-namespace grov { namespace client { namespace reader {
-
-
-Task::Task(QObject* parent)
-:
-	QObject(parent)
-{
-	// TODO: delete after process
-}
-
-
-
-void Task::cancel(void)
-{
-	// TODO: realize
-	// TODO: cancel callback to flush cached data
-	MLIB_D("Task [%1] is cancelled.", this);
-	this->disconnect(NULL, NULL, this, NULL);
-	this->deleteLater();
-}
-
-
-}}}
+#endif
 

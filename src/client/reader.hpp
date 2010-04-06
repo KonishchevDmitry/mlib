@@ -50,7 +50,11 @@ class Reader: public QObject
 		//	TASK_TYPE_GET_FEED_LIST,
 
 			/// Get reading list (list of items that user did not read).
-			TASK_TYPE_GET_READING_LIST
+			TASK_TYPE_GET_READING_LIST,
+
+			/// Flush all offline data (send all saved user actions to Google
+			/// Reader).
+			TASK_TYPE_FLUSH_OFFLINE_DATA
 		};
 
 
@@ -84,6 +88,9 @@ class Reader: public QObject
 
 	public:
 	// TODO: description
+		void	flush_offline_data(void);
+
+	// TODO: description
 		/// Gets reading list (list of items that user did not read).
 		///
 		/// This is asynchronous operation. When it will be completed either
@@ -108,10 +115,13 @@ class Reader: public QObject
 		/// for our goals this works fine.
 		void	cancel_all_tasks(void);
 
-		/// Emits when task processing fails.
+		/// Emitted when task processing fails.
 		void	error(const QString& error);
 
-		/// Emits when all reading list's items gotten.
+		/// Emitted when we flush all offline data.
+		void	offline_data_flushed(void);
+
+		/// Emitted when all reading list's items gotten.
 		// TODO
 		void	reading_list_gotten(void);
 
