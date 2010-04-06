@@ -283,12 +283,7 @@ int main(int argc, char *argv[])
 	// Configuring application <--
 
 	// Processing command line arguments
-	// TODO
-//	process_command_line_options(app);
-	// TODO
-	m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
-	// TODO
-	//m::set_debug_level(m::DEBUG_LEVEL_VERBOSE);
+	process_command_line_options(app);
 
 	m::set_message_handler(m::MESSAGE_TYPE_INFO, &message_handler);
 #if DEVELOP_MODE
@@ -339,7 +334,7 @@ int main(int argc, char *argv[])
 	// Creating the main window -->
 		try
 		{
-			MAIN_WINDOW.reset(new grov::Main_window(argv[1], argv[2]));
+			MAIN_WINDOW.reset(new grov::Main_window);
 			MAIN_WINDOW->show();
 		}
 		catch(m::Exception& e)

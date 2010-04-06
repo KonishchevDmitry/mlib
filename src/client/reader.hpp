@@ -59,7 +59,7 @@ class Reader: public QObject
 
 
 	public:
-		Reader(client::Storage* storage, const QString& user, const QString& password, QObject* parent = NULL);
+		Reader(client::Storage* storage, QObject* parent = NULL);
 
 
 	public:
@@ -73,13 +73,6 @@ class Reader: public QObject
 		/// Google Reader's authentication id.
 		QString				auth_id;
 
-	private:
-		/// Google Reader's user name.
-		QString				user;
-
-		/// Google Reader's password.
-		QString				password;
-
 
 // TODO
 		/// Google Reader's tasks, waiting for login.
@@ -88,18 +81,18 @@ class Reader: public QObject
 
 	public:
 	// TODO: description
-		void	flush_offline_data(void);
+		void	flush_offline_data(const QString& login, const QString& password);
 
 	// TODO: description
 		/// Gets reading list (list of items that user did not read).
 		///
 		/// This is asynchronous operation. When it will be completed either
 		/// reading_list() or error() signal will be generated.
-		void	get_offline_data(void);
+		void	get_offline_data(const QString& login, const QString& password);
 
 	private:
 		/// Adds Google Reader's task (task, that needs Google Reader login).
-		void			add_google_reader_task(Task_type type);
+		void			add_google_reader_task(const QString& login, const QString& password, Task_type type);
 
 		/// Prepares and process a task.
 		void			process_task(reader::Task* task);

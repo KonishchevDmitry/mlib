@@ -32,21 +32,18 @@
 namespace grov { namespace client {
 
 
-Reader::Reader(Storage* storage, const QString& user, const QString& password, QObject* parent)
+Reader::Reader(Storage* storage, QObject* parent)
 :
 	QObject(parent),
 
 	storage(storage),
-	cookies(new QNetworkCookieJar(this)),
-
-	user(user),
-	password(password)
+	cookies(new QNetworkCookieJar(this))
 {
 }
 
 
 
-void Reader::add_google_reader_task(Task_type type)
+void Reader::add_google_reader_task(const QString& login, const QString& password, Task_type type)
 {
 	bool no_tasks = this->pending_gr_tasks.empty();
 
@@ -58,7 +55,7 @@ void Reader::add_google_reader_task(Task_type type)
 	if(no_tasks)
 	{
 		reader::tasks::Authenticate* task = new reader::tasks::Authenticate(
-			this, this->user, this->password, this );
+			this, login, password, this );
 
 		connect(task, SIGNAL(authenticated(const QString&)),
 			this, SLOT(authenticated(const QString&)) );
@@ -112,19 +109,19 @@ void Reader::authenticated(const QString& auth_id)
 
 
 
-void Reader::flush_offline_data(void)
+void Reader::flush_offline_data(const QString& login, const QString& password)
 {
 	MLIB_D("Flushing all offline data...");
-	this->add_google_reader_task(TASK_TYPE_FLUSH_OFFLINE_DATA);
+	this->add_google_reader_task(login, password, TASK_TYPE_FLUSH_OFFLINE_DATA);
 }
 
 
 
-void Reader::get_offline_data(void)
+void Reader::get_offline_data(const QString& login, const QString& password)
 {
 	// TODO
 	MLIB_D("Adding 'get reading list' task...");
-	this->add_google_reader_task(TASK_TYPE_GET_READING_LIST);
+	this->add_google_reader_task(login, password, TASK_TYPE_GET_READING_LIST);
 }
 
 

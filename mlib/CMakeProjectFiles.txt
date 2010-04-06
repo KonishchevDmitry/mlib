@@ -3,6 +3,7 @@ set(MLIB_SOURCES
 	core/messages.cpp
 	core/types.cpp
 	core/exception.cpp
+	gui/messages.cpp
 )
 
 set(MLIB_MOC_SOURCES

@@ -45,12 +45,12 @@ class Messenger: public QObject
 
 	signals:
 		/// Shows a message.
-		void	message(const char* file, int line, m::Message_type type, QString title, const QString& message);
+		void	message(const char* file, int line, m::Message_type type, const QString& title, const QString& message);
 
 
 	private slots:
 		/// Called when we get a message.
-		void	on_message(const char* file, int line, m::Message_type type, QString title, const QString& message);
+		void	on_message(const char* file, int line, m::Message_type type, const QString& title, const QString& message);
 };
 
 

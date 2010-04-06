@@ -30,7 +30,7 @@ namespace grov {
 
 // TODO: quit signal that destroys main window an than stops main loop so all
 // messages will be displayed
-Main_window::Main_window(const QString user, const QString password, QWidget *parent)
+Main_window::Main_window(QWidget *parent)
 :
 	QMainWindow(parent),
 	ui(new Ui::Main_window)
@@ -39,7 +39,7 @@ Main_window::Main_window(const QString user, const QString password, QWidget *pa
 
 	// Client -->
 		// Throws m::Exception
-		this->client = new Client(user, password, this);
+		this->client = new Client(this);
 
 		connect(this->client, SIGNAL(mode_changed(Client::Mode)),
 			this, SLOT(mode_changed(Client::Mode)) );

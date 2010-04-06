@@ -52,30 +52,27 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="347"/>
+        <location filename="../main.cpp" line="342"/>
         <source>Unable to start %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../tools/messenger.cpp" line="70"/>
-        <source>Application critical error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>grov::Client</name>
     <message>
-        <location filename="../client.cpp" line="79"/>
-        <location filename="../client.cpp" line="129"/>
+        <location filename="../client.cpp" line="87"/>
+        <location filename="../client.cpp" line="196"/>
         <source>Discarding all offline data failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client.cpp" line="133"/>
+        <location filename="../client.cpp" line="200"/>
         <source>Unable to go offline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client.cpp" line="207"/>
+        <source>Error while flushing offline data</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -154,6 +151,53 @@ Options:
     </message>
 </context>
 <context>
+    <name>grov::client::Login_dialog</name>
+    <message>
+        <location filename="../client/login_dialog.ui" line="14"/>
+        <source>Please enter your Google Reader&apos;s login and password - grov</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/login_dialog.ui" line="23"/>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Please enter your &lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Google Reader&apos;s login and password&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/login_dialog.ui" line="39"/>
+        <source>&amp;Password:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/login_dialog.ui" line="56"/>
+        <source>&amp;Login:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/login_dialog.cpp" line="52"/>
+        <source>Invalid login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/login_dialog.cpp" line="52"/>
+        <source>Please enter a valid login.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/login_dialog.cpp" line="54"/>
+        <source>Invalid password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/login_dialog.cpp" line="54"/>
+        <source>Please enter a valid password.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>grov::client::Storage</name>
     <message>
         <location filename="../client/storage.cpp" line="93"/>
@@ -171,62 +215,72 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="210"/>
+        <location filename="../client/storage.cpp" line="211"/>
         <source>Unable to create table in the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="226"/>
+        <location filename="../client/storage.cpp" line="227"/>
         <source>Error while closing database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="312"/>
+        <location filename="../client/storage.cpp" line="313"/>
         <source>Unable to add feeds to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="377"/>
+        <location filename="../client/storage.cpp" line="378"/>
         <source>Unable to add feeds&apos; items to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="414"/>
+        <location filename="../client/storage.cpp" line="415"/>
         <source>Unable to delete data from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="470"/>
+        <location filename="../client/storage.cpp" line="471"/>
         <source>Logical error (invalid item&apos;s source type).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="533"/>
+        <location filename="../client/storage.cpp" line="534"/>
         <source>Error while flushing changes&apos; cache to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="591"/>
+        <location filename="../client/storage.cpp" line="592"/>
         <source>Query did not return a value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="657"/>
+        <location filename="../client/storage.cpp" line="658"/>
         <source>Unable to query a feed&apos;s item from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="605"/>
+        <location filename="../client/storage.cpp" line="606"/>
         <source>Unable to get feed tree from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="688"/>
+        <location filename="../client/storage.cpp" line="714"/>
+        <source>Unable to get user changes that he made to the items:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="733"/>
         <source>Unable to query feed&apos;s items from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="769"/>
+        <location filename="../client/storage.cpp" line="815"/>
+        <source>Error while synchronizing flushed to Google Reader changes with the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="880"/>
         <source>Database error:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -254,6 +308,19 @@ Options:
     <message>
         <location filename="../client/reader/tasks/authenticate.cpp" line="85"/>
         <source>Unable to login to Google Reader. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>grov::client::reader::tasks::Flush_offline_data</name>
+    <message>
+        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="146"/>
+        <source>Server returned error.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="173"/>
+        <source>Unable flush user changes to Google Reader.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -286,14 +353,12 @@ Options:
 <context>
     <name>grov::client::reader::tasks::Get_reading_list</name>
     <message>
-        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="113"/>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="113"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="114"/>
         <source>Parsing error:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="119"/>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="119"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="120"/>
         <source>Unable to get Google Reader&apos;s reading list. %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -408,7 +473,7 @@ Options:
 <context>
     <name>grov::tools::Messenger</name>
     <message>
-        <location filename="../tools/messenger.cpp" line="94"/>
+        <location filename="../tools/messenger.cpp" line="58"/>
         <source>Error happened at %1:%2. Please contact to developer.</source>
         <translation type="unfinished"></translation>
     </message>

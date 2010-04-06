@@ -18,57 +18,56 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_MAIN_WINDOW
-#define GROV_HEADER_MAIN_WINDOW
+#ifndef GROV_HEADER_CLIENT_LOGIN_DIALOG
+#define GROV_HEADER_CLIENT_LOGIN_DIALOG
 
-#include <QtGui/QMainWindow>
+#include <QtGui/QDialog>
 
-#include <src/client.hpp>
 #include <src/common.hpp>
 
 
-namespace grov {
+namespace grov { namespace client {
 
 
 namespace Ui {
-	class Main_window;
+    class Login_dialog;
 }
 
 
-class Main_window: public QMainWindow
+
+/// Prompts Google Reader's login and password from user.
+class Login_dialog : public QDialog
 {
 	Q_OBJECT
 
 	public:
-		/// @throw m::Exception
-		Main_window(QWidget *parent = 0);
-		~Main_window(void);
+		Login_dialog(QWidget *parent = 0);
+		~Login_dialog(void);
 
 
 	private:
 		// Qt Designer-generated widgets.
-		Ui::Main_window*	ui;
-
-		/// Represents our Google Reader offline client.
-		Client*				client;
+		Ui::Login_dialog	*ui;
 
 
-	private slots:
-		/// Called when current mode changed.
-		void	mode_changed(Client::Mode mode);
+	public:
+		/// Returns login.
+		QString	login(void);
 
-		/// When user clicks "Discard all offline data" button.
-		void	on_discard_all_offline_data_action_activated(void);
+		/// Returns password.
+		QString	password(void);
 
-		/// When user clicks "Flush offline data" button.
-		void	on_flush_offline_data_action_activated(void);
 
-		/// When user clicks "Go offline" button.
-		void	on_go_offline_action_activated(void);
+	public slots:
+		/// See QDialog::accept().
+		virtual void	accept(void);
+
+		/// See QDialog::reject().
+		virtual void	reject(void);
 };
 
 
-}
+}}
 
 #endif
 

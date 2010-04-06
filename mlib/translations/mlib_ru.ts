@@ -5,6 +5,7 @@
     <name>QObject</name>
     <message>
         <location filename="../core/messages.cpp" line="110"/>
+        <location filename="../gui/messages.cpp" line="51"/>
         <source>Application critical error</source>
         <translation type="unfinished"></translation>
     </message>

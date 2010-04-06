@@ -18,8 +18,13 @@
 **************************************************************************/
 
 
+#if DEVELOP_MODE
+	#include <QtCore/QFile>
+#endif
+
 #include <src/common.hpp>
 
+#include "client/login_dialog.hpp"
 #include "client/reader.hpp"
 #include "client/storage.hpp"
 
@@ -30,7 +35,7 @@ namespace grov
 {
 
 
-Client::Client(const QString& user, const QString& password, QObject* parent)
+Client::Client(QObject* parent)
 :
 	Storage(parent),
 	mode(MODE_NONE)
@@ -39,7 +44,7 @@ Client::Client(const QString& user, const QString& password, QObject* parent)
 	if(this->has_items())
 		this->mode = MODE_OFFLINE;
 
-	this->reader = new client::Reader(this, user, password, this);
+	this->reader = new client::Reader(this, this);
 
 	connect(this->reader, SIGNAL(error(const QString&)),
 		this, SLOT(reader_error(const QString&)) );
@@ -90,8 +95,52 @@ void Client::discard_offline_data(void)
 void Client::flush_offline_data(void)
 {
 	MLIB_A(this->mode == MODE_OFFLINE);
-	this->change_mode(MODE_GOING_NONE);
-	this->reader->flush_offline_data();
+
+	QString login;
+	QString password;
+
+	if(this->get_login_data(&login, &password))
+	{
+		this->change_mode(MODE_GOING_NONE);
+		this->reader->flush_offline_data(login, password);
+	}
+}
+
+
+
+bool Client::get_login_data(QString* login, QString* password)
+{
+#if OFFLINE_DEVELOPMENT
+	*login = "fake_offline_login";
+	*login = "fake_offline_password";
+	return true;
+#else
+	#if DEVELOP_MODE
+		QFile login_data("login_data");
+
+		if(login_data.exists() && login_data.open(QIODevice::ReadOnly))
+		{
+			*login = login_data.readLine();
+			*password = login_data.readLine();
+			return true;
+		}
+		else
+		{
+	#endif
+			client::Login_dialog dialog;
+
+			if(dialog.exec())
+			{
+				*login = dialog.login();
+				*password = dialog.password();
+				return true;
+			}
+			else
+				return false;
+	#if DEVELOP_MODE
+		}
+	#endif
+#endif
 }
 
 
@@ -99,8 +148,15 @@ void Client::flush_offline_data(void)
 void Client::go_offline(void)
 {
 	MLIB_A(this->mode == MODE_NONE);
-	this->change_mode(MODE_GOING_OFFLINE);
-	this->reader->get_offline_data();
+
+	QString login;
+	QString password;
+
+	if(this->get_login_data(&login, &password))
+	{
+		this->change_mode(MODE_GOING_OFFLINE);
+		this->reader->get_offline_data(login, password);
+	}
 }
 
 

@@ -18,57 +18,65 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_MAIN_WINDOW
-#define GROV_HEADER_MAIN_WINDOW
-
-#include <QtGui/QMainWindow>
-
-#include <src/client.hpp>
 #include <src/common.hpp>
 
+#include <mlib/gui/messages.hpp>
 
-namespace grov {
-
-
-namespace Ui {
-	class Main_window;
-}
+#include "login_dialog.hpp"
+#include "ui_login_dialog.h"
 
 
-class Main_window: public QMainWindow
+namespace grov { namespace client {
+
+
+Login_dialog::Login_dialog(QWidget *parent)
+:
+	QDialog(parent),
+	ui(new Ui::Login_dialog)
 {
-	Q_OBJECT
-
-	public:
-		/// @throw m::Exception
-		Main_window(QWidget *parent = 0);
-		~Main_window(void);
-
-
-	private:
-		// Qt Designer-generated widgets.
-		Ui::Main_window*	ui;
-
-		/// Represents our Google Reader offline client.
-		Client*				client;
-
-
-	private slots:
-		/// Called when current mode changed.
-		void	mode_changed(Client::Mode mode);
-
-		/// When user clicks "Discard all offline data" button.
-		void	on_discard_all_offline_data_action_activated(void);
-
-		/// When user clicks "Flush offline data" button.
-		void	on_flush_offline_data_action_activated(void);
-
-		/// When user clicks "Go offline" button.
-		void	on_go_offline_action_activated(void);
-};
-
-
+    ui->setupUi(this);
 }
 
-#endif
+
+
+Login_dialog::~Login_dialog()
+{
+    delete ui;
+}
+
+
+
+void Login_dialog::accept(void)
+{
+	if(this->login().isEmpty())
+		m::gui::show_warning_message(this, tr("Invalid login"), tr("Please enter a valid login."));
+	else if(this->password().isEmpty())
+		m::gui::show_warning_message(this, tr("Invalid password"), tr("Please enter a valid password."));
+	else
+		this->done(Accepted);
+}
+
+
+
+QString Login_dialog::login(void)
+{
+	return ui->login->text().trimmed();
+}
+
+
+
+QString Login_dialog::password(void)
+{
+	return ui->password->text();
+}
+
+
+
+void Login_dialog::reject(void)
+{
+	this->done(Rejected);
+}
+
+
+}}
 

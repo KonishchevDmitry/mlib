@@ -60,7 +60,7 @@ class Client: public client::Storage
 
 	public:
 		/// @throw m::Exception
-		Client(const QString& user, const QString& password, QObject* parent = NULL);
+		Client(QObject* parent = NULL);
 
 
 	private:
@@ -73,30 +73,35 @@ class Client: public client::Storage
 
 	public:
 		/// Returns current mode.
-		Mode			current_mode(void);
+		Mode	current_mode(void);
 
 		/// Deletes all offline data and goes to mode MODE_NONE.
-		void			discard_offline_data(void);
+		void	discard_offline_data(void);
 
 		/// Flushes all offline data (sends all saved user actions to Google
 		/// Reader).
 		///
 		/// This is asynchronous operation.
-		void			flush_offline_data(void);
+		void	flush_offline_data(void);
 
 		/// Goes to offline mode.
 		///
 		/// This is asynchronous operation.
-		void			go_offline(void);
+		void	go_offline(void);
 
 	private:
 		/// Changes current mode.
-		void			change_mode(Mode mode);
+		void	change_mode(Mode mode);
+
+		/// Gets login information from the user.
+		///
+		/// @return true if user gave us this information.
+		bool	get_login_data(QString* login, QString* password);
 
 
 	signals:
 		/// Called when current mode changed.
-		void			mode_changed(Client::Mode mode);
+		void	mode_changed(Client::Mode mode);
 
 
 	private slots:

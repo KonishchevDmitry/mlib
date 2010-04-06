@@ -8,6 +8,7 @@ set(GROV_SOURCES
 	tools/messenger.cpp
 	client.cpp
 	main.cpp
+	client/login_dialog.cpp
 	client/reader.cpp
 	client/storage.cpp
 	client/reader/network_task.cpp
@@ -28,6 +29,7 @@ set(GROV_MOC_SOURCES
 	main_window/viewer/feeds_view.hpp
 	tools/messenger.hpp
 	main_window.hpp
+	client/login_dialog.hpp
 	client/reader.hpp
 	client/storage.hpp
 	client/reader/google_reader_task.hpp
@@ -47,5 +49,6 @@ set(GROV_TRANSLATIONS
 
 set(GROV_UIS
 	main_window/viewer.ui
+	client/login_dialog.ui
 	main_window.ui
 )
