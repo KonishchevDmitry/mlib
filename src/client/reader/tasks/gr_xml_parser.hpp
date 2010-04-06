@@ -47,6 +47,8 @@ class Gr_xml_parser: public QObject
 		Gr_feed_item_list	reading_list(const QByteArray& data, QString* continuation_code);
 
 		/// Parses a subscription list.
+		///
+		/// @throw m::Exception.
 		Gr_feed_list		subscription_list(const QByteArray& data);
 
 

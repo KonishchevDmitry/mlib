@@ -46,6 +46,7 @@ class Feed_item
 };
 
 
+
 /// Represents a RSS feed's item that had been changed.
 class Changed_feed_item
 {
@@ -79,19 +80,25 @@ class Changed_feed_item
 };
 
 
+
 /// Represents a RSS feed's item gotten from Google Reader's reading list.
 class Gr_feed_item: public Feed_item
 {
-		// TODO
 	public:
+		Gr_feed_item(void);
+
+
+	public:
+		/// Item's Google Reader id.
 		QString		gr_id;
+
+		/// Item's feed's Google Reader id.
 		QString		feed_gr_id;
-		// TODO: odd
-		QString		feed_name;
-		// TODO: odd
-		QStringList	labels;
-		// TODO: add starred, read
+
+		/// Is item starred.
+		bool		starred;
 };
+
 
 
 /// Represents a RSS feed's item gotten from ours DB.

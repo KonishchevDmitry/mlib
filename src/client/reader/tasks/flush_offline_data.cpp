@@ -79,9 +79,20 @@ void Flush_offline_data::flush(void)
 		{
 			case Changed_feed_item::PROPERTY_READ:
 				// TODO
+			#if DEVELOP_MODE
 				++this->changed_items_flush;
 				this->flush();
 				return;
+			#else
+				url += "edit-tag";
+				post_request = _F(
+					"i=%1&%2=%3&T=%4",
+					QUrl::toPercentEncoding(item.gr_id),
+					item.value ? 'a' : 'r',
+					QUrl::toPercentEncoding("user/-/state/com.google/read"),
+					QUrl::toPercentEncoding(this->token)
+				);
+			#endif
 				break;
 
 			case Changed_feed_item::PROPERTY_STARRED:

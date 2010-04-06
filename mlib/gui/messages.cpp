@@ -29,6 +29,7 @@
 namespace m { namespace gui {
 
 
+// TODO: no title
 void show_message(QWidget* parent, Message_type type, QString title, const QString& message, const QString& details)
 {
 	QMessageBox::Icon icon;

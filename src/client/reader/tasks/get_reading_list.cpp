@@ -111,13 +111,13 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 				}
 				catch(m::Exception& e)
 				{
-					M_THROW(PAM( tr("Parsing error:"), EE(e) ));
+					M_THROW(PAM( tr("Parsing error."), EE(e) ));
 				}
 			// Getting feeds' items <--
 		}
 		catch(m::Exception& e)
 		{
-			M_THROW(tr("Unable to get Google Reader's reading list. %1"), EE(e));
+			M_THROW(PAM( tr("Unable to get Google Reader's reading list."), EE(e) ));
 		}
 
 		// Throws m::Exception

@@ -46,153 +46,112 @@ QDomDocument Gr_xml_parser::get_dom(const QByteArray& data)
 
 
 
-// Check and clean
 Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* continuation_code)
 {
-	MLIB_DV("Parsing feeds' items list:");
+	MLIB_DV("Parsing reading list:");
 
-	// Throws m::Exception
-	QDomDocument xml = this->get_dom(data);
+	Gr_feed_item_list items;
 
-	// Parsing XML document -->
-	{
-		Gr_feed_item_list items;
-
+	// Opening the XML document -->
+		// Throws m::Exception
+		QDomDocument xml = this->get_dom(data);
 		QDomElement root = xml.documentElement();
 
 		if(root.tagName() != "feed")
 			M_THROW(tr("Invalid XML root element: '%1'."), root.tagName());
+	// Opening the XML document <--
 
-		// Continuation code -->
-			if(continuation_code)
+	// Continuation code -->
+		if(continuation_code)
+		{
+			QDomNodeList codes = root.elementsByTagName("gr:continuation");
+
+			if(codes.isEmpty())
+				continuation_code->clear();
+			else if(codes.size() > 1)
+				M_THROW(tr("Reading list has several continuation codes."));
+			else
 			{
-				QDomNodeList codes = root.elementsByTagName("gr:continuation");
-
-				MLIB_DV("Number of continuation codes: %1.", codes.size());
-
-				if(codes.isEmpty())
-					continuation_code->clear();
-				else
-				{
-					*continuation_code = codes.item(0).toElement().text();
-					MLIB_DV("Continuation code: '%1'.", *continuation_code);
-				}
+				*continuation_code = codes.item(0).toElement().text();
+				MLIB_DV("Continuation code: '%1'.", *continuation_code);
+				if(continuation_code->isEmpty())
+					M_THROW(tr("Gotten empty continuation code."));
 			}
-		// Continuation code <--
+		}
+	// Continuation code <--
 
+	// Entries -->
+	{
 		QDomNodeList entries = root.elementsByTagName("entry");
 
 		for(int entry_id = 0; entry_id < entries.size(); entry_id++)
 		{
-			QDomNode entry = entries.item(entry_id);
 			Gr_feed_item item;
+			QDomNode entry = entries.item(entry_id);
 
 			if(entry_id)
 				MLIB_DV("");
 
-			// Google Reader's id -->
+			// Id -->
 				item.gr_id = entry.firstChildElement("id").text();
-				MLIB_DV("Google Reader's id: '%1'.", item.gr_id);
+				MLIB_DV("Id: '%1'.", item.gr_id);
 
 				if(item.gr_id.isEmpty())
 					M_THROW(tr("Gotten item with empty id."));
-			// Google Reader's id <--
+			// Id <--
 
 			// Title and summary -->
 				item.title = entry.firstChildElement("title").text();
 				MLIB_DV("Title: '%1'.", item.title);
 
 				item.summary = entry.firstChildElement("summary").text();
-				MLIB_DV("Summary: '%1'.", item.summary);
+				//MLIB_DV("Summary: '%1'.", item.summary);
 
 				if(item.title.isEmpty() && item.summary.isEmpty())
 				{
-					// TODO: at less its id
-					MLIB_SW(tr("Gotten item with empty title and summary. Skipping it."));
+					MLIB_SW(_F( tr("Gotten item [%1] with empty title and summary. Skipping it."), item.gr_id ));
 					continue;
 				}
 			// Title and summary <--
 
-			// Feed info -->
-			{
-				QDomElement source_dom = entry.firstChildElement("source");
+			// Feed's id -->
+				item.feed_gr_id = entry.firstChildElement("source").attribute("gr:stream-id");
+				MLIB_DV("Feed id: '%1'.", item.feed_gr_id);
 
-				// Feed's id -->
-				{
-					QString stream_id = source_dom.attribute("gr:stream-id");
-					MLIB_DV("Stream id: %1", stream_id);
-
-					// TODO: check
-					item.feed_gr_id = stream_id;
-					#if 0
-					QString stream_id_prefix = "feed/";
-					if(
-						!stream_id.startsWith(stream_id_prefix) ||
-						// http:// or may be https://
-						!( item.feed_uri = stream_id.mid(stream_id_prefix.size()) ).startsWith("http")
-					)
-					{
-						// TODO: at less its id
-						MLIB_SW(_F( tr("Gotten item with invalid stream id '%1'. Skipping it."), stream_id ));
-						continue;
-					}
-					#endif
-				}
-				// Feed's id <--
-
-				// Feed name -->
-				{
-					QDomNodeList titles = source_dom.elementsByTagName("title");
-
-					MLIB_DV("Titles count: %1.", titles.size());
-
-					if(
-						titles.isEmpty() ||
-						( item.feed_name = titles.item(0).toElement().text() ).isEmpty()
-					)
-					{
-						// TODO: at less its id
-						MLIB_SW(tr("Gotten item with empty subscription name. Skipping it."));
-						continue;
-					}
-
-					MLIB_DV("Feed name: '%1'.", item.feed_name);
-				}
-				// Feed name <--
-			}
-			// Feed info <--
+				if(item.feed_gr_id.isEmpty())
+					// TODO: check other user shares
+					M_THROW(tr("Gotten item with empty feed's id."));
+			// Feed's id <--
 
 			// Labels -->
 			{
-				QDomElement entry_dom = entry.toElement();
-				QDomNodeList categories = entry_dom.elementsByTagName("category");
+				QDomNodeList categories = entry.toElement().elementsByTagName("category");
 
-				QSet<QString> labels;
-				MLIB_DV("Labels:");
-
-				for(int category_id = 0; category_id < categories.size(); category_id++)
+				for(int id = 0; id < categories.size(); id++)
 				{
-					QString label = categories.item(category_id).toElement().attribute("label");
+					QString label = categories.item(id).toElement().attribute("label");
 
-// TODO
-					if(!label.isEmpty() /*&& label != "reading-list" && label != "fresh"*/)
-					{
-						MLIB_DV("\t%1", label);
-						labels << label;
-					}
+					if(label.isEmpty())
+						continue;
+
+					MLIB_DV("Label: '%1'.", label);
+
+					if(label == "starred")
+						item.starred = true;
 				}
 
-				Q_FOREACH(const QString& label, labels)
-					item.labels << label;
+				MLIB_DV("Starred: %1.", item.starred);
 			}
 			// Labels <--
 
 			items << item;
 		}
-
-		return items;
 	}
-	// Parsing XML document <--
+	// Entries <--
+
+	MLIB_DV("Reading list parsed.");
+
+	return items;
 }
 
 

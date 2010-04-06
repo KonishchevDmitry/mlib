@@ -343,8 +343,8 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		// Adding items -->
 		{
 			QSqlQuery insert_item_query = this->prepare(
-				"INSERT INTO items (gr_id, feed_id, title, summary, starred) "
-					"values (:gr_id, :feed_id, :title, :summary, :starred)"
+				"INSERT INTO items (gr_id, feed_id, title, summary, starred, orig_starred) "
+					"values (:gr_id, :feed_id, :title, :summary, :starred, :orig_starred)"
 			);
 
 			Q_FOREACH(const Gr_feed_item& item, items)
@@ -362,7 +362,8 @@ void Storage::add_items(const Gr_feed_item_list& items)
 				insert_item_query.bindValue(":feed_id", feed_id);
 				insert_item_query.bindValue(":title", item.title);
 				insert_item_query.bindValue(":summary", item.summary);
-				insert_item_query.bindValue(":starred", item.labels.contains("starred") == true);
+				insert_item_query.bindValue(":starred", item.starred);
+				insert_item_query.bindValue(":orig_starred", item.starred);
 				this->exec(insert_item_query);
 			}
 		}
@@ -400,6 +401,7 @@ void Storage::clear(void)
 //		this->exec("DELETE FROM labels_to_items");
 		this->exec("DELETE FROM labels_to_feeds");
 
+		// TODO: when creating too
 		// Starred items is a special label - it must always exists.
 		this->exec("INSERT INTO labels (name) VALUES ('starred')");
 
@@ -435,6 +437,7 @@ void Storage::create_current_query(void)
 	this->flush_cache();
 
 
+// TODO: starred label
 	QSqlQuery query;
 
 	switch(this->current_source)

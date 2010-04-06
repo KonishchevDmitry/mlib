@@ -141,7 +141,9 @@ void Network_task::on_finished(void)
 //		);
 
 		reply_data = reply->readAll();
-		MLIB_D("Request reply:\n%1", reply_data);
+
+		if(reply_data.size() < 1000)
+			MLIB_DV("Request reply:\n%1", reply_data);
 	}
 	catch(m::Exception& e)
 	{

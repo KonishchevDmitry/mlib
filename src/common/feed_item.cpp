@@ -52,6 +52,14 @@ Changed_feed_item::Changed_feed_item(Big_id id, const QString& gr_id, Changed_pr
 
 
 
+Gr_feed_item::Gr_feed_item(void)
+:
+	starred(false)
+{
+}
+
+
+
 Db_feed_item::Db_feed_item(void)
 :
 	id(-1)

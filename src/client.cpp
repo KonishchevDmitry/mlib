@@ -164,6 +164,7 @@ void Client::go_offline(void)
 void Client::offline_data_flushed(void)
 {
 	MLIB_A(this->mode == MODE_GOING_NONE);
+	this->clear(); // TODO: exception
 	this->change_mode(MODE_NONE);
 	// TODO: clear, etc
 }
