@@ -46,8 +46,29 @@ class Google_reader_task: public Network_task
 
 
 	protected:
+		/// Google Reader's API token.
+		///
+		/// Empty if not gotten yet.
+		QString	token;
+
+
+	protected:
+		/// Gets Google Reader's API token.
+		///
+		/// This is an asynchronous operation. token_gotten() is called when we
+		/// get an API token, or error() is emitted and finish() called on error.
+		void					get_token(void);
+
 		/// See Network_task::prepare_request().
 		virtual QNetworkRequest	prepare_request(const QString& url);
+
+		/// Called when we get Google Reader's API token.
+		virtual void			token_gotten(void);
+
+
+	private slots:
+		/// Called when we get Google Reader's API token.
+		void	on_token_gotten(const QString& token);
 };
 
 

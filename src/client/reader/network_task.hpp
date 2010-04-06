@@ -74,7 +74,7 @@ class Network_task: public Task
 		void					get(const QString& url);
 
 		/// Sends an HTTP POST request.
-		void					post(const QString& url, const QByteArray& data);
+		void					post(const QString& url, const QString& data);
 
 		/// Returns a QNetworkRequest object with the common HTTP headers
 		/// and Cookies setted.

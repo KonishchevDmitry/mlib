@@ -1,5 +1,3 @@
-# TODO boost
-
 # Configures MLib.
 #
 # Application is not allowed to configure Qt by itself (CMake's Qt module can't

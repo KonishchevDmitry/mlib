@@ -29,7 +29,6 @@
 namespace m { namespace gui {
 
 
-// TODO: no title
 void show_message(QWidget* parent, Message_type type, QString title, const QString& message, const QString& details)
 {
 	QMessageBox::Icon icon;
@@ -38,19 +37,21 @@ void show_message(QWidget* parent, Message_type type, QString title, const QStri
 	{
 		case MESSAGE_TYPE_INFO:
 			icon = QMessageBox::Information;
+			if(title.isEmpty())
+				title = QObject::tr("Information");
 			break;
 
 		case MESSAGE_TYPE_SILENT_WARNING:
 		case MESSAGE_TYPE_WARNING:
 			icon = QMessageBox::Warning;
+			if(title.isEmpty())
+				title = QObject::tr("Warning");
 			break;
 
 		case MESSAGE_TYPE_ERROR:
 			icon = QMessageBox::Critical;
-
 			if(title.isEmpty())
 				title = QObject::tr("Application critical error");
-
 			break;
 
 		default:

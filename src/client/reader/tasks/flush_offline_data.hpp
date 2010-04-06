@@ -44,23 +44,16 @@ class Flush_offline_data: public Google_reader_task
 
 
 	private:
-		/// Google Reader's API token.
-		QString					token;
-
-		/// Items that had been changed by user.
+		/// Items that had been changed by the user.
 		Changed_feed_item_list	changed_items;
-
 
 		/// Points to the first item which needs synchronization with the
 		/// database.
-		Changed_feed_item_list::const_iterator	changed_items_db;
+		Changed_feed_item_list::const_iterator	to_db;
 
 		/// Points to the first item which changes has not been flushed to
 		/// Google Reader.
-		Changed_feed_item_list::const_iterator	changed_items_flush;
-
-		/// Points to the end of changed_items.
-		Changed_feed_item_list::const_iterator	changed_items_end;
+		Changed_feed_item_list::const_iterator	to_flush;
 
 
 	public:
@@ -70,10 +63,14 @@ class Flush_offline_data: public Google_reader_task
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
-		/// Synchronizes flushes with database.
+		/// Synchronizes flushes with the database.
 		///
 		/// @throw m::Exception.
 		void			sync_with_db(void);
+
+	protected:
+		/// Google Reader's API token gotten.
+		virtual void	token_gotten(void);
 
 	private:
 		/// Flushes all offline data.
@@ -81,13 +78,8 @@ class Flush_offline_data: public Google_reader_task
 
 
 	signals:
-		/// Emited when all offline data flushed.
+		/// Emitted when all offline data flushed.
 		void	flushed(void);
-
-
-	private slots:
-		/// Google Reader's API token gotten.
-		void	token_gotten(const QString& token);
 };
 
 

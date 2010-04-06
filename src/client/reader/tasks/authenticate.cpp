@@ -23,6 +23,7 @@
 #include <QtNetwork/QNetworkRequest>
 
 #include <src/common.hpp>
+#include <src/main.hpp>
 
 #include "authenticate.hpp"
 
@@ -76,13 +77,13 @@ void Authenticate::request_finished(const QString& error, const QByteArray& repl
 		// Throws m::Exception.
 		QString auth_id = this->get_auth_id(reply);
 		MLIB_D("Auth id gotten: '%1'.", auth_id);
-
 		emit this->authenticated(auth_id);
+		this->finish();
 	}
 	catch(m::Exception& e)
 	{
 		MLIB_D("Authentication error. %1", EE(e));
-		emit this->error(_F( tr("Unable to login to Google Reader. %1"), EE(e) ));
+		this->failed(PAM( tr("Unable to login to Google Reader."), EE(e) ));
 	}
 }
 
@@ -90,14 +91,13 @@ void Authenticate::request_finished(const QString& error, const QByteArray& repl
 
 void Authenticate::process(void)
 {
-// TODO:
-#if OFFLINE_DEVELOPMENT
-	emit authenticated("");
-	return;
-#else
 	MLIB_D("Logining to Google Reader...");
 
-	QString post_request = _F(
+#if OFFLINE_DEVELOPMENT
+	emit this->authenticated("fake_offline_auth_id");
+	this->finish();
+#else
+	QString post_data = _F(
 		"accountType=GOOGLE&"
 		"Email=%1&"
 		"Passwd=%2&"
@@ -105,11 +105,10 @@ void Authenticate::process(void)
 		"source=%3",
 		QUrl::toPercentEncoding(this->user),
 		QUrl::toPercentEncoding(this->password),
-		// TODO
-		"grov-0.1"
+		get_user_agent()
 	);
 
-	this->post("https://www.google.com/accounts/ClientLogin", post_request.toAscii());
+	this->post("https://www.google.com/accounts/ClientLogin", post_data);
 #endif
 }
 

@@ -20,15 +20,11 @@
 
 #include <QtCore/QUrl>
 
-// TODO
-#include <QtNetwork/QNetworkRequest>
-
 #include <src/common.hpp>
+#include <src/main.hpp>
 
 #include <src/client/reader.hpp>
 #include <src/client/storage.hpp>
-
-#include "get_gr_token.hpp"
 
 #include "flush_offline_data.hpp"
 
@@ -48,9 +44,10 @@ void Flush_offline_data::flush(void)
 {
 #if OFFLINE_DEVELOPMENT
 	emit this->flushed();
+	this->finish();
 #else
 	// If we flushed all data -->
-		if(changed_items_flush == changed_items_end)
+		if(this->to_flush == this->changed_items.end())
 		{
 			try
 			{
@@ -58,34 +55,34 @@ void Flush_offline_data::flush(void)
 			}
 			catch(m::Exception& e)
 			{
-				emit this->error(EE(e));
+				this->failed(EE(e));
 				return;
 			}
 
 			emit this->flushed();
+			this->finish();
 			return;
 		}
 	// If we flushed all data <--
 
 	// Flushing next item -->
 	{
-		const Changed_feed_item& item = *changed_items_flush;
-		// TODO: other params
+		const Changed_feed_item& item = *this->to_flush;
 		QString url = "https://www.google.com/reader/api/0/";
-		QString post_request;
+		QString post_data;
 
 		MLIB_D("Flushing item [%1](%2) changes (%3, %4)...", item.id, item.gr_id, item.property, item.value);
 		switch(item.property)
 		{
 			case Changed_feed_item::PROPERTY_READ:
-				// TODO
 			#if DEVELOP_MODE
-				++this->changed_items_flush;
+				MLIB_D("Skipping flushing for developer mode.");
+				++this->to_flush;
 				this->flush();
 				return;
 			#else
 				url += "edit-tag";
-				post_request = _F(
+				post_data = _F(
 					"i=%1&%2=%3&T=%4",
 					QUrl::toPercentEncoding(item.gr_id),
 					item.value ? 'a' : 'r',
@@ -97,7 +94,7 @@ void Flush_offline_data::flush(void)
 
 			case Changed_feed_item::PROPERTY_STARRED:
 				url += "edit-tag";
-				post_request = _F(
+				post_data = _F(
 					"i=%1&%2=%3&T=%4",
 					QUrl::toPercentEncoding(item.gr_id),
 					item.value ? 'a' : 'r',
@@ -113,7 +110,8 @@ void Flush_offline_data::flush(void)
 				break;
 		}
 
-		this->post(url, post_request.toAscii());
+		url += "?client=" + QUrl::toPercentEncoding(get_user_agent());
+		this->post(url, post_data);
 	}
 	// Flushing next item <--
 #endif
@@ -123,17 +121,7 @@ void Flush_offline_data::flush(void)
 
 void Flush_offline_data::process(void)
 {
-	// TODO: delete on cancel and other actions...
-	Get_gr_token* task = new Get_gr_token(this->reader, this);
-
-	// TODO: this and all other
-	connect(task, SIGNAL(error(const QString&)),
-		this, SIGNAL(error(const QString&)) );
-
-	connect(task, SIGNAL(token_gotten(const QString&)),
-		this, SLOT(token_gotten(const QString&)) );
-
-	task->process();
+	this->get_token();
 }
 
 
@@ -168,7 +156,7 @@ void Flush_offline_data::request_finished(const QString& error, const QByteArray
 			}
 			// Checking for errors <--
 
-			++this->changed_items_flush;
+			++this->to_flush;
 		}
 		catch(m::Exception& e)
 		{
@@ -185,7 +173,7 @@ void Flush_offline_data::request_finished(const QString& error, const QByteArray
 		}
 
 		// Synchronizing flushes with the database
-		if(this->changed_items_flush - this->changed_items_db >= 10)
+		if(this->to_flush - this->to_db >= 10)
 			// Throws m::Exception
 			this->sync_with_db();
 
@@ -193,7 +181,7 @@ void Flush_offline_data::request_finished(const QString& error, const QByteArray
 	}
 	catch(m::Exception& e)
 	{
-		emit this->error(EE(e));
+		this->failed(EE(e));
 	}
 }
 
@@ -202,29 +190,26 @@ void Flush_offline_data::request_finished(const QString& error, const QByteArray
 void Flush_offline_data::sync_with_db(void)
 {
 	// Throws m::Exception
-	this->reader->storage->mark_changes_as_flushed(this->changed_items_db, this->changed_items_flush);
-	this->changed_items_db = this->changed_items_flush;
+	this->reader->storage->mark_changes_as_flushed(this->to_db, this->to_flush);
+	this->to_db = this->to_flush;
 }
 
 
 
-void Flush_offline_data::token_gotten(const QString& token)
+void Flush_offline_data::token_gotten(void)
 {
-	this->token = token;
-
 	try
 	{
 		this->changed_items = this->reader->storage->get_user_changes();
 	}
 	catch(m::Exception& e)
 	{
-		emit this->error(EE(e));
+		this->failed(EE(e));
 		return;
 	}
 
-	this->changed_items_db = this->changed_items.begin();
-	this->changed_items_flush = this->changed_items.begin();
-	this->changed_items_end = this->changed_items.end();
+	this->to_db = this->changed_items.begin();
+	this->to_flush = this->changed_items.begin();
 
 	MLIB_D("Flushing all offline data...");
 	this->flush();

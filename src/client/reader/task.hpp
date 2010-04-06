@@ -42,15 +42,29 @@ class Task: public QObject
 		/// Processes the task.
 		virtual void	process(void) = 0;
 
+	protected:
+		// TODO
+		void	failed(const QString& message);
+
+		// TODO
+		void	finish(void);
+
+		// TODO
+		void	process_task(Task* task);
+
 
 	signals:
 		/// This signal tasks emits when processing fails.
-		void			error(const QString& message);
+		void	error(const QString& message);
 
 
 	public slots:
 		/// Cancels the task.
-		void			cancel(void);
+		void	cancel(void);
+
+	private slots:
+		/// Called when child task emits error() signal.
+		void	child_task_error(const QString& message);
 
 };
 

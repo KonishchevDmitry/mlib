@@ -60,6 +60,9 @@ namespace grov { namespace {
 	/// string if we could not determine it.
 	QString	get_install_dir(void);
 
+	/// Returns a string with program version.
+	QString	get_version(void);
+
 	/// Shows messages to the user.
 	void	message_handler(const char* file, int line, m::Message_type type, const QString& title, const QString& message);
 
@@ -111,6 +114,18 @@ namespace grov { namespace {
 			return install_dir.path();
 		}
 		// Getting installation directory path <--
+	}
+
+
+
+	QString get_version(void)
+	{
+		QString version = QString::number(GROV_VERSION_MAJOR) + '.' + QString::number(GROV_VERSION_MINOR);
+
+		if(GROV_VERSION_PATCH)
+			version += "." + QString::number(GROV_VERSION_PATCH);
+
+		return version;
 	}
 
 
@@ -195,7 +210,11 @@ namespace grov { namespace {
 				else if(arg == "--version")
 				{
 					QTextStream stream(stdout);
-					stream << GROV_APP_NAME << " " << get_version() << endl;
+					stream
+						<< QCoreApplication::applicationName()
+						<< " "
+						<< QCoreApplication::applicationVersion()
+						<< endl;
 					exit(EXIT_SUCCESS);
 				}
 				else
@@ -254,14 +273,9 @@ QMainWindow* get_main_window(void)
 
 
 
-QString get_version(void)
+QString get_user_agent(void)
 {
-	QString version = QString::number(GROV_VERSION_MAJOR) + '.' + QString::number(GROV_VERSION_MINOR);
-
-	if(GROV_VERSION_PATCH)
-		version += "." + QString::number(GROV_VERSION_PATCH);
-
-	return version;
+	return QCoreApplication::applicationName() + '/' + QCoreApplication::applicationVersion();
 }
 
 
@@ -279,6 +293,7 @@ int main(int argc, char *argv[])
 		QTextCodec::setCodecForCStrings(QTextCodec::codecForLocale());
 
 		app.setApplicationName(GROV_APP_NAME);
+		app.setApplicationVersion(get_version());
 		APP_BINARY_PATH = QDir(app.applicationFilePath()).absolutePath();
 	// Configuring application <--
 
@@ -314,7 +329,7 @@ int main(int argc, char *argv[])
 
 		if(!install_dir.isEmpty())
 		{
-			is = app_translator.load(_F("%1_%2", GROV_APP_NAME, QLocale::system().name()),
+			is = app_translator.load(_F("%1_%2", GROV_APP_UNIX_NAME, QLocale::system().name()),
 				QDir(install_dir).absoluteFilePath(GROV_APP_TRANSLATIONS_DIR) );
 			if(is)
 				app.installTranslator(&app_translator);
@@ -339,7 +354,7 @@ int main(int argc, char *argv[])
 		}
 		catch(m::Exception& e)
 		{
-			MLIB_W(_F(QApplication::tr("Unable to start %1"), GROV_APP_NAME), EE(e));
+			MLIB_W(_F(QApplication::tr("Unable to start %1"), QCoreApplication::applicationName()), EE(e));
 			exit(EXIT_FAILURE);
 		}
 	// Creating the main window <--

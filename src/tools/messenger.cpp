@@ -18,6 +18,8 @@
 **************************************************************************/
 
 
+#include <QtCore/QCoreApplication>
+
 #include <QtGui/QMainWindow>
 
 #include <src/common.hpp>
@@ -54,7 +56,7 @@ void Messenger::on_message(const char* file, int line, m::Message_type type, con
 
 	if(type == m::MESSAGE_TYPE_ERROR)
 	{
-		details += _F("%1 %2\n\n", GROV_APP_NAME, get_version());
+		details += _F("%1 %2\n\n", QCoreApplication::applicationName(), QCoreApplication::applicationVersion());
 		details += _F( tr("Error happened at %1:%2. Please contact to developer."), file, line );
 	}
 

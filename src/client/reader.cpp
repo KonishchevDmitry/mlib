@@ -32,6 +32,7 @@
 namespace grov { namespace client {
 
 
+// TODO: wait tasks on close
 Reader::Reader(Storage* storage, QObject* parent)
 :
 	QObject(parent),

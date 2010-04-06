@@ -166,13 +166,13 @@ void Network_task::on_timeout(void)
 
 
 
-void Network_task::post(const QString& url, const QByteArray& data)
+void Network_task::post(const QString& url, const QString& data)
 {
 	MLIB_D("Processing a HTTP POST to '%1' with data '%2'...", url, data);
 	QNetworkRequest request = this->prepare_request(url);
 	// TODO
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-	this->process_reply(this->manager->post(request, data));
+	this->process_reply(this->manager->post(request, data.toAscii()));
 }
 
 
@@ -184,6 +184,22 @@ QNetworkRequest Network_task::prepare_request(const QString& url)
 	// TODO
 //	request.setHeader(QNetworkRequest::CookieHeader,
 //		qVariantFromValue(this->reader->cookies->cookiesForUrl(QUrl(url))) );
+
+// TODO:
+// GET /apis/accounts/docs/AuthForInstalledApps.html HTTP/1.1
+// Host: code.google.com
+// User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8
+// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+// Accept-Language: en-us,en;q=0.5
+// Accept-Encoding: gzip,deflate
+// Accept-Charset: windows-1251,utf-8;q=0.7,*;q=0.7
+// Keep-Alive: 300
+// Connection: keep-alive
+// Referer: http://code.google.com/apis/documents/docs/3.0/developers_guide_protocol.html
+// Cookie: ...
+// If-Modified-Since: Tue, 06 Apr 2010 18:05:21 GMT
+// If-None-Match: "c88a98bd8f0c7eec5ed8ef5da68b1b39"
+// Cache-Control: max-age=0
 
 	// TODO
 	request.setRawHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8");

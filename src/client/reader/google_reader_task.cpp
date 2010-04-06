@@ -24,6 +24,8 @@
 
 #include <src/client/reader.hpp>
 
+#include "tasks/get_gr_token.hpp"
+
 #include "google_reader_task.hpp"
 
 
@@ -38,11 +40,37 @@ Google_reader_task::Google_reader_task(Reader* reader, QObject* parent)
 
 
 
+void Google_reader_task::get_token(void)
+{
+	tasks::Get_gr_token* task = new tasks::Get_gr_token(this->reader, this);
+
+	connect(task, SIGNAL(token_gotten(const QString&)),
+		this, SLOT(on_token_gotten(const QString&)) );
+
+	task->process();
+}
+
+
+
+void Google_reader_task::on_token_gotten(const QString& token)
+{
+	this->token = token;
+	this->token_gotten();
+}
+
+
+
 QNetworkRequest Google_reader_task::prepare_request(const QString& url)
 {
 	QNetworkRequest request = Network_task::prepare_request(url);
 	request.setRawHeader("Authorization", "GoogleLogin auth=" + this->reader->auth_id.toAscii());
 	return request;
+}
+
+
+
+void Google_reader_task::token_gotten(void)
+{
 }
 
 

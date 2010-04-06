@@ -31,8 +31,8 @@ namespace grov {
 	/// Returns main window or NULL if it had not been created yet.
 	QMainWindow*	get_main_window(void);
 
-	/// Returns a string with program version.
-	QString			get_version(void);
+	/// Returns application's user agent string.
+	QString			get_user_agent(void);
 
 }
 
