@@ -747,7 +747,7 @@ void Storage::mark_as_read(const Db_feed_item& item)
 		this->flush_cache();
 
 	// TODO
-	emit this->item_marked_as_read(QList<Big_id>(), item.feed_id, true);
+	emit this->item_marked_as_read(item.feed_id, true);
 
 	MLIB_D("Item [%1] marked as read.", item.id);
 }

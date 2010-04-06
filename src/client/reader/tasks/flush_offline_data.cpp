@@ -46,8 +46,7 @@ Flush_offline_data::Flush_offline_data(Reader* reader, QObject* parent)
 
 void Flush_offline_data::flush(void)
 {
-// TODO
-#if !OFFLINE_DEVELOPMENT
+#if OFFLINE_DEVELOPMENT
 	emit this->flushed();
 #else
 	// If we flushed all data -->

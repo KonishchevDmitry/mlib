@@ -70,10 +70,10 @@ class Feed_tree_item
 		/// Type of this item.
 		Type			type;
 
-		/// Label's of feed's id.
+		/// Label's or feed's id.
 		Big_id			id;
 
-		/// Label's of feed's name.
+		/// Label's or feed's name.
 		QString			name;
 
 

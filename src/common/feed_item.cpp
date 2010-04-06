@@ -64,7 +64,7 @@ Db_feed_item::Db_feed_item(Big_id id, Big_id feed_id, const QString& title, cons
 :
 	Feed_item(title, summary),
 	id(id),
-	feed_id(id),
+	feed_id(feed_id),
 	starred(starred)
 {
 }

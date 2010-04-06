@@ -22,7 +22,7 @@
 #define GROV_HEADER_MAIN_WINDOW_VIEWER_FEEDS_MODEL
 
 #include <QtCore/QAbstractItemModel>
-#include <QtCore/QHash>
+#include <QtCore/QMultiMap>
 
 #include <src/common.hpp>
 #include <src/common/feed_tree.hpp>
@@ -54,22 +54,13 @@ class Feeds_model: public QAbstractItemModel
 
 	private:
 		/// All offline data.
-		client::Storage*	storage;
+		client::Storage*					storage;
 
 		/// Current feed tree.
-		Feed_tree			feed_tree;
+		Feed_tree							feed_tree;
 
-
-		/// Contains pointers to Feed_tree_items that represents labels.
-		QHash<Big_id, Feed_tree_item*>					labels;
-
-		/// Contains pointers to Feed_tree_items that represents feeds in
-		/// labels.
-		QHash< Big_id, QHash<Big_id, Feed_tree_item*> >	labels_feeds;
-
-		/// Contains pointers to Feed_tree_items that represents feeds without
-		/// labels.
-		QHash<Big_id, Feed_tree_item*>					lonely_feeds;
+		/// Contains pointers to Feed_tree_items that represents feeds.
+		QMultiMap<Big_id, Feed_tree_item*>	feeds;
 
 
 	// QAbstractItemModel interface.
@@ -98,7 +89,7 @@ class Feeds_model: public QAbstractItemModel
 		void	feed_tree_changed(void);
 
 		/// Called when an item is marked as read/unread.
-		void	item_marked_as_read(const QList<Big_id>& label_ids, Big_id feed_id, bool read);
+		void	item_marked_as_read(Big_id feed_id, bool read);
 };
 
 

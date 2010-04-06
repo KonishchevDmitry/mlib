@@ -42,8 +42,8 @@ Feeds_model::Feeds_model(client::Storage* storage, QObject *parent)
 	connect(this->storage, SIGNAL(feed_tree_changed()),
 		this, SLOT(feed_tree_changed()) );
 
-	connect(this->storage, SIGNAL(item_marked_as_read(const QList<Big_id>&, Big_id, bool)),
-		this, SLOT(item_marked_as_read(const QList<Big_id>&, Big_id, bool)) );
+	connect(this->storage, SIGNAL(item_marked_as_read(Big_id, bool)),
+		this, SLOT(item_marked_as_read(Big_id, bool)) );
 
 	this->feed_tree_changed();
 }
@@ -162,46 +162,29 @@ QModelIndex Feeds_model::index(int row, int column, const QModelIndex& parent) c
 
 
 
-void Feeds_model::item_marked_as_read(const QList<Big_id>& label_ids, Big_id feed_id, bool read)
+void Feeds_model::item_marked_as_read(Big_id feed_id, bool read)
 {
-	MLIB_D("Feed's [%1] item's read status changed. Updating model...", feed_id);
+	MLIB_DV("Feed's [%1] item's read status changed. Updating model...", feed_id);
 
-	Feed_tree_item* feed_item;
-
-	if(( feed_item = this->lonely_feeds.value(feed_id, NULL) ))
+	Q_FOREACH(Feed_tree_item* feed, this->feeds.values(feed_id))
 	{
-		feed_item->unread_items += ( read ? -1 : 1 );
+		Big_id read_increment = ( read ? -1 : 1 );
+		Feed_tree_item* parent = feed->get_parent();
 
-		Feed_tree_item* parent = feed_item->get_parent();
-		QModelIndex index = this->index(parent->get_child_id(feed_item), 0, QModelIndex());
-		this->changePersistentIndex(index, index);
+		QModelIndex parent_index;
+		if(parent->is_label())
+		{
+			parent_index = this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex());
+			parent->unread_items += read_increment;
+			emit this->dataChanged(parent_index, parent_index);
+		}
+
+		QModelIndex feed_index = this->index(parent->get_child_id(feed), 0, parent_index);
+		feed->unread_items += read_increment;
+		emit this->dataChanged(feed_index, feed_index);
 	}
 
-	// TODO
-	typedef QHash<Big_id, Feed_tree_item*> Label;
-	Q_FOREACH(const Label& label, this->labels_feeds)
-	{
-		if(label.contains(feed_id))
-			if(( feed_item = label.value(feed_id, NULL) ))
-			{
-			MLIB_D("Updating feed [%1]...", feed_id);
-				feed_item->unread_items += ( read ? -1 : 1 );
-
-				Feed_tree_item* parent = feed_item->get_parent();
-				QModelIndex index = this->index(
-					parent->get_child_id(feed_item), 0,
-					this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex())
-				);
-				emit this->dataChanged(index, index);
-//				this->changePersistentIndex(index, index);
-//				this->changePersistentIndex(
-//					this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex()),
-//					this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex())
-//				);
-			}
-	}
-
-	MLIB_D("Model updated.");
+	MLIB_DV("Model updated.");
 }
 
 
@@ -240,9 +223,7 @@ int Feeds_model::rowCount(const QModelIndex& parent) const
 
 void Feeds_model::update_feed_tree_map(void)
 {
-	this->labels.clear();
-	this->labels_feeds.clear();
-	this->lonely_feeds.clear();
+	this->feeds.clear();
 	this->update_feed_tree_item_map(&this->feed_tree);
 }
 
@@ -250,28 +231,12 @@ void Feeds_model::update_feed_tree_map(void)
 
 void Feeds_model::update_feed_tree_item_map(Feed_tree_item* item)
 {
-	Big_id item_id = item->get_id();
+	if(item->is_feed())
+		this->feeds.insert(item->get_id(), item);
+
 	size_t children_count = item->count();
-
-	if(item->is_label())
-		this->labels[item_id] = item;
-
-	for(size_t child_id = 0; child_id < children_count; child_id++)
-	{
-		Feed_tree_item* child = item->get_child(child_id);
-
-		if(item->is_label())
-			this->labels_feeds[item_id][child->get_id()] = child;
-		else if(item->is_root())
-		{
-			if(child->is_feed())
-				this->lonely_feeds[child->get_id()] = child;
-			else
-				this->update_feed_tree_item_map(child);
-		}
-		else
-			MLIB_LE();
-	}
+	for(size_t id = 0; id < children_count; id++)
+		update_feed_tree_item_map(item->get_child(id));
 }
 
 

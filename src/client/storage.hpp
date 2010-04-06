@@ -211,7 +211,7 @@ class Storage: public QObject
 		void	feed_tree_changed(void);
 
 		/// Called when an item is marked as read/unread.
-		void	item_marked_as_read(const QList<Big_id>& label_ids, Big_id feed_id, bool read);
+		void	item_marked_as_read(Big_id feed_id, bool read);
 };
 
 }}
