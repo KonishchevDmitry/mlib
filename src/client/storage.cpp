@@ -403,7 +403,9 @@ void Storage::clear(void)
 
 		// TODO: when creating too
 		// Starred items is a special label - it must always exists.
-		this->exec("INSERT INTO labels (name) VALUES ('starred')");
+		// TODO:
+		QSqlQuery query = this->exec("INSERT INTO labels (name) VALUES ('starred')");
+		this->starred_label_id = m::qvariant_to_big_id(query.lastInsertId());
 
 		MLIB_D("Vacuuming database...");
 		// TODO
@@ -443,6 +445,7 @@ void Storage::create_current_query(void)
 	switch(this->current_source)
 	{
 		case SOURCE_FEED:
+		{
 			query = this->prepare(
 				"SELECT "
 					"id, feed_id, title, summary, starred "
@@ -454,28 +457,50 @@ void Storage::create_current_query(void)
 				"ORDER BY "
 					"id"
 			);
-			break;
+
+			query.bindValue(":source_id", this->current_source_id);
+		}
+		break;
 
 		case SOURCE_LABEL:
-			query = this->prepare(
-				"SELECT "
-					"id, feed_id, title, summary, starred "
-				"FROM "
-					"items "
-				"WHERE "
-					"feed_id in (SELECT feed_id FROM labels_to_feeds WHERE label_id = :source_id) AND "
-					"read = 0 "
-				"ORDER BY "
-					"id"
-			);
-			break;
+		{
+			// TODO
+			if(this->current_source_id == this->starred_label_id)
+			{
+			// TODO: no counter in starred
+				query = this->prepare(
+					"SELECT "
+						"id, feed_id, title, summary, starred "
+					"FROM "
+						"items "
+					"WHERE "
+						"starred = 'true' "
+					"ORDER BY "
+						"id"
+				);
+			}
+			else
+			{
+				query = this->prepare(
+					"SELECT "
+						"id, feed_id, title, summary, starred "
+					"FROM "
+						"items "
+					"WHERE "
+						"feed_id in (SELECT feed_id FROM labels_to_feeds WHERE label_id = :source_id) AND "
+						"read = 0 "
+					"ORDER BY "
+						"id"
+				);
+				query.bindValue(":source_id", this->current_source_id);
+			}
+		}
+		break;
 
 		default:
 			M_THROW(tr("Logical error (invalid item's source type)."));
 			break;
 	}
-
-	query.bindValue(":source_id", this->current_source_id);
 
 	// Throws m::Exception
 	this->exec(query);

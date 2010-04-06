@@ -220,8 +220,12 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 						if(category.tagName() == "string" && category.attribute("name") == "label")
 						{
 							QString label = category.text();
-							MLIB_DV("Label: '%1'.", label);
-							feed.labels << label;
+
+							if(label != "-") // Some special label
+							{
+								MLIB_DV("Label: '%1'.", label);
+								feed.labels << label;
+							}
 						}
 					}
 				}

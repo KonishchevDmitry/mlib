@@ -96,6 +96,7 @@ void Client::flush_offline_data(void)
 {
 	MLIB_A(this->mode == MODE_OFFLINE);
 
+// reset, etc
 	QString login;
 	QString password;
 

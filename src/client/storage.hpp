@@ -84,6 +84,8 @@ class Storage: public QObject
 		boost::scoped_ptr<QSqlDatabase>	db;
 
 
+// TODO:
+	Big_id starred_label_id;
 		// Current source.
 		Current_source					current_source;
 

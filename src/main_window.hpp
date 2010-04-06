@@ -35,6 +35,8 @@ namespace Ui {
 }
 
 
+// TODO: webkit menu, links, etc
+/// Application's main window.
 class Main_window: public QMainWindow
 {
 	Q_OBJECT
