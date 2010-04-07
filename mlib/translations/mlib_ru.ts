@@ -5,7 +5,7 @@
     <name>QObject</name>
     <message>
         <location filename="../core/messages.cpp" line="110"/>
-        <location filename="../gui/messages.cpp" line="54"/>
+        <location filename="../gui/messages.cpp" line="55"/>
         <source>Application critical error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15,12 +15,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gui/messages.cpp" line="41"/>
+        <location filename="../gui/messages.cpp" line="42"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../gui/messages.cpp" line="48"/>
+        <location filename="../gui/messages.cpp" line="49"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>

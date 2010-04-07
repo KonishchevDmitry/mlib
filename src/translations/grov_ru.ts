@@ -61,17 +61,17 @@ Options:
     <name>grov::Client</name>
     <message>
         <location filename="../client.cpp" line="88"/>
-        <location filename="../client.cpp" line="200"/>
+        <location filename="../client.cpp" line="207"/>
         <source>Discarding all offline data failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client.cpp" line="204"/>
+        <location filename="../client.cpp" line="211"/>
         <source>Unable to go offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client.cpp" line="211"/>
+        <location filename="../client.cpp" line="218"/>
         <source>Error while flushing offline data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -288,7 +288,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::reader::Network_task</name>
     <message>
-        <location filename="../client/reader/network_task.cpp" line="89"/>
+        <location filename="../client/reader/network_task.cpp" line="88"/>
         <source>Server returned too big amount of data (%1 bytes).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -327,12 +327,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::reader::tasks::Get_gr_token</name>
     <message>
-        <location filename="../client/reader/tasks/get_gr_token.cpp" line="72"/>
+        <location filename="../client/reader/tasks/get_gr_token.cpp" line="74"/>
         <source>Gotten empty token.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_gr_token.cpp" line="76"/>
+        <location filename="../client/reader/tasks/get_gr_token.cpp" line="78"/>
         <source>Unable to get Google Reader&apos;s API token.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -340,22 +340,22 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::reader::tasks::Get_reading_list</name>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="124"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="126"/>
         <source>Parsing error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="130"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="132"/>
         <source>Unable to get Google Reader&apos;s reading list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="149"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="151"/>
         <source>Reading lists number limit exceeded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="150"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="152"/>
         <source>Gotten too big number (%1) of reading lists from Google Reader. It seems that program entered in an infinite loop, or you have very big number of unread items. Please read downloaded items first, than you can download others.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -364,7 +364,7 @@ p, li { white-space: pre-wrap; }
     <name>grov::client::reader::tasks::Gr_xml_parser</name>
     <message>
         <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="61"/>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="173"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="181"/>
         <source>Invalid XML root element: &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -384,22 +384,22 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="112"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="119"/>
         <source>Gotten item [%1] with empty title and summary. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="123"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="131"/>
         <source>Gotten item with empty feed&apos;s id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="237"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="245"/>
         <source>Given subscription has no id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="240"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="248"/>
         <source>(title unknown)</source>
         <translation type="unfinished"></translation>
     </message>
