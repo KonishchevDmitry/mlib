@@ -34,6 +34,7 @@
 namespace grov
 {
 
+// TODO: task cancelled
 
 Client::Client(QObject* parent)
 :
@@ -156,7 +157,7 @@ void Client::go_offline(void)
 	if(this->get_login_data(&login, &password))
 	{
 		this->change_mode(MODE_GOING_OFFLINE);
-		this->reader->get_offline_data(login, password);
+		this->reader->get_reading_list(login, password);
 	}
 }
 
@@ -180,6 +181,14 @@ void Client::offline_data_gotten(void)
 
 
 
+// TODO
+void Client::reader_cancelled(void)
+{
+}
+
+
+
+// TODO
 void Client::reader_error(const QString& message)
 {
 	Mode new_mode;

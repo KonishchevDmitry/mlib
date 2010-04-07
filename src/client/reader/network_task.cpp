@@ -22,19 +22,13 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
-// TODO
-//#include <QtCore/QVariant>
 
 #include <QtNetwork/QNetworkAccessManager>
-// TODO
-//#include <QtNetwork/QNetworkCookie>
-//#include <QtNetwork/QNetworkCookieJar>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
 #include <src/common.hpp>
-
-#include <src/client/reader.hpp>
+#include <src/main.hpp>
 
 #include "network_task.hpp"
 
@@ -42,11 +36,10 @@
 namespace grov { namespace client { namespace reader {
 
 
-Network_task::Network_task(Reader* reader, QObject* parent)
+Network_task::Network_task(QObject* parent)
 :
 	Task(parent),
 
-	reader(reader),
 	fails_count(0),
 
 	manager(new QNetworkAccessManager(this)),
@@ -54,8 +47,7 @@ Network_task::Network_task(Reader* reader, QObject* parent)
 	timeout_timer(new QTimer(this))
 {
 	this->timeout_timer->setSingleShot(true);
-	// TODO
-	this->timeout_timer->setInterval(10 * 1000);
+	this->timeout_timer->setInterval(60 * 1000);
 	connect(this->timeout_timer, SIGNAL(timeout()),
 		this, SLOT(on_timeout()) );
 }
@@ -85,19 +77,27 @@ void Network_task::on_data_gotten(qint64 size, qint64 total_size)
 
 		// Request's reply size limit -->
 		{
-			// TODO
 			const qint64 max_size = 10 * 1024 * 1024;
 			const qint64 reply_size = std::max(size, total_size);
 
 			if(reply_size > max_size)
 			{
 				MLIB_D("Request's reply is too big (%1 bytes).", reply_size);
+
 				// TODO: may be format to KB, MB, GB
-				this->reply_error = _F(tr("Server returned too big amount of data (%1 bytes)."), reply_size);
+				this->request_error = _F(tr("Server returned too big amount of data (%1 bytes)."), reply_size);
+
+				// To suppress all queued signals
+				this->disconnect(this->current_reply, SIGNAL(downloadProgress(qint64, qint64)), this, NULL);
+
 				this->current_reply->abort();
 			}
 		}
 		// Request's reply size limit <--
+	}
+	else
+	{
+		// Connection already timed out, but we had not got a signal yet.
 	}
 }
 
@@ -114,11 +114,10 @@ void Network_task::on_finished(void)
 	QString reply_error;
 	QByteArray reply_data;
 
-
 	try
 	{
-		if(!this->reply_error.isEmpty())
-			M_THROW(this->reply_error);
+		if(!this->request_error.isEmpty())
+			M_THROW(this->request_error);
 
 		if(reply->error())
 			M_THROW(CSF(reply->errorString()));
@@ -133,13 +132,6 @@ void Network_task::on_finished(void)
 		}
 		// Checking HTTP status code <--
 
-// TODO
-		// Getting cookies from the reply
-//		this->reader->cookies->setCookiesFromUrl(
-//			QNetworkCookie::parseCookies(reply->rawHeader("Set-Cookie")),
-//			reply->request().url()
-//		);
-
 		reply_data = reply->readAll();
 
 		if(reply_data.size() < 1000)
@@ -151,17 +143,20 @@ void Network_task::on_finished(void)
 		reply_error = EE(e);
 	}
 
-	this->request_finished(reply_error, reply_data);
 	reply->deleteLater();
+	this->request_finished(reply_error, reply_data);
 }
 
 
 
 void Network_task::on_timeout(void)
 {
-	MLIB_D("Request timed out.");
-	this->reply_error = tr("Connection timed out.");
-	this->current_reply->abort();
+	if(this->current_reply)
+	{
+		MLIB_D("Request timed out.");
+		this->request_error = tr("Connection timed out.");
+		this->current_reply->abort();
+	}
 }
 
 
@@ -170,8 +165,6 @@ void Network_task::post(const QString& url, const QString& data)
 {
 	MLIB_D("Processing a HTTP POST to '%1' with data '%2'...", url, data);
 	QNetworkRequest request = this->prepare_request(url);
-	// TODO
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 	this->process_reply(this->manager->post(request, data.toAscii()));
 }
 
@@ -180,30 +173,7 @@ void Network_task::post(const QString& url, const QString& data)
 QNetworkRequest Network_task::prepare_request(const QString& url)
 {
 	QNetworkRequest request(url);
-
-	// TODO
-//	request.setHeader(QNetworkRequest::CookieHeader,
-//		qVariantFromValue(this->reader->cookies->cookiesForUrl(QUrl(url))) );
-
-// TODO:
-// GET /apis/accounts/docs/AuthForInstalledApps.html HTTP/1.1
-// Host: code.google.com
-// User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8
-// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-// Accept-Language: en-us,en;q=0.5
-// Accept-Encoding: gzip,deflate
-// Accept-Charset: windows-1251,utf-8;q=0.7,*;q=0.7
-// Keep-Alive: 300
-// Connection: keep-alive
-// Referer: http://code.google.com/apis/documents/docs/3.0/developers_guide_protocol.html
-// Cookie: ...
-// If-Modified-Since: Tue, 06 Apr 2010 18:05:21 GMT
-// If-None-Match: "c88a98bd8f0c7eec5ed8ef5da68b1b39"
-// Cache-Control: max-age=0
-
-	// TODO
-	request.setRawHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8");
-
+	request.setRawHeader("User-Agent", get_user_agent().toAscii());
 	return request;
 }
 
@@ -214,7 +184,7 @@ void Network_task::process_reply(QNetworkReply* reply)
 	MLIB_A(!this->current_reply);
 
 	this->current_reply = reply;
-	this->reply_error.clear();
+	this->request_error.clear();
 	this->timeout_timer->start();
 
 	connect(reply, SIGNAL(downloadProgress(qint64, qint64)),

@@ -26,8 +26,6 @@ class QNetworkRequest;
 
 #include <src/common.hpp>
 
-#include <src/client/reader.hxx>
-
 #include "network_task.hpp"
 
 #include "google_reader_task.hxx"
@@ -42,33 +40,54 @@ class Google_reader_task: public Network_task
 	Q_OBJECT
 
 	public:
-		Google_reader_task(Reader* reader, QObject* parent = NULL);
+		Google_reader_task(const QString& auth_id, QObject* parent = NULL);
+		Google_reader_task(const QString& login, const QString& password, QObject* parent = NULL);
 
 
 	protected:
+		/// Google Reader's authentication id.
+		QString	auth_id;
+
 		/// Google Reader's API token.
 		///
 		/// Empty if not gotten yet.
 		QString	token;
 
+	private:
+		/// Google Reader's login.
+		QString	login;
+
+		/// Google Reader's password.
+		QString	password;
+
+
+	public:
+		/// Processes the task.
+		virtual void			process(void);
 
 	protected:
+		/// Called when we logins to Google Reader.
+		virtual void			authenticated(void) = 0;
+
 		/// Gets Google Reader's API token.
 		///
 		/// This is an asynchronous operation. token_gotten() is called when we
-		/// get an API token, or error() is emitted and finish() called on error.
+		/// get an API token, or failed() is called on error.
 		void					get_token(void);
 
 		/// See Network_task::prepare_request().
 		virtual QNetworkRequest	prepare_request(const QString& url);
 
 		/// Called when we get Google Reader's API token.
-		virtual void			token_gotten(void);
+		virtual void			token_gotten(void) {};
 
 
 	private slots:
+		/// Called when we successfully login Google Reader.
+		void			on_authenticated(const QString& auth_id);
+
 		/// Called when we get Google Reader's API token.
-		void	on_token_gotten(const QString& token);
+		void			on_token_gotten(const QString& token);
 };
 
 

@@ -21,10 +21,6 @@
 #ifndef GROV_HEADER_CLIENT_READER
 #define GROV_HEADER_CLIENT_READER
 
-class QNetworkCookieJar;
-
-#include <QtCore/QQueue>
-
 #include <src/common.hpp>
 
 #include "storage.hxx"
@@ -42,22 +38,6 @@ class Reader: public QObject
 {
 	Q_OBJECT
 
-	private:
-	// TODO
-		/// Possible asynchronous tasks.
-		enum Task_type {
-			/// Get feed list (list of all user's feeds).
-		//	TASK_TYPE_GET_FEED_LIST,
-
-			/// Get reading list (list of items that user did not read).
-			TASK_TYPE_GET_READING_LIST,
-
-			/// Flush all offline data (send all saved user actions to Google
-			/// Reader).
-			TASK_TYPE_FLUSH_OFFLINE_DATA
-		};
-
-
 	public:
 		Reader(client::Storage* storage, QObject* parent = NULL);
 
@@ -66,41 +46,34 @@ class Reader: public QObject
 		/// Storage for offline data.
 		client::Storage*	storage;
 
-// TODO:
-		/// Storage for all ours cookies.
-		QNetworkCookieJar*	cookies;
-
-		/// Google Reader's authentication id.
-		QString				auth_id;
-
-
-// TODO
-		/// Google Reader's tasks, waiting for login.
-		QQueue<Task_type>	pending_gr_tasks;
-
 
 	public:
-	// TODO: description
+		/// Flushes all offline data (sends all saved user actions to Google
+		/// Reader).
+		///
+		/// This is asynchronous operation. When it will be completed either
+		/// offline_data_flushed() or error() or cancelled() signal will be
+		/// emitted.
 		void	flush_offline_data(const QString& login, const QString& password);
 
-	// TODO: description
 		/// Gets reading list (list of items that user did not read).
 		///
 		/// This is asynchronous operation. When it will be completed either
-		/// reading_list() or error() signal will be generated.
-		void	get_offline_data(const QString& login, const QString& password);
+		/// reading_list_gotten() or error() or cancelled() signal will be
+		/// emitted.
+		void	get_reading_list(const QString& login, const QString& password);
+
+		/// Cancels current operation.
+		void	cancel(void);
 
 	private:
-		/// Adds Google Reader's task (task, that needs Google Reader login).
-		void			add_google_reader_task(const QString& login, const QString& password, Task_type type);
-
 		/// Prepares and process a task.
-		void			process_task(reader::Task* task);
+		void	process_task(reader::Task* task);
 
 
 	signals:
-		/// When user cancelling current operation or when task processing
-		/// fails, we cancelling all pending and processing tasks.
+		/// When user cancelling current operation, we cancelling all processing
+		/// tasks.
 		///
 		/// All tasks connects to this signal.
 		///
@@ -108,23 +81,17 @@ class Reader: public QObject
 		/// for our goals this works fine.
 		void	cancel_all_tasks(void);
 
+		/// Emitted when a task cancelled.
+		void	cancelled(void);
+
 		/// Emitted when task processing fails.
 		void	error(const QString& error);
 
 		/// Emitted when we flush all offline data.
 		void	offline_data_flushed(void);
 
-		/// Emitted when all reading list's items gotten.
-		// TODO
+		/// Emitted when we get reading list.
 		void	reading_list_gotten(void);
-
-
-	private slots:
-		/// Called when we successfully login to Google Reader.
-		void	authenticated(const QString& auth_id);
-
-		/// Called when task processing fails.
-		void	task_error(const QString& message);
 };
 
 

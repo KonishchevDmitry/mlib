@@ -18,15 +18,16 @@
 **************************************************************************/
 
 
-// TODO
-#include <QtCore/QFile>
+#if DEVELOP_MODE || OFFLINE_DEVELOPMENT
+	#include <QtCore/QFile>
+#endif
 
-#include <QtNetwork/QNetworkRequest>
+#include <QtCore/QUrl>
 
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
+#include <src/main.hpp>
 
-#include <src/client/reader.hpp>
 #include <src/client/storage.hpp>
 
 #include "get_feed_list.hpp"
@@ -38,40 +39,49 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Get_reading_list::Get_reading_list(Reader* reader, QObject* parent)
+Get_reading_list::Get_reading_list(Storage* storage, const QString& login, const QString& password, QObject* parent)
 :
-	Google_reader_task(reader, parent)
+	Google_reader_task(login, password, parent),
+	storage(storage),
+	reading_lists_counter(0)
 {
+}
+
+
+
+void Get_reading_list::authenticated(void)
+{
+	Get_feed_list* task = new Get_feed_list(this->storage, this->auth_id, this);
+
+	connect(task, SIGNAL(feeds_gotten()),
+		this, SLOT(get_reading_list()) );
+
+	this->process_task(task);
 }
 
 
 
 void Get_reading_list::get_reading_list(void)
 {
-#if OFFLINE_DEVELOPMENT
-	QFile reading_list("reading_list");
-	reading_list.open(QIODevice::ReadOnly);
-	QByteArray reply = reading_list.readAll();
-	reading_list.close();
-
-	this->request_finished("", reply);
-#else
 	MLIB_D("Getting Google Reader's reading list...");
 
-	// TODO: other params
-	// TODO: more xt
-	QString query = "https://www.google.com/reader/atom/user/-/state/com.google/reading-list?n=1000&r=o&xt=user/-/state/com.google/read";
+#if OFFLINE_DEVELOPMENT
+	QFile list("reading.list");
+
+	if(list.open(QIODevice::ReadOnly))
+		this->request_finished("", list.readAll());
+	else
+		this->request_finished(_F("Error while reading '%1'.", list.fileName()), "");
+#else
+	QString url =
+		"https://www.google.com/reader/atom/user/-/state/com.google/reading-list"
+		"?n=1000&r=o&xt=user/-/state/com.google/read"
+		"&client=" + QUrl::toPercentEncoding(get_user_agent());
 
 	if(!this->continuation_code.isEmpty())
-		query += "&c=" + this->continuation_code;
+		url += "&c=" + this->continuation_code;
 
-// TODO:
-//	this->post("https://www.google.com/reader/api/0/edit-tag?client=contact:konishchev",
-//	//"a=user%2F14394675015157700687%2Fstate%2Fcom.google%2Fstarred&async=true&s=feed%2Fhttp%3A%2F%2Fwww.opennet.ru%2Fopennews%2Fopennews_mini.rss&i=tag%3Agoogle.com%2C2005%3Areader%2Fitem%2F0e114e09b80a285c&pos=0&T=6CoOqycBAAA.GONvLRCRL9agdExKsQJdhQ.n-UQldYDsiz58ao-SZDdpA"
-//	"a=user%2F-%2Fstate%2Fcom.google%2Fstarred&async=true&s=feed%2Fhttp%3A%2F%2Fwww.opennet.ru%2Fopennews%2Fopennews_mini.rss&i=tag%3Agoogle.com%2C2005%3Areader%2Fitem%2F0e114e09b80a285c&T=9ysSqycBAAA.GONvLRCRL9agdExKsQJdhQ.ZuwUM5_HhNb9_D0H7Pxh9g"
-//	//"i=" + QUrl::toPercentEncoding("tag:google.com,2005:reader/item/8e6564550a865a10") + "&a=" + QUrl::toPercentEncoding("user/14394675015157700687/state/com.google/starred")
-//	);
-	this->get(query);
+	this->get(url);
 #endif
 }
 
@@ -85,14 +95,6 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 	{
 		Gr_feed_item_list items;
 
-		// TODO
-//		{
-//			QFile reading_list("reading_list");
-//			reading_list.open(QIODevice::Append);
-//			reading_list.write(reply);
-//			reading_list.close();
-//		}
-
 		try
 		{
 			// Checking for errors -->
@@ -103,6 +105,16 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 					return;
 				}
 			// Checking for errors <--
+
+		#if DEVELOP_MODE && !OFFLINE_DEVELOPMENT
+			// For offline development -->
+			{
+				QFile list("reading.list");
+				list.open(QIODevice::WriteOnly);
+				list.write(reply);
+			}
+			// For offline development <--
+		#endif
 
 			// Getting feeds' items -->
 				try
@@ -121,40 +133,40 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 		}
 
 		// Throws m::Exception
-		this->reader->storage->add_items(items);
+		this->storage->add_items(items);
+		this->reading_lists_counter++;
 
-#if !OFFLINE_DEVELOPMENT
-		// TODO
+	#if !OFFLINE_DEVELOPMENT
 		if(this->continuation_code.isEmpty() || items.empty())
-#endif
+		{
+	#endif
 			emit this->reading_list_gotten();
-#if !OFFLINE_DEVELOPMENT
+			this->finish();
+	#if !OFFLINE_DEVELOPMENT
+		}
 		else
-			// TODO max number limit
-			this->get_reading_list();
-#endif
+		{
+			if(this->reading_lists_counter >= 100)
+			{
+				MLIB_W(tr("Reading lists number limit exceeded"),
+					_F(tr(
+						"Gotten too big number (%1) of reading lists from Google Reader. "
+						"It seems that program entered in an infinite loop, or you have very big number of unread items. "
+						"Please read downloaded items first, than you can download others."
+					), this->reading_lists_counter)
+				);
+				emit this->reading_list_gotten();
+				this->finish();
+			}
+			else
+				this->get_reading_list();
+		}
+	#endif
 	}
 	catch(m::Exception& e)
 	{
-		emit this->error(EE(e));
+		this->failed(EE(e));
 	}
-}
-
-
-
-void Get_reading_list::process(void)
-{
-	// TODO: delete on cancel and other actions...
-	this->get_feed_list_task = new Get_feed_list(this->reader, this);
-
-	// TODO: this and all other
-	connect(this->get_feed_list_task, SIGNAL(error(const QString&)),
-		this, SIGNAL(error(const QString&)) );
-
-	connect(this->get_feed_list_task, SIGNAL(feeds_gotten()),
-		this, SLOT(get_reading_list()) );
-
-	this->get_feed_list_task->process();
 }
 
 

@@ -36,6 +36,12 @@ class Task: public QObject
 
 	public:
 		Task(QObject* parent = NULL);
+		~Task(void);
+
+
+	private:
+		/// Is task finished.
+		bool	finished;
 
 
 	public:
@@ -43,18 +49,28 @@ class Task: public QObject
 		virtual void	process(void) = 0;
 
 	protected:
-		// TODO
-		void	failed(const QString& message);
+		/// Returns true if task cancelled.
+		///
+		/// \attention
+		/// Must be used only in destructors - in other methods the return
+		/// value is undefined.
+		bool			is_cancelled(void);
 
-		// TODO
-		void	finish(void);
+		/// Emits error() signal end finish the task.
+		void			failed(const QString& message);
 
-		// TODO
-		void	process_task(Task* task);
+		/// Asynchronously deletes the task.
+		void			finish(void);
+
+		/// Processes a child task.
+		void			process_task(Task* task);
 
 
 	signals:
-		/// This signal tasks emits when processing fails.
+		/// Emitted when task cancelled.
+		void	cancelled(void);
+
+		/// This signal task emits when processing fails.
 		void	error(const QString& message);
 
 

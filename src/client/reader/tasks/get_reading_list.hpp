@@ -25,10 +25,8 @@
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 
-#include <src/client/reader.hxx>
+#include <src/client/storage.hxx>
 #include <src/client/reader/google_reader_task.hpp>
-
-#include "get_feed_list.hxx"
 
 #include "get_reading_list.hxx"
 
@@ -42,20 +40,23 @@ class Get_reading_list: public Google_reader_task
 	Q_OBJECT
 
 	public:
-		Get_reading_list(Reader* reader, QObject* parent = NULL);
+		Get_reading_list(Storage* storage, const QString& login, const QString& password, QObject* parent = NULL);
 
 
 	private:
-		/// Task for getting feed list.
-		Get_feed_list*	get_feed_list_task;
+		/// Our offline data storage.
+		Storage*	storage;
 
 		/// Reading list continuation code.
-		QString			continuation_code;
+		QString		continuation_code;
+
+		/// Gotten reading lists counter.
+		size_t		reading_lists_counter;
 
 
 	public:
-		/// Processes the task.
-		virtual void	process(void);
+		/// See Google_reader_task::authenticated().
+		virtual void	authenticated(void);
 
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
@@ -68,7 +69,7 @@ class Get_reading_list: public Google_reader_task
 
 	private slots:
 		/// Gets reading list.
-		void			get_reading_list(void);
+		void	get_reading_list(void);
 };
 
 

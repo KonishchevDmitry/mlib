@@ -1,6 +1,7 @@
 * cmake boost rules
 * application icon
-* handle application's quit
+* handle application's quit (deleteLater, etc)
 * progress bar
 * think about authorization in Google_reader_task
+* unix signals handler
 

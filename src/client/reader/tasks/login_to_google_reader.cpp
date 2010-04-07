@@ -25,23 +25,23 @@
 #include <src/common.hpp>
 #include <src/main.hpp>
 
-#include "authenticate.hpp"
+#include "login_to_google_reader.hpp"
 
 
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Authenticate::Authenticate(Reader* reader, const QString& user, const QString& password, QObject* parent)
+Login_to_google_reader::Login_to_google_reader(const QString& login, const QString& password, QObject* parent)
 :
-	Network_task(reader, parent),
-	user(user),
+	Network_task(parent),
+	login(login),
 	password(password)
 {
 }
 
 
 
-QString Authenticate::get_auth_id(const QByteArray& reply)
+QString Login_to_google_reader::get_auth_id(const QByteArray& reply)
 {
 	char auth_id_prefix[] = "Auth=";
 
@@ -58,7 +58,7 @@ QString Authenticate::get_auth_id(const QByteArray& reply)
 
 
 
-void Authenticate::request_finished(const QString& error, const QByteArray& reply)
+void Login_to_google_reader::request_finished(const QString& error, const QByteArray& reply)
 {
 	MLIB_D("Authentication request finished.");
 
@@ -89,13 +89,12 @@ void Authenticate::request_finished(const QString& error, const QByteArray& repl
 
 
 
-void Authenticate::process(void)
+void Login_to_google_reader::process(void)
 {
 	MLIB_D("Logining to Google Reader...");
 
 #if OFFLINE_DEVELOPMENT
-	emit this->authenticated("fake_offline_auth_id");
-	this->finish();
+	emit this->request_finished("", "Auth=fake_offline_auth_id");
 #else
 	QString post_data = _F(
 		"accountType=GOOGLE&"
@@ -103,9 +102,9 @@ void Authenticate::process(void)
 		"Passwd=%2&"
 		"service=reader&"
 		"source=%3",
-		QUrl::toPercentEncoding(this->user),
+		QUrl::toPercentEncoding(this->login),
 		QUrl::toPercentEncoding(this->password),
-		get_user_agent()
+		QUrl::toPercentEncoding(get_user_agent())
 	);
 
 	this->post("https://www.google.com/accounts/ClientLogin", post_data);

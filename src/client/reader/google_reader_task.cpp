@@ -22,9 +22,8 @@
 
 #include <src/common.hpp>
 
-#include <src/client/reader.hpp>
-
 #include "tasks/get_gr_token.hpp"
+#include "tasks/login_to_google_reader.hpp"
 
 #include "google_reader_task.hpp"
 
@@ -32,9 +31,20 @@
 namespace grov { namespace client { namespace reader {
 
 
-Google_reader_task::Google_reader_task(Reader* reader, QObject* parent)
+Google_reader_task::Google_reader_task(const QString& auth_id, QObject* parent)
 :
-	Network_task(reader, parent)
+	Network_task(parent),
+	auth_id(auth_id)
+{
+}
+
+
+
+Google_reader_task::Google_reader_task(const QString& login, const QString& password, QObject* parent)
+:
+	Network_task(parent),
+	login(login),
+	password(password)
 {
 }
 
@@ -42,12 +52,20 @@ Google_reader_task::Google_reader_task(Reader* reader, QObject* parent)
 
 void Google_reader_task::get_token(void)
 {
-	tasks::Get_gr_token* task = new tasks::Get_gr_token(this->reader, this);
+	tasks::Get_gr_token* task = new tasks::Get_gr_token(this->auth_id, this);
 
 	connect(task, SIGNAL(token_gotten(const QString&)),
 		this, SLOT(on_token_gotten(const QString&)) );
 
-	task->process();
+	this->process_task(task);
+}
+
+
+
+void Google_reader_task::on_authenticated(const QString& auth_id)
+{
+	this->auth_id = auth_id;
+	this->authenticated();
 }
 
 
@@ -63,14 +81,27 @@ void Google_reader_task::on_token_gotten(const QString& token)
 QNetworkRequest Google_reader_task::prepare_request(const QString& url)
 {
 	QNetworkRequest request = Network_task::prepare_request(url);
-	request.setRawHeader("Authorization", "GoogleLogin auth=" + this->reader->auth_id.toAscii());
+	if(!this->auth_id.isEmpty())
+		request.setRawHeader("Authorization", "GoogleLogin auth=" + auth_id.toAscii());
 	return request;
 }
 
 
 
-void Google_reader_task::token_gotten(void)
+void Google_reader_task::process(void)
 {
+	if(this->auth_id.isEmpty())
+	{
+		tasks::Login_to_google_reader* task =
+			new tasks::Login_to_google_reader(this->login, this->password, this);
+
+		connect(task, SIGNAL(authenticated(const QString&)),
+			this, SLOT(on_authenticated(const QString&)) );
+
+		this->process_task(task);
+	}
+	else
+		this->authenticated();
 }
 
 

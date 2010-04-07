@@ -26,6 +26,7 @@
 #include "messages.hpp"
 
 
+
 namespace m { namespace gui {
 
 
@@ -63,10 +64,21 @@ void show_message(QWidget* parent, Message_type type, QString title, const QStri
 	if(!title.isEmpty())
 		window_title.prepend(title + " - ");
 
+	QString message_box_title = "<b>" + Qt::escape(title) + "</b> ";
+
+	// TODO: dirty hack
+	if(message_box_title.size() < 40)
+	{
+		message_box_title.replace(' ', "&nbsp;");
+
+		for(size_t i = 0; i < 40; i++)
+			message_box_title += "&nbsp;";
+	}
+
 	QMessageBox message_box(icon, window_title, message, QMessageBox::Ok, parent);
 
 	message_box.setTextFormat(Qt::RichText);
-	message_box.setText("<b>" + Qt::escape(title) + "</b>");
+	message_box.setText(message_box_title);
 	message_box.setInformativeText(Qt::escape(message));
 
 	if(!details.isEmpty())

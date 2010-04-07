@@ -24,7 +24,6 @@
 
 #include <src/common.hpp>
 
-#include <src/client/reader.hxx>
 #include <src/client/reader/google_reader_task.hpp>
 
 #include "get_gr_token.hxx"
@@ -39,12 +38,12 @@ class Get_gr_token: public Google_reader_task
 	Q_OBJECT
 
 	public:
-		Get_gr_token(Reader* reader, QObject* parent = NULL);
+		Get_gr_token(const QString& auth_id, QObject* parent = NULL);
 
 
 	public:
-		/// Processes the task.
-		virtual void	process(void);
+		/// See Google_reader_task::authenticated().
+		virtual void	authenticated(void);
 
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);

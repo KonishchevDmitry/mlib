@@ -5,13 +5,23 @@
     <name>QObject</name>
     <message>
         <location filename="../core/messages.cpp" line="110"/>
-        <location filename="../gui/messages.cpp" line="51"/>
+        <location filename="../gui/messages.cpp" line="54"/>
         <source>Application critical error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../core/messages.hpp" line="94"/>
         <source>Logical error.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gui/messages.cpp" line="41"/>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gui/messages.cpp" line="48"/>
+        <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

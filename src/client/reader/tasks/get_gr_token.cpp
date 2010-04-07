@@ -18,7 +18,10 @@
 **************************************************************************/
 
 
+#include <QtCore/QUrl>
+
 #include <src/common.hpp>
+#include <src/main.hpp>
 
 #include "get_gr_token.hpp"
 
@@ -26,10 +29,26 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Get_gr_token::Get_gr_token(Reader* reader, QObject* parent)
+Get_gr_token::Get_gr_token(const QString& auth_id, QObject* parent)
 :
-	Google_reader_task(reader, parent)
+	Google_reader_task(auth_id, parent)
 {
+}
+
+
+
+void Get_gr_token::authenticated(void)
+{
+	MLIB_D("Getting Google Reader's API token...");
+
+#if OFFLINE_DEVELOPMENT
+	this->request_finished("", "fake_offline_token");
+#else
+	QString url =
+		"https://www.google.com/reader/api/0/token"
+		"?client=" + QUrl::toPercentEncoding(get_user_agent());
+	this->get(url);
+#endif
 }
 
 
@@ -46,7 +65,7 @@ void Get_gr_token::request_finished(const QString& error, const QByteArray& repl
 				if(this->throw_if_fatal_error(error))
 				{
 					MLIB_D("Request failed. Trying again...");
-					this->process();
+					this->authenticated();
 					return;
 				}
 			// Checking for errors <--
@@ -61,26 +80,12 @@ void Get_gr_token::request_finished(const QString& error, const QByteArray& repl
 
 		MLIB_D("Gotten Google Reader's API token: '%1'.", reply);
 		emit this->token_gotten(reply);
+		this->finish();
 	}
 	catch(m::Exception& e)
 	{
-		emit this->error(EE(e));
+		this->failed(EE(e));
 	}
-}
-
-
-
-void Get_gr_token::process(void)
-{
-	MLIB_D("Getting Google Reader's API token...");
-
-#if OFFLINE_DEVELOPMENT
-	emit this->token_gotten("fake offline token");
-#else
-	// TODO: more params
-	QString query = "https://www.google.com/reader/api/0/token";
-	this->get(query);
-#endif
 }
 
 

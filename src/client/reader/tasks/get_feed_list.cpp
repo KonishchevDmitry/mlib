@@ -18,13 +18,16 @@
 **************************************************************************/
 
 
-// TODO
-#include <QtCore/QFile>
+#if DEVELOP_MODE || OFFLINE_DEVELOPMENT
+	#include <QtCore/QFile>
+#endif
+
+#include <QtCore/QUrl>
 
 #include <src/common.hpp>
 #include <src/common/feed.hpp>
+#include <src/main.hpp>
 
-#include <src/client/reader.hpp>
 #include <src/client/storage.hpp>
 
 #include "gr_xml_parser.hpp"
@@ -35,10 +38,32 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Get_feed_list::Get_feed_list(Reader* reader, QObject* parent)
+Get_feed_list::Get_feed_list(Storage* storage, const QString& auth_id, QObject* parent)
 :
-	Google_reader_task(reader, parent)
+	Google_reader_task(auth_id, parent),
+	storage(storage)
 {
+}
+
+
+
+void Get_feed_list::authenticated(void)
+{
+	MLIB_D("Getting Google Reader's subscription list...");
+
+#if OFFLINE_DEVELOPMENT
+	QFile list("subscription.list");
+
+	if(list.open(QIODevice::ReadOnly))
+		this->request_finished("", list.readAll());
+	else
+		this->request_finished(_F("Error while reading '%1'.", list.fileName()), "");
+#else
+	QString url =
+		"https://www.google.com/reader/api/0/subscription/list?output=xml"
+		"&client=" + QUrl::toPercentEncoding(get_user_agent());
+	this->get(url);
+#endif
 }
 
 
@@ -49,14 +74,6 @@ void Get_feed_list::request_finished(const QString& error, const QByteArray& rep
 
 	try
 	{
-		// TODO
-	//	{
-	//		QFile reading_list("subscription_list");
-	//		reading_list.open(QIODevice::WriteOnly);
-	//		reading_list.write(reply);
-	//		reading_list.close();
-	//	}
-
 		Gr_feed_list feeds;
 
 		try
@@ -65,10 +82,20 @@ void Get_feed_list::request_finished(const QString& error, const QByteArray& rep
 				if(this->throw_if_fatal_error(error))
 				{
 					MLIB_D("Request failed. Trying again...");
-					this->process();
+					this->authenticated();
 					return;
 				}
 			// Checking for errors <--
+
+		#if DEVELOP_MODE && !OFFLINE_DEVELOPMENT
+			// For offline development -->
+			{
+				QFile list("subscription.list");
+				list.open(QIODevice::WriteOnly);
+				list.write(reply);
+			}
+			// For offline development <--
+		#endif
 
 			// Getting feeds -->
 				try
@@ -77,44 +104,25 @@ void Get_feed_list::request_finished(const QString& error, const QByteArray& rep
 				}
 				catch(m::Exception& e)
 				{
-					M_THROW(PAM( tr("Parsing error:"), EE(e) ));
+					M_THROW(PAM( tr("Parsing error."), EE(e) ));
 				}
 			// Getting feeds <--
 		}
 		catch(m::Exception& e)
 		{
-			M_THROW(tr("Unable to get Google Reader's subscription list. %1"), EE(e));
+			M_THROW(PAM( tr("Unable to get Google Reader's subscription list."), EE(e) ));
 		}
 
 		// Throws m::Exception
-		this->reader->storage->add_feeds(feeds);
+		this->storage->add_feeds(feeds);
 
 		emit this->feeds_gotten();
+		this->finish();
 	}
 	catch(m::Exception& e)
 	{
-		emit this->error(EE(e));
+		this->failed(EE(e));
 	}
-}
-
-
-
-void Get_feed_list::process(void)
-{
-	MLIB_D("Getting Google Reader's subscription list...");
-
-#if OFFLINE_DEVELOPMENT
-	QFile list("subscription_list");
-	list.open(QIODevice::ReadOnly);
-	QByteArray reply = list.readAll();
-	list.close();
-
-	this->request_finished("", reply);
-#else
-	// TODO: more params
-	QString query = "https://www.google.com/reader/api/0/subscription/list?output=xml";
-	this->get(query);
-#endif
 }
 
 

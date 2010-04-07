@@ -24,10 +24,10 @@
 
 #include <src/common.hpp>
 
-#include <src/client/reader.hxx>
+#include <src/client/storage.hxx>
 #include <src/client/reader/google_reader_task.hpp>
 
-#include "get_reading_list.hxx"
+#include "get_feed_list.hxx"
 
 
 namespace grov { namespace client { namespace reader { namespace tasks {
@@ -39,12 +39,17 @@ class Get_feed_list: public Google_reader_task
 	Q_OBJECT
 
 	public:
-		Get_feed_list(Reader* reader, QObject* parent = NULL);
+		Get_feed_list(Storage* storage, const QString& auth_id, QObject* parent = NULL);
+
+
+	private:
+		/// Our offline data storage.
+		Storage*	storage;
 
 
 	public:
-		/// Processes the task.
-		virtual void	process(void);
+		/// See Google_reader_task::authenticated().
+		virtual void	authenticated(void);
 
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);

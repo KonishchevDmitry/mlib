@@ -101,17 +101,25 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 			// Id <--
 
 			// Title and summary -->
+			{
 				item.title = entry.firstChildElement("title").text();
 				MLIB_DV("Title: '%1'.", item.title);
 
 				item.summary = entry.firstChildElement("summary").text();
 				//MLIB_DV("Summary: '%1'.", item.summary);
 
+				if(item.summary.isEmpty())
+				{
+					item.summary = entry.firstChildElement("content").text();
+					//MLIB_DV("Content: '%1'.", item.summary);
+				}
+
 				if(item.title.isEmpty() && item.summary.isEmpty())
 				{
 					MLIB_SW(_F( tr("Gotten item [%1] with empty title and summary. Skipping it."), item.gr_id ));
 					continue;
 				}
+			}
 			// Title and summary <--
 
 			// Feed's id -->

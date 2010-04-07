@@ -23,7 +23,6 @@
 #include <src/common.hpp>
 #include <src/main.hpp>
 
-#include <src/client/reader.hpp>
 #include <src/client/storage.hpp>
 
 #include "flush_offline_data.hpp"
@@ -32,10 +31,28 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-Flush_offline_data::Flush_offline_data(Reader* reader, QObject* parent)
+Flush_offline_data::Flush_offline_data(Storage* storage, const QString& login, const QString& password, QObject* parent)
 :
-	Google_reader_task(reader, parent)
+	Google_reader_task(login, password, parent),
+	storage(storage),
+	to_db(this->changed_items.begin()),
+	to_flush(this->changed_items.begin())
 {
+}
+
+
+
+Flush_offline_data::~Flush_offline_data(void)
+{
+	if(this->is_cancelled())
+		this->silent_sync_with_db();
+}
+
+
+
+void Flush_offline_data::authenticated(void)
+{
+	this->get_token();
 }
 
 
@@ -119,13 +136,6 @@ void Flush_offline_data::flush(void)
 
 
 
-void Flush_offline_data::process(void)
-{
-	this->get_token();
-}
-
-
-
 void Flush_offline_data::request_finished(const QString& error, const QByteArray& reply)
 {
 	MLIB_D("Flushing item's changes request finished.");
@@ -160,15 +170,7 @@ void Flush_offline_data::request_finished(const QString& error, const QByteArray
 		}
 		catch(m::Exception& e)
 		{
-			try
-			{
-				this->sync_with_db();
-			}
-			catch(m::Exception& e)
-			{
-				MLIB_SW(EE(e));
-			}
-
+			this->silent_sync_with_db();
 			M_THROW(PAM( tr("Unable flush user changes to Google Reader."), EE(e) ));
 		}
 
@@ -187,10 +189,24 @@ void Flush_offline_data::request_finished(const QString& error, const QByteArray
 
 
 
+void Flush_offline_data::silent_sync_with_db(void)
+{
+	try
+	{
+		this->sync_with_db();
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_SW(EE(e));
+	}
+}
+
+
+
 void Flush_offline_data::sync_with_db(void)
 {
 	// Throws m::Exception
-	this->reader->storage->mark_changes_as_flushed(this->to_db, this->to_flush);
+	this->storage->mark_changes_as_flushed(this->to_db, this->to_flush);
 	this->to_db = this->to_flush;
 }
 
@@ -200,7 +216,7 @@ void Flush_offline_data::token_gotten(void)
 {
 	try
 	{
-		this->changed_items = this->reader->storage->get_user_changes();
+		this->changed_items = this->storage->get_user_changes();
 	}
 	catch(m::Exception& e)
 	{

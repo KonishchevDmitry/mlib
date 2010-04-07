@@ -25,7 +25,7 @@
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 
-#include <src/client/reader.hxx>
+#include <src/client/storage.hxx>
 #include <src/client/reader/google_reader_task.hpp>
 
 #include "flush_offline_data.hxx"
@@ -40,10 +40,15 @@ class Flush_offline_data: public Google_reader_task
 	Q_OBJECT
 
 	public:
-		Flush_offline_data(Reader* reader, QObject* parent = NULL);
+		Flush_offline_data(Storage* storage, const QString& login, const QString& password, QObject* parent = NULL);
+		~Flush_offline_data(void);
 
 
 	private:
+		/// Our offline data storage.
+		Storage*	storage;
+
+
 		/// Items that had been changed by the user.
 		Changed_feed_item_list	changed_items;
 
@@ -56,25 +61,27 @@ class Flush_offline_data: public Google_reader_task
 		Changed_feed_item_list::const_iterator	to_flush;
 
 
-	public:
-		/// Processes the task.
-		virtual void	process(void);
+	protected:
+		/// See Google_reader_task::authenticated().
+		virtual void	authenticated(void);
 
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
+
+		/// Google Reader's API token gotten.
+		virtual void	token_gotten(void);
+
+	private:
+		/// Same as sync_with_db() but not throws an exceptions.
+		void			silent_sync_with_db(void);
 
 		/// Synchronizes flushes with the database.
 		///
 		/// @throw m::Exception.
 		void			sync_with_db(void);
 
-	protected:
-		/// Google Reader's API token gotten.
-		virtual void	token_gotten(void);
-
-	private:
 		/// Flushes all offline data.
-		void	flush(void);
+		void			flush(void);
 
 
 	signals:

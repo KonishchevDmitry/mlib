@@ -28,26 +28,37 @@ namespace grov { namespace client { namespace reader {
 
 Task::Task(QObject* parent)
 :
-	QObject(parent)
+	QObject(parent),
+	finished(false)
 {
-	// TODO: delete after process
+	MLIB_D("Task [%1] created.", this);
+}
+
+
+
+Task::~Task(void)
+{
+	if(this->is_cancelled())
+	{
+		MLIB_D("Task [%1] is cancelled.", this);
+		emit this->cancelled();
+	}
+
+	MLIB_D("Task [%1] destroyed.", this);
 }
 
 
 
 void Task::cancel(void)
 {
-	// TODO: realize
-	// TODO: cancel callback to flush cached data
-	MLIB_D("Task [%1] is cancelled.", this);
-	this->finish();
+	this->deleteLater();
 }
 
 
 
 void Task::child_task_error(const QString& message)
 {
-	MLIB_D("Task's [%1] child task emitted error.", this);
+	MLIB_D("Task's [%1] child task emitted error '%2'.", this, message);
 	this->failed(message);
 }
 
@@ -55,28 +66,32 @@ void Task::child_task_error(const QString& message)
 
 void Task::failed(const QString& message)
 {
-	// TODO
-	emit this->error(message);
 	this->finish();
+	emit this->error(message);
 }
 
 
 
-// TODO
 void Task::finish(void)
 {
-	this->disconnect(NULL, NULL, this, NULL);
+	MLIB_D("Finalizing task [%1]...", this);
+	this->finished = true;
 	this->deleteLater();
+}
+
+
+
+bool Task::is_cancelled(void)
+{
+	return !this->finished;
 }
 
 
 
 void Task::process_task(Task* task)
 {
-	// TODO: other signals
-
 	connect(task, SIGNAL(error(const QString&)),
-		this, SIGNAL(child_task_error(const QString&)) );
+		this, SLOT(child_task_error(const QString&)) );
 
 	task->process();
 }

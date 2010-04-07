@@ -28,8 +28,6 @@ class QTimer;
 
 #include <src/common.hpp>
 
-#include <src/client/reader.hxx>
-
 #include "task.hpp"
 
 #include "network_task.hxx"
@@ -45,13 +43,10 @@ class Network_task: public Task
 	Q_OBJECT
 
 	public:
-		Network_task(Reader* reader, QObject* parent = NULL);
+		Network_task(QObject* parent = NULL);
 
 
 	protected:
-		/// Reader that created us.
-		Reader*			reader;
-
 		/// Number of failed requests.
 		size_t			fails_count;
 
@@ -66,7 +61,7 @@ class Network_task: public Task
 		QTimer*					timeout_timer;
 
 		/// Error string if request failed.
-		QString					reply_error;
+		QString					request_error;
 
 
 	protected:
@@ -107,7 +102,7 @@ class Network_task: public Task
 
 	private:
 		/// Starts processing the reply.
-		void			process_reply(QNetworkReply* reply);
+		void					process_reply(QNetworkReply* reply);
 
 
 	private slots:

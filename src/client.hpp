@@ -111,6 +111,9 @@ class Client: public client::Storage
 		/// Called when we get all offline data.
 		void	offline_data_gotten(void);
 
+		/// Called when reader request cancelled.
+		void	reader_cancelled(void);
+
 		/// Called when reader request failed.
 		void	reader_error(const QString& message);
 };
