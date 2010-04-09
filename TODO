@@ -2,7 +2,7 @@
 * application icon
 * handle application's quit (deleteLater, etc)
 * progress bar
-* think about authorization in Google_reader_task
 * unix signals handler
 * progress dialog when going offline/online
+* browser menu, links, etc
 

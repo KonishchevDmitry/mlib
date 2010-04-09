@@ -35,6 +35,11 @@ void	show_message(QWidget* parent, Message_type type, QString title, const QStri
 /// Shows warning message, blocking until the user closes it.
 void	show_warning_message(QWidget* parent, const QString& title, const QString& message, const QString& details = QString());
 
+/// Shows "Yes or No" message.
+///
+/// Returns true, if user answer yes.
+bool	yes_no_message(QWidget* parent, const QString& title, const QString& message);
+
 
 }}
 

@@ -35,8 +35,6 @@ namespace Ui {
 }
 
 
-// TODO: webkit menu, links, etc
-// TODO: quit handling
 /// Application's main window.
 class Main_window: public QMainWindow
 {

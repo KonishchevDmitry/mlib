@@ -77,6 +77,8 @@ Storage::Storage(QObject* parent)
 			this->create_db_tables();
 		else
 			this->check_db_format_version();
+
+		this->get_db_info();
 	// Preparing the database <--
 }
 
@@ -311,7 +313,7 @@ void Storage::clear(void)
 	}
 	catch(m::Exception& e)
 	{
-		M_THROW(PAM( tr("Unable to delete data from the database:"), EE(e) ));
+		M_THROW(PAM( tr("Unable to delete data from the database."), EE(e) ));
 	}
 
 	try
@@ -347,15 +349,22 @@ void Storage::create_current_query(void)
 	this->flush_cache();
 
 	QString where;
+	bool bind_source_id = true;
 
 	switch(this->current_source)
 	{
 		case SOURCE_FEED:
 		{
 			if(this->current_source_id == this->broadcast_feed_id)
+			{
 				where = "read = 0 AND broadcast = 1";
-			else if(this->current_source_id == this->broadcast_feed_id)
+				bind_source_id = false;
+			}
+			else if(this->current_source_id == this->starred_feed_id)
+			{
 				where = "starred = 1";
+				bind_source_id = false;
+			}
 			else
 				where = "feed_id = :source_id AND read = 0";
 		}
@@ -390,7 +399,9 @@ void Storage::create_current_query(void)
 		"ORDER BY "
 			"id", where
 	));
-	query.bindValue(":source_id", this->current_source_id);
+
+	if(bind_source_id)
+		query.bindValue(":source_id", this->current_source_id);
 
 	// Throws m::Exception
 	this->exec(query);
@@ -456,7 +467,6 @@ void Storage::create_db_tables(void)
 		this->exec("CREATE INDEX labels_to_feeds_label_id_idx ON labels_to_feeds(label_id)");
 
 		this->init_empty_database();
-		this->get_db_info();
 
 		transaction.commit();
 	}

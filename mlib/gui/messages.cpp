@@ -96,5 +96,20 @@ void show_warning_message(QWidget* parent, const QString& title, const QString& 
 }
 
 
+
+bool yes_no_message(QWidget* parent, const QString& title, const QString& message)
+{
+	QString window_title = title + " - " + QCoreApplication::applicationName();
+
+	QMessageBox message_box(QMessageBox::Question, window_title, message, QMessageBox::Yes | QMessageBox::No, parent);
+
+	message_box.setTextFormat(Qt::RichText);
+	message_box.setText("<b>" + Qt::escape(title) + "</b>");
+	message_box.setInformativeText(Qt::escape(message));
+	message_box.setDefaultButton(QMessageBox::No);
+	return message_box.exec() == QMessageBox::Yes;
+}
+
+
 }}
 

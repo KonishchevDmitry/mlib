@@ -18,6 +18,8 @@
 **************************************************************************/
 
 
+#include <mlib/gui/messages.hpp>
+
 #include <src/client.hpp>
 #include <src/common.hpp>
 
@@ -28,8 +30,6 @@
 namespace grov {
 
 
-// TODO: quit signal that destroys main window an than stops main loop so all
-// messages will be displayed
 Main_window::Main_window(QWidget *parent)
 :
 	QMainWindow(parent),
@@ -76,23 +76,24 @@ void Main_window::mode_changed(Client::Mode mode)
 	ui->feed_menu->setEnabled(mode == Client::MODE_OFFLINE);
 
 	ui->viewer->setVisible(mode == Client::MODE_OFFLINE);
-
-	// TODO may be reset Viewer
+	ui->viewer->select_no_feed();
 }
 
 
 
 void Main_window::on_discard_all_offline_data_action_activated(void)
 {
-	// TODO: Are you sure question
-	this->client->discard_offline_data();
+	bool is = m::gui::yes_no_message(this, tr("Discard all offline data"),
+		tr("Are you sure want to discard all offline data?") );
+
+	if(is)
+		this->client->discard_offline_data();
 }
 
 
 
 void Main_window::on_flush_offline_data_action_activated(void)
 {
-	ui->viewer->select_no_feed();
 	this->client->flush_offline_data();
 }
 
