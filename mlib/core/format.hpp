@@ -88,6 +88,9 @@ inline QString	_S(const std::string& string);
 /// create_sentence_from("some error message") returns "Some error message.".
 QString			create_sentence_from(QString string);
 
+/// Alias to create_sentence_from().
+inline QString	CSF(const QString& string);
+
 /// Formats message so it can be placed as: "$prefix:$message".
 ///
 /// The results are:
@@ -116,19 +119,17 @@ QString			create_sentence_from(QString string);
 /// </pre>
 QString			pretty_add_message(QString prefix, QString message);
 
+/// Alias to pretty_add_message().
+inline QString	PAM(const QString& prefix, const QString& message);
+
 
 }
 
 #if MLIB_ENABLE_ALIASES
-	/// Alias to m::create_sentence_from().
-	inline QString	CSF(const QString& string);
-
-	/// Alias to m::pretty_add_message().
-	inline QString	PAM(const QString& prefix, const QString& message);
-
-
 	using m::_F;
 	using m::_S;
+	using m::CSF;
+	using m::PAM;
 #endif
 
 #include "format.hh"

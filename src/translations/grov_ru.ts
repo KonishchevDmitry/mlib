@@ -200,87 +200,107 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::Storage</name>
     <message>
-        <location filename="../client/storage.cpp" line="93"/>
-        <source>Unable to rollback a transaction:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../client/storage.cpp" line="128"/>
+        <location filename="../client/storage.cpp" line="63"/>
         <source>Can&apos;t create directory &apos;%1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="138"/>
+        <location filename="../client/storage.cpp" line="72"/>
         <source>Unable to open database &apos;%1&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="211"/>
-        <source>Unable to create table in the database:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../client/storage.cpp" line="227"/>
+        <location filename="../client/storage.cpp" line="93"/>
         <source>Error while closing database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="313"/>
+        <location filename="../client/storage.cpp" line="178"/>
         <source>Unable to add feeds to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="379"/>
+        <location filename="../client/storage.cpp" line="230"/>
+        <source>Gotten item &apos;%1&apos; for unknown feed &apos;%2&apos;. Skipping it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="257"/>
         <source>Unable to add feeds&apos; items to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="419"/>
+        <location filename="../client/storage.cpp" line="276"/>
+        <source>Unable to get the database format version:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="281"/>
+        <source>Application&apos;s database &apos;%1&apos; has unsupported format version. Please delete it by yourself. If you have an important unsaved offline data in it, please flush this offline data by that version of %2, which you have used to create it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="314"/>
         <source>Unable to delete data from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="501"/>
+        <location filename="../client/storage.cpp" line="324"/>
+        <source>Unable to vacuum the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="378"/>
         <source>Logical error (invalid item&apos;s source type).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="562"/>
+        <location filename="../client/storage.cpp" line="464"/>
+        <source>Error while creating tables in the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="494"/>
+        <source>query did not return a value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="531"/>
         <source>Error while flushing changes&apos; cache to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="620"/>
-        <source>Query did not return a value.</source>
+        <location filename="../client/storage.cpp" line="568"/>
+        <source>Error while getting database&apos;s main information:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="686"/>
+        <location filename="../client/storage.cpp" line="687"/>
+        <source>Error while getting feed tree from the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="741"/>
         <source>Unable to query a feed&apos;s item from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="634"/>
-        <source>Unable to get feed tree from the database:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../client/storage.cpp" line="742"/>
+        <location filename="../client/storage.cpp" line="797"/>
         <source>Unable to get user changes that he made to the items:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="761"/>
+        <location filename="../client/storage.cpp" line="817"/>
         <source>Unable to query feed&apos;s items from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="843"/>
+        <location filename="../client/storage.cpp" line="929"/>
         <source>Error while synchronizing flushed to Google Reader changes with the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="908"/>
+        <location filename="../client/storage.cpp" line="995"/>
         <source>Database error:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -364,7 +384,7 @@ p, li { white-space: pre-wrap; }
     <name>grov::client::reader::tasks::Gr_xml_parser</name>
     <message>
         <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="61"/>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="181"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="183"/>
         <source>Invalid XML root element: &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -389,17 +409,17 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="131"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="130"/>
         <source>Gotten item with empty feed&apos;s id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="245"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="247"/>
         <source>Given subscription has no id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="248"/>
+        <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="250"/>
         <source>(title unknown)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -475,12 +495,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::main_window::viewer::Feeds_model</name>
     <message>
-        <location filename="../main_window/viewer/feeds_model.cpp" line="104"/>
+        <location filename="../main_window/viewer/feeds_model.cpp" line="111"/>
         <source>Error while updating subscription list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer/feeds_model.cpp" line="140"/>
+        <location filename="../main_window/viewer/feeds_model.cpp" line="147"/>
         <source>Subscriptions</source>
         <translation type="unfinished"></translation>
     </message>

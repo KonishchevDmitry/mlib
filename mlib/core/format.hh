@@ -207,21 +207,19 @@ QString _S(const std::string& string)
 }
 
 
+
+QString CSF(const QString& string)
+{
+	return m::create_sentence_from(string);
 }
 
 
 
-#if MLIB_ENABLE_ALIASES
-	QString CSF(const QString& string)
-	{
-		return m::create_sentence_from(string);
-	}
+QString PAM(const QString& prefix, const QString& message)
+{
+	return m::pretty_add_message(prefix, message);
+}
 
 
-
-	QString PAM(const QString& prefix, const QString& message)
-	{
-		return m::pretty_add_message(prefix, message);
-	}
-#endif
+}
 

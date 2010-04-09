@@ -25,4 +25,12 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
+<context>
+    <name>m::db::Scoped_transaction</name>
+    <message>
+        <location filename="../db/scoped_transaction.cpp" line="51"/>
+        <source>Unable to rollback a transaction:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>

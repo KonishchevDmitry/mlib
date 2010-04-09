@@ -24,8 +24,10 @@
 #include <QtCore/QVariant>
 
 #include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
+
+#include <mlib/db/core.hpp>
+#include <mlib/db/scoped_transaction.hpp>
 
 #include <src/common.hpp>
 #include <src/common/feed.hpp>
@@ -40,85 +42,18 @@
 namespace grov { namespace client {
 
 
-// Scoped_transaction -->
-	/// Starts transaction at construction and rollbacks it on destruction if
-	/// it has not been committed.
-	class Scoped_transaction
-	{
-		public:
-			/// @throw m::Exception.
-			Scoped_transaction(const QSqlDatabase& db);
-			~Scoped_transaction(void);
-
-
-		private:
-			/// Database.
-			QSqlDatabase	db;
-
-			/// Is transaction closed.
-			bool			closed;
-
-
-		public:
-			/// Commits this transaction.
-			///
-			/// @throw m::Exception.
-			void	commit(void);
-	};
-
-
-
-	Scoped_transaction::Scoped_transaction(const QSqlDatabase& db)
-	:
-		db(db),
-		closed(false)
-	{
-		MLIB_D("Starting a transaction...");
-
-		if(!this->db.transaction())
-			M_THROW(this->db.lastError().databaseText());
-	}
-
-
-
-	Scoped_transaction::~Scoped_transaction(void)
-	{
-		if(!this->closed)
-		{
-			MLIB_D("Rolling back the transaction...");
-
-			if(!this->db.rollback())
-			{
-				MLIB_SW(PAM(
-					grov::client::Storage::tr("Unable to rollback a transaction:"),
-					this->db.lastError().databaseText()
-				));
-			}
-		}
-	}
-
-
-
-	void Scoped_transaction::commit(void)
-	{
-		MLIB_D("Committing the transaction...");
-
-		if(!this->db.commit())
-			M_THROW(this->db.lastError().databaseText());
-
-		this->closed = true;
-	}
-// Scoped_transaction <--
-
-
-
-const Big_id Storage::NO_LABEL_ID;
+const int CURRENT_DB_FORMAT_VERSION = 1;
 
 
 Storage::Storage(QObject* parent)
 :
 	QObject(parent),
+
 	db(new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE"))),
+
+	broadcast_feed_id(-1),
+	starred_feed_id(-1),
+
 	current_source(SOURCE_NONE)
 {
 	QString app_home_dir = get_app_home_dir();
@@ -127,91 +62,22 @@ Storage::Storage(QObject* parent)
 	if(!QDir("").mkpath(app_home_dir))
 		M_THROW(tr("Can't create directory '%1."), app_home_dir);
 
-	// Opening database -->
+	// Opening the database -->
 		this->db->setDatabaseName(QDir(app_home_dir).filePath(GROV_APP_UNIX_NAME ".db"));
 
 		MLIB_D("Opening database '%1'...", this->db->databaseName());
 
 		if(!this->db->open())
-		{
 			M_THROW(PAM(
-				_F(tr("Unable to open database '%1':"), this->db->databaseName()),
-				this->db->lastError().databaseText()
-			));
-		}
-	// Opening database <--
+				_F(tr("Unable to open database '%1':"), this->db->databaseName()), EE(*this->db) ));
+	// Opening the database <--
 
-	// Creating all tables -->
+	// Preparing the database -->
 		if(this->db->tables().empty())
-		{
-		// TODO: selects and indexes optimization
-			try
-			{
-				Scoped_transaction transaction(*this->db);
-
-				this->exec(
-					"CREATE TABLE config("
-						"name TEXT,"
-						"value TEXT"
-					")"
-				);
-				this->exec("INSERT INTO config VALUES ('version', 1)");
-
-				this->exec(
-					"CREATE TABLE feeds("
-						"id INTEGER PRIMARY KEY,"
-						"gr_id TEXT,"
-						"name TEXT"
-					")"
-				);
-
-				this->exec(
-					"CREATE TABLE labels("
-						"id INTEGER PRIMARY KEY,"
-						"name TEXT"
-					")"
-				);
-
-				this->exec(
-					"CREATE TABLE items("
-						"id INTEGER PRIMARY KEY,"
-						"gr_id TEXT,"
-						"feed_id INTEGER,"
-						"title TEXT,"
-						"summary TEXT,"
-						"read DEFAULT 0,"
-						"orig_read DEFAULT 0," // TODO
-						"starred DEFAULT 0," // TODO
-						"orig_starred DEFAULT 0" // TODO
-					")"
-				);
-				this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
-
-// TODO
-//				this->exec(
-//					"CREATE TABLE labels_to_items("
-//						"label_id INTEGER,"
-//						"item_id INTEGER"
-//					")"
-//				);
-//				this->exec("CREATE INDEX labels_to_items_label_id_idx ON labels_to_items(label_id)");
-
-				this->exec(
-					"CREATE TABLE labels_to_feeds("
-						"label_id INTEGER,"
-						"feed_id INTEGER"
-					")"
-				);
-				this->exec("CREATE INDEX labels_to_feeds_label_id_idx ON labels_to_feeds(label_id)");
-
-				transaction.commit();
-			}
-			catch(m::Exception& e)
-			{
-				M_THROW(PAM( tr("Unable to create table in the database:"), EE(e) ));
-			}
-		}
-	// Creating all tables <--
+			this->create_db_tables();
+		else
+			this->check_db_format_version();
+	// Preparing the database <--
 }
 
 
@@ -232,7 +98,6 @@ Storage::~Storage(void)
 
 
 
-// TODO: add test throw
 void Storage::add_feeds(const Gr_feed_list& feeds)
 {
 	MLIB_D("Adding %1 feeds to DB...", feeds.size());
@@ -247,7 +112,7 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 	try
 	{
 		// For SQLite it really speeds up many insertions.
-		Scoped_transaction transaction(*this->db);
+		m::db::Scoped_transaction transaction(*this->db);
 
 		// Adding feeds -->
 		{
@@ -318,7 +183,6 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 
 
 
-// TODO: add test throw
 void Storage::add_items(const Gr_feed_item_list& items)
 {
 	MLIB_D("Adding %1 items to DB...", items.size());
@@ -328,7 +192,7 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		QHash<QString, Big_id> feeds;
 
 		// For SQLite it really speeds up many insertions.
-		Scoped_transaction transaction(*this->db);
+		m::db::Scoped_transaction transaction(*this->db);
 
 		// Getting all known feeds -->
 		{
@@ -343,27 +207,41 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		// Adding items -->
 		{
 			QSqlQuery insert_item_query = this->prepare(
-				"INSERT INTO items (gr_id, feed_id, title, summary, starred, orig_starred) "
-					"values (:gr_id, :feed_id, :title, :summary, :starred, :orig_starred)"
+				"INSERT INTO items ("
+					"feed_id, broadcast, read, orig_read, starred, orig_starred,"
+					"gr_id, title, summary"
+				") values ("
+					":feed_id, :broadcast, :read, :orig_read, :starred, :orig_starred,"
+					":gr_id, :title, :summary"
+				")"
 			);
 
 			Q_FOREACH(const Gr_feed_item& item, items)
 			{
 				Big_id feed_id = feeds.value(item.feed_gr_id, -1);
 
-				// TODO:
 				if(feed_id < 0)
 				{
-					MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!");
-					continue;
+					if(item.broadcast)
+						// TODO:
+						feed_id = -1;
+					else
+					{
+						MLIB_SW(_F( tr("Gotten item '%1' for unknown feed '%2'. Skipping it."),
+							item.gr_id, item.feed_gr_id ));
+						continue;
+					}
 				}
 
-				insert_item_query.bindValue(":gr_id", item.gr_id);
 				insert_item_query.bindValue(":feed_id", feed_id);
+				insert_item_query.bindValue(":broadcast", int(item.broadcast));
+				insert_item_query.bindValue(":read", 0);
+				insert_item_query.bindValue(":orig_read", 0);
+				insert_item_query.bindValue(":starred", int(item.starred));
+				insert_item_query.bindValue(":orig_starred", int(item.starred));
+				insert_item_query.bindValue(":gr_id", item.gr_id);
 				insert_item_query.bindValue(":title", item.title);
 				insert_item_query.bindValue(":summary", item.summary);
-				insert_item_query.bindValue(":starred", item.starred);
-				insert_item_query.bindValue(":orig_starred", item.starred);
 				this->exec(insert_item_query);
 			}
 		}
@@ -384,40 +262,69 @@ void Storage::add_items(const Gr_feed_item_list& items)
 
 
 
-void Storage::clear(void)
+void Storage::check_db_format_version(void)
 {
-	this->reset();
-	this->clear_cache();
+	int version;
 
 	try
 	{
-		MLIB_D("Cleaning offline data...");
-		Scoped_transaction transaction(*this->db);
+		QSqlQuery query = this->exec_and_next("SELECT value FROM config WHERE name = 'version'");
+		version = query.value(0).toInt();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to get the database format version:"), EE(e) ));
+	}
 
-		this->exec("DELETE FROM feeds");
-		this->exec("DELETE FROM labels");
-		this->exec("DELETE FROM items");
-		// TODO
-//		this->exec("DELETE FROM labels_to_items");
-		this->exec("DELETE FROM labels_to_feeds");
+	if(version != CURRENT_DB_FORMAT_VERSION)
+	{
+		M_THROW(tr(
+			"Application's database '%1' has unsupported format version. "
+			"Please delete it by yourself. "
+			"If you have an important unsaved offline data in it, "
+			"please flush this offline data by that version of %2, "
+			"which you have used to create it."),
+			this->db->databaseName(), GROV_APP_NAME
+		);
+	}
+}
 
-		// TODO: when creating too
-		// Starred items is a special label - it must always exists.
-		// TODO:
-		QSqlQuery query = this->exec("INSERT INTO labels (name) VALUES ('starred')");
-		this->starred_label_id = m::qvariant_to_big_id(query.lastInsertId());
 
-		MLIB_D("Vacuuming database...");
-		// TODO
-//		this->exec("VACUUM");
 
+void Storage::clear(void)
+{
+	MLIB_D("Cleaning offline data...");
+
+	try
+	{
+		m::db::Scoped_transaction transaction(*this->db);
+			this->exec("DELETE FROM feeds");
+			this->exec("DELETE FROM labels");
+			this->exec("DELETE FROM items");
+			this->exec("DELETE FROM labels_to_feeds");
+			this->init_empty_database();
+			this->get_db_info();
 		transaction.commit();
-		MLIB_D("Offline data cleaned.");
+
+		this->reset();
+		this->clear_cache();
 	}
 	catch(m::Exception& e)
 	{
 		M_THROW(PAM( tr("Unable to delete data from the database:"), EE(e) ));
 	}
+
+	try
+	{
+		MLIB_D("Vacuuming the database...");
+		this->exec("VACUUM");
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_SW(PAM( tr("Unable to vacuum the database:"), EE(e) ));
+	}
+
+	MLIB_D("Offline data cleaned.");
 
 	emit this->feed_tree_changed();
 }
@@ -433,67 +340,37 @@ void Storage::clear_cache(void)
 
 void Storage::create_current_query(void)
 {
-	MLIB_D("Creating new current query...");
+	MLIB_D("Creating new current query for %1:%2...",
+		this->current_source, this->current_source_id );
 
 	// Throws m::Exception
 	this->flush_cache();
 
-
-// TODO: starred label
-	QSqlQuery query;
+	QString where;
 
 	switch(this->current_source)
 	{
 		case SOURCE_FEED:
 		{
-			query = this->prepare(
-				"SELECT "
-					"id, feed_id, title, summary, starred "
-				"FROM "
-					"items "
-				"WHERE "
-					"feed_id = :source_id AND "
-					"read = 0 "
-				"ORDER BY "
-					"id"
-			);
-
-			query.bindValue(":source_id", this->current_source_id);
+			if(this->current_source_id == this->broadcast_feed_id)
+				where = "read = 0 AND broadcast = 1";
+			else if(this->current_source_id == this->broadcast_feed_id)
+				where = "starred = 1";
+			else
+				where = "feed_id = :source_id AND read = 0";
 		}
 		break;
 
 		case SOURCE_LABEL:
 		{
-			// TODO
-			if(this->current_source_id == this->starred_label_id)
-			{
-			// TODO: no counter in starred
-				query = this->prepare(
+			where =
+				"feed_id IN ( "
 					"SELECT "
-						"id, feed_id, title, summary, starred "
+						"feed_id "
 					"FROM "
-						"items "
-					"WHERE "
-						"starred = 'true' "
-					"ORDER BY "
-						"id"
-				);
-			}
-			else
-			{
-				query = this->prepare(
-					"SELECT "
-						"id, feed_id, title, summary, starred "
-					"FROM "
-						"items "
-					"WHERE "
-						"feed_id in (SELECT feed_id FROM labels_to_feeds WHERE label_id = :source_id) AND "
-						"read = 0 "
-					"ORDER BY "
-						"id"
-				);
-				query.bindValue(":source_id", this->current_source_id);
-			}
+						"labels_to_feeds "
+					"WHERE label_id = :source_id "
+				") AND read = 0";
 		}
 		break;
 
@@ -503,9 +380,89 @@ void Storage::create_current_query(void)
 	}
 
 	// Throws m::Exception
+	QSqlQuery query = this->prepare(_F(
+		"SELECT "
+			"id, feed_id, title, summary, broadcast, read, starred "
+		"FROM "
+			"items "
+		"WHERE "
+			"%1 "
+		"ORDER BY "
+			"id", where
+	));
+	query.bindValue(":source_id", this->current_source_id);
+
+	// Throws m::Exception
 	this->exec(query);
 
 	this->current_query.reset(new QSqlQuery(query));
+}
+
+
+
+// TODO: selects and indexes optimization
+void Storage::create_db_tables(void)
+{
+	try
+	{
+		m::db::Scoped_transaction transaction(*this->db);
+
+		this->exec(
+			"CREATE TABLE config("
+				"name TEXT,"
+				"value TEXT"
+			")"
+		);
+		this->exec(_F("INSERT INTO config VALUES ('version', %1)", CURRENT_DB_FORMAT_VERSION));
+
+		this->exec(
+			"CREATE TABLE feeds("
+				"id INTEGER PRIMARY KEY,"
+				"name TEXT,"
+				"gr_id TEXT"
+			")"
+		);
+
+		this->exec(
+			"CREATE TABLE labels("
+				"id INTEGER PRIMARY KEY,"
+				"name TEXT"
+			")"
+		);
+
+		this->exec(
+			"CREATE TABLE items("
+				"id INTEGER PRIMARY KEY,"
+				"feed_id INTEGER,"
+				"broadcast INTEGER,"
+				"read INTEGER,"
+				"orig_read INTEGER,"
+				"starred INTEGER,"
+				"orig_starred INTEGER,"
+				"gr_id TEXT,"
+				"title TEXT,"
+				"summary TEXT"
+			")"
+		);
+		this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
+
+		this->exec(
+			"CREATE TABLE labels_to_feeds("
+				"label_id INTEGER,"
+				"feed_id INTEGER"
+			")"
+		);
+		this->exec("CREATE INDEX labels_to_feeds_label_id_idx ON labels_to_feeds(label_id)");
+
+		this->init_empty_database();
+		this->get_db_info();
+
+		transaction.commit();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Error while creating tables in the database:"), EE(e) ));
+	}
 }
 
 
@@ -515,47 +472,59 @@ void Storage::exec(QSqlQuery& query)
 	MLIB_DV("Executing query '%1'...", query.lastQuery());
 
 	if(!query.exec())
-		// TODO: may be databaseText()?
-		M_THROW(query.lastError().driverText());
+		M_THROW(EE(query));
 }
 
 
 
 QSqlQuery Storage::exec(const QString& query_string)
 {
-	QSqlQuery query(*this->db);
-	query.prepare(query_string);
+	QSqlQuery query = this->prepare(query_string);
 	this->exec(query);
 	return query;
 }
 
 
 
+void Storage::exec_and_next(QSqlQuery& query)
+{
+	this->exec(query);
+
+	if(!query.next())
+		M_THROW(tr("query did not return a value"));
+}
+
+
+
+QSqlQuery Storage::exec_and_next(const QString& query_string)
+{
+	QSqlQuery query = this->prepare(query_string);
+	this->exec_and_next(query);
+	return query;
+}
+
+
+
+/// TODO: by timer
 void Storage::flush_cache(void)
 {
 	if(this->readed_items_cache.empty())
 		return;
 
+	QString ids;
+	Q_FOREACH(Big_id id, this->readed_items_cache)
+		ids += (ids.isEmpty() ? "" : ",") + QString::number(id);
+
 	try
 	{
-		Scoped_transaction transaction(*this->db);
-
-		QSqlQuery query = this->prepare(
+		this->exec(
 			"UPDATE "
 				"items "
 			"SET "
 				"read = 1 "
 			"WHERE "
-				"id = :id"
+				"id IN (" + ids + ")"
 		);
-
-		Q_FOREACH(Big_id id, this->readed_items_cache)
-		{
-			query.bindValue(":id", id);
-			this->exec(query);
-		}
-
-		transaction.commit();
 	}
 	catch(m::Exception& e)
 	{
@@ -567,7 +536,44 @@ void Storage::flush_cache(void)
 
 
 
-// TODO: feeds without labels
+void Storage::get_db_info(void)
+{
+	Big_id broadcast_feed_id;
+	Big_id starred_feed_id;
+
+	try
+	{
+		QSqlQuery query = this->prepare(
+			"SELECT "
+				"id "
+			"FROM "
+				"feeds "
+			"WHERE "
+				"name = :name "
+			"ORDER BY "
+				"id "
+			"LIMIT 1"
+		);
+
+		query.bindValue(":name", "broadcast");
+		this->exec_and_next(query);
+		broadcast_feed_id = m::qvariant_to_big_id(query.value(0));
+
+		query.bindValue(":name", "starred");
+		this->exec_and_next(query);
+		starred_feed_id = m::qvariant_to_big_id(query.value(0));
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Error while getting database's main information:"), EE(e) ));
+	}
+
+	this->broadcast_feed_id = broadcast_feed_id;
+	this->starred_feed_id = starred_feed_id;
+}
+
+
+
 Feed_tree Storage::get_feed_tree(void)
 {
 	MLIB_D("Getting feed tree...");
@@ -578,6 +584,22 @@ Feed_tree Storage::get_feed_tree(void)
 	try
 	{
 		Feed_tree feed_tree = Feed_tree::create();
+
+		QSqlQuery lonely_feeds_query = this->exec(
+			"SELECT "
+				"id, name "
+			"FROM "
+				"feeds "
+			"WHERE "
+				"id NOT IN ("
+					"SELECT "
+						"feed_id "
+					"FROM "
+						"labels_to_feeds "
+					"GROUP BY "
+						"feed_id"
+				")"
+		);
 
 		QSqlQuery labels_query = this->exec(
 			"SELECT id, name FROM labels" );
@@ -600,30 +622,61 @@ Feed_tree Storage::get_feed_tree(void)
 				"feed_id = :feed_id AND read = 0"
 		);
 
-		while(labels_query.next())
-		{
-			Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
-			QString label_name = labels_query.value(1).toString();
+		QSqlQuery broadcast_items_query = this->prepare(
+			"SELECT "
+				"COUNT(*) "
+			"FROM "
+				"items "
+			"WHERE "
+				"broadcast = 1"
+		);
 
-			Feed_tree_item* label = feed_tree.add_label(label_id, label_name);
-			labels_feeds_query.bindValue(":label_id", label_id);
-			this->exec(labels_feeds_query);
-
-			while(labels_feeds_query.next())
+		// Labeled feeds -->
+			while(labels_query.next())
 			{
-				Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
-				QString feed_name = labels_feeds_query.value(1).toString();
+				Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
+				QString label_name = labels_query.value(1).toString();
 
-				feeds_items_query.bindValue(":feed_id", feed_id);
-				this->exec(feeds_items_query);
-				if(!feeds_items_query.next())
-					M_THROW(tr("Query did not return a value."));
+				Feed_tree_item* label = feed_tree.add_label(label_id, label_name);
+				labels_feeds_query.bindValue(":label_id", label_id);
+				this->exec(labels_feeds_query);
 
-				Feed_tree_item* feed = label->add_feed(feed_id, feed_name);
-				feed->unread_items += m::qvariant_to_big_id(feeds_items_query.value(0));
-				label->unread_items += feed->unread_items;
+				while(labels_feeds_query.next())
+				{
+					Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
+					QString feed_name = labels_feeds_query.value(1).toString();
+
+					feeds_items_query.bindValue(":feed_id", feed_id);
+					this->exec_and_next(feeds_items_query);
+
+					Feed_tree_item* feed = label->add_feed(feed_id, feed_name);
+					feed->unread_items = m::qvariant_to_big_id(feeds_items_query.value(0));
+					label->unread_items += feed->unread_items;
+				}
 			}
-		}
+		// Labeled feeds <--
+
+		// Lonely feeds -->
+			while(lonely_feeds_query.next())
+			{
+				QSqlQuery query;
+				Big_id feed_id = m::qvariant_to_big_id(lonely_feeds_query.value(0));
+				QString feed_name = lonely_feeds_query.value(1).toString();
+
+				if(feed_id == this->broadcast_feed_id)
+					query = broadcast_items_query;
+				else
+				{
+					query = feeds_items_query;
+					feeds_items_query.bindValue(":feed_id", feed_id);
+				}
+
+				this->exec_and_next(query);
+
+				Feed_tree_item* feed = feed_tree.add_feed(feed_id, feed_name);
+				feed->unread_items = m::qvariant_to_big_id(query.value(0));
+			}
+		// Lonely feeds <--
 
 		MLIB_D("Feed tree gotten.");
 
@@ -631,7 +684,7 @@ Feed_tree Storage::get_feed_tree(void)
 	}
 	catch(m::Exception& e)
 	{
-		M_THROW(PAM( tr("Unable to get feed tree from the database:"), EE(e) ));
+		M_THROW(PAM( tr("Error while getting feed tree from the database:"), EE(e) ));
 	}
 }
 
@@ -670,7 +723,9 @@ Db_feed_item Storage::get_item(bool next)
 				id, m::qvariant_to_big_id(query->value(1)),
 				query->value(2).toString(),
 				query->value(3).toString(),
-				this->current_query_star_cache.value(id, query->value(4).toBool())
+				query->value(4).toBool(),
+				this->current_query_read_cache.contains(id) ? true : query->value(5).toBool(),
+				this->current_query_star_cache.value(id, query->value(6).toBool())
 			);
 
 			MLIB_D("Item gotten.");
@@ -749,6 +804,7 @@ Changed_feed_item_list Storage::get_user_changes(void)
 
 
 
+// TODO: delete
 bool Storage::has_items(void)
 {
 	try
@@ -764,20 +820,50 @@ bool Storage::has_items(void)
 
 
 
+void Storage::init_empty_database(void)
+{
+	// "broadcast" and "starred" is a special feeds that must always exists.
+
+	QSqlQuery query = this->prepare("INSERT INTO feeds (name) VALUES (:name)");
+
+	query.bindValue(":name", "broadcast");
+	this->exec(query);
+
+	query.bindValue(":name", "starred");
+	this->exec(query);
+}
+
+
+
 void Storage::mark_as_read(const Db_feed_item& item)
 {
 	MLIB_D("Marking item [%1] as read...", item.id);
 
-	this->readed_items_cache << item.id;
+	if(this->current_query_read_cache.contains(item.id))
+		MLIB_D("Item [%1] is already marked as read.", item.id);
+	else
+	{
+		this->current_query_read_cache.insert(item.id);
+		this->readed_items_cache << item.id;
 
-	if(readed_items_cache.size() > 10)
-		// Throws m::Exception
-		this->flush_cache();
+		// Updating items counter -->
+		{
+			QList<Big_id> feed_ids;
+			feed_ids << item.feed_id;
 
-	// TODO
-	emit this->item_marked_as_read(item.feed_id, true);
+			if(item.broadcast)
+				feed_ids << this->broadcast_feed_id;
 
-	MLIB_D("Item [%1] marked as read.", item.id);
+			emit this->item_marked_as_read(feed_ids, true);
+		}
+		// Updating items counter <--
+
+		if(readed_items_cache.size() > 10)
+			// Throws m::Exception
+			this->flush_cache();
+
+		MLIB_D("Item [%1] marked as read.", item.id);
+	}
 }
 
 
@@ -789,7 +875,7 @@ void Storage::mark_changes_as_flushed(Changed_feed_item_list::const_iterator beg
 	try
 	{
 		// For SQLite it really speeds up many updates.
-		Scoped_transaction transaction(*this->db);
+		m::db::Scoped_transaction transaction(*this->db);
 
 		QSqlQuery read_query = this->prepare(
 			"UPDATE "
@@ -853,7 +939,7 @@ QSqlQuery Storage::prepare(const QString& string)
 	QSqlQuery query(*this->db);
 
 	if(!query.prepare(string))
-		M_THROW(query.lastError().databaseText());
+		M_THROW(EE(query));
 
 	return query;
 }
@@ -864,6 +950,7 @@ void Storage::reset(void)
 {
 	MLIB_D("Reseting...");
 	this->current_query.reset();
+	this->current_query_read_cache.clear();
 	this->current_query_star_cache.clear();
 }
 

@@ -1,6 +1,6 @@
 /**************************************************************************
 *                                                                         *
-*   grov - Google Reader offline viewer                                   *
+*   MLib - library of some useful things for internal usage               *
 *                                                                         *
 *   Copyright (C) 2010, Dmitry Konishchev                                 *
 *   http://konishchevdmitry.blogspot.com/                                 *
@@ -12,18 +12,44 @@
 *                                                                         *
 *   This program is distributed in the hope that it will be useful,       *
 *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
 
 
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlError>
+#include <QtSql/QSqlQuery>
+
 #include <mlib/core.hpp>
 
-#include <src/config.hpp>
+#include "core.hpp"
 
-// TODO
-#if DEVELOP_MODE
-	#define OFFLINE_DEVELOPMENT 1
-#endif
+
+namespace m {
+
+
+QString EE(const QSqlDatabase& db)
+{
+	return EE(db.lastError());
+}
+
+
+
+QString EE(const QSqlError& error)
+{
+	// TODO: may be databaseText()?
+	return error.driverText();
+}
+
+
+
+QString EE(const QSqlQuery& query)
+{
+	return EE(query.lastError());
+}
+
+
+}
 

@@ -54,6 +54,7 @@ Changed_feed_item::Changed_feed_item(Big_id id, const QString& gr_id, Changed_pr
 
 Gr_feed_item::Gr_feed_item(void)
 :
+	broadcast(false),
 	starred(false)
 {
 }
@@ -68,11 +69,17 @@ Db_feed_item::Db_feed_item(void)
 
 
 
-Db_feed_item::Db_feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred)
+Db_feed_item::Db_feed_item(
+	Big_id id, Big_id feed_id,
+	const QString& title, const QString& summary,
+	bool broadcast, bool read, bool starred
+)
 :
 	Feed_item(title, summary),
 	id(id),
 	feed_id(feed_id),
+	broadcast(broadcast),
+	read(read),
 	starred(starred)
 {
 }

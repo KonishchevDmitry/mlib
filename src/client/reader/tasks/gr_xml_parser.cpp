@@ -127,7 +127,6 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 				MLIB_DV("Feed id: '%1'.", item.feed_gr_id);
 
 				if(item.feed_gr_id.isEmpty())
-					// TODO: check other user shares
 					M_THROW(tr("Gotten item with empty feed's id."));
 			// Feed's id <--
 
@@ -144,10 +143,13 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 
 					MLIB_DV("Label: '%1'.", label);
 
-					if(label == "starred")
+					if(label == "broadcast")
+						item.broadcast = true;
+					else if(label == "starred")
 						item.starred = true;
 				}
 
+				MLIB_DV("Broadcast: %1.", item.broadcast);
 				MLIB_DV("Starred: %1.", item.starred);
 			}
 			// Labels <--

@@ -42,8 +42,8 @@ Feeds_model::Feeds_model(client::Storage* storage, QObject *parent)
 	connect(this->storage, SIGNAL(feed_tree_changed()),
 		this, SLOT(feed_tree_changed()) );
 
-	connect(this->storage, SIGNAL(item_marked_as_read(Big_id, bool)),
-		this, SLOT(item_marked_as_read(Big_id, bool)) );
+	connect(this->storage, SIGNAL(item_marked_as_read(const QList<Big_id>&, bool)),
+		this, SLOT(item_marked_as_read(const QList<Big_id>&, bool)) );
 
 	this->feed_tree_changed();
 }
@@ -67,8 +67,15 @@ QVariant Feeds_model::data(const QModelIndex& index, int role) const
 	switch(role)
 	{
 		case Qt::DisplayRole:
-			return item->get_name() + " (" + QString::number(item->unread_items) + ')';
-			break;
+		{
+			QString name = item->get_name();
+
+			if(item->unread_items)
+				name += " (" + QString::number(item->unread_items) + ')';
+
+			return name;
+		}
+		break;
 
 		case ROLE_IS_FEED:
 			return item->is_feed();
@@ -162,29 +169,32 @@ QModelIndex Feeds_model::index(int row, int column, const QModelIndex& parent) c
 
 
 
-void Feeds_model::item_marked_as_read(Big_id feed_id, bool read)
+void Feeds_model::item_marked_as_read(const QList<Big_id>& feed_ids, bool read)
 {
-	MLIB_DV("Feed's [%1] item's read status changed. Updating model...", feed_id);
-
-	Q_FOREACH(Feed_tree_item* feed, this->feeds.values(feed_id))
+	Q_FOREACH(Big_id feed_id, feed_ids)
 	{
-		Big_id read_increment = ( read ? -1 : 1 );
-		Feed_tree_item* parent = feed->get_parent();
+		MLIB_DV("Feed's [%1] item's read status changed. Updating model...", feed_id);
 
-		QModelIndex parent_index;
-		if(parent->is_label())
+		Q_FOREACH(Feed_tree_item* feed, this->feeds.values(feed_id))
 		{
-			parent_index = this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex());
-			parent->unread_items += read_increment;
-			emit this->dataChanged(parent_index, parent_index);
+			Big_id read_increment = ( read ? -1 : 1 );
+			Feed_tree_item* parent = feed->get_parent();
+
+			QModelIndex parent_index;
+			if(parent->is_label())
+			{
+				parent_index = this->index(parent->get_parent()->get_child_id(parent), 0, QModelIndex());
+				parent->unread_items += read_increment;
+				emit this->dataChanged(parent_index, parent_index);
+			}
+
+			QModelIndex feed_index = this->index(parent->get_child_id(feed), 0, parent_index);
+			feed->unread_items += read_increment;
+			emit this->dataChanged(feed_index, feed_index);
 		}
 
-		QModelIndex feed_index = this->index(parent->get_child_id(feed), 0, parent_index);
-		feed->unread_items += read_increment;
-		emit this->dataChanged(feed_index, feed_index);
+		MLIB_DV("Model updated.");
 	}
-
-	MLIB_DV("Model updated.");
 }
 
 

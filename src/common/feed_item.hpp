@@ -95,6 +95,9 @@ class Gr_feed_item: public Feed_item
 		/// Item's feed's Google Reader id.
 		QString		feed_gr_id;
 
+		/// Is item from a user that our user follow.
+		bool		broadcast;
+
 		/// Is item starred.
 		bool		starred;
 };
@@ -106,8 +109,12 @@ class Db_feed_item: public Feed_item
 {
 	public:
 		Db_feed_item(void);
-		// TODO: read
-		Db_feed_item(Big_id id, Big_id feed_id, const QString& title, const QString& summary, bool starred);
+
+		Db_feed_item(
+			Big_id id, Big_id feed_id,
+			const QString& title, const QString& summary,
+			bool broadcast, bool read, bool starred
+		);
 
 
 	public:
@@ -116,6 +123,9 @@ class Db_feed_item: public Feed_item
 
 		/// Item's feed id.
 		Big_id	feed_id;
+
+		/// Is item broadcast.
+		bool	broadcast;
 
 		/// Is item read or unread.
 		bool	read;

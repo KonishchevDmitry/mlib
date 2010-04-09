@@ -1,6 +1,6 @@
 /**************************************************************************
 *                                                                         *
-*   grov - Google Reader offline viewer                                   *
+*   MLib - library of some useful things for internal usage               *
 *                                                                         *
 *   Copyright (C) 2010, Dmitry Konishchev                                 *
 *   http://konishchevdmitry.blogspot.com/                                 *
@@ -12,7 +12,7 @@
 *                                                                         *
 *   This program is distributed in the hope that it will be useful,       *
 *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
@@ -20,10 +20,50 @@
 
 #include <mlib/core.hpp>
 
-#include <src/config.hpp>
+#include "core.hpp"
 
-// TODO
-#if DEVELOP_MODE
-	#define OFFLINE_DEVELOPMENT 1
-#endif
+#include "scoped_transaction.hpp"
+
+
+namespace m { namespace db {
+
+
+Scoped_transaction::Scoped_transaction(const QSqlDatabase& db)
+:
+	db(db),
+	closed(false)
+{
+	MLIB_D("Starting a transaction...");
+
+	if(!this->db.transaction())
+		M_THROW(EE(this->db));
+}
+
+
+
+Scoped_transaction::~Scoped_transaction(void)
+{
+	if(!this->closed)
+	{
+		MLIB_D("Rolling back the transaction...");
+
+		if(!this->db.rollback())
+			MLIB_SW(PAM( tr("Unable to rollback a transaction:"), EE(this->db) ));
+	}
+}
+
+
+
+void Scoped_transaction::commit(void)
+{
+	MLIB_D("Committing the transaction...");
+
+	if(!this->db.commit())
+		M_THROW(EE(this->db));
+
+	this->closed = true;
+}
+
+
+}}
 

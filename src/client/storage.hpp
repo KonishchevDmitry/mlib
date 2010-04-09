@@ -28,7 +28,8 @@
 class QSqlDatabase;
 class QSqlQuery;
 
-#include <QtCore/QHash>
+#include <QtCore/QMap>
+#include <QtCore/QSet>
 
 #include <src/common.hpp>
 #include <src/common/feed.hxx>
@@ -40,7 +41,8 @@ class QSqlQuery;
 
 namespace grov { namespace client {
 
-/// Represents a storage which stores all feeds' items for offline mode.
+
+/// Represents a storage which stores all feeds' items for offline viewing.
 class Storage: public QObject
 {
 	Q_OBJECT
@@ -68,12 +70,6 @@ class Storage: public QObject
 
 
 	public:
-	// TODO:
-		/// See description of Feeds_tree.
-		static const Big_id	NO_LABEL_ID = -1;
-
-
-	public:
 		/// @throw m::Exception
 		Storage(QObject* parent = NULL);
 		~Storage(void);
@@ -84,23 +80,31 @@ class Storage: public QObject
 		boost::scoped_ptr<QSqlDatabase>	db;
 
 
-// TODO:
-	Big_id starred_label_id;
+		/// Id of the fake "broadcast feed".
+		Big_id						broadcast_feed_id;
+
+		/// Id of the fake "starred feed".
+		Big_id						starred_feed_id;
+
+
 		// Current source.
-		Current_source					current_source;
+		Current_source				current_source;
 
 		/// Current source's id.
-		Big_id							current_source_id;
+		Big_id						current_source_id;
 
 		/// Current query that user processes on the database.
-		std::auto_ptr<QSqlQuery>		current_query;
+		std::auto_ptr<QSqlQuery>	current_query;
 
-		// TODO:
-		QHash<Big_id, bool>				current_query_star_cache;
+		/// Items, that have been read in the current query.
+		QSet<Big_id>				current_query_read_cache;
+
+		/// Items, that have been starred/unstarred in the current query.
+		QMap<Big_id, bool>			current_query_star_cache;
 
 
 		/// Cache of items' ids that needs to be marked as read.
-		QList<Big_id>					readed_items_cache;
+		QList<Big_id>				readed_items_cache;
 
 
 	public:
@@ -167,6 +171,11 @@ class Storage: public QObject
 		bool			has_items(void);
 
 	private:
+		/// Checks whether we can work with this database format version.
+		///
+		/// @throw m::Exception, No_more_items.
+		void			check_db_format_version(void);
+
 		/// Deletes all cached data.
 		void			clear_cache(void);
 
@@ -176,12 +185,21 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void			create_current_query(void);
 
-		/// TODO: use outside
-		/// TODO: by timer
+		/// Creates all necessary tables in the database.
+		///
+		/// @throw m::Exception.
+		void			create_db_tables(void);
+
 		/// Flushs all cached data.
 		///
 		/// @throw m::Exception, No_more_items.
 		void			flush_cache(void);
+
+		/// Gets some valuable information from the database needed to continue
+		/// work after its opening.
+		///
+		/// @throw m::Exception.
+		void			get_db_info(void);
 
 		/// Returns item corresponding to current_query.
 		///
@@ -198,6 +216,27 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		QSqlQuery		exec(const QString& query_string);
 
+		/// Executes a query and calls query.next().
+		///
+		/// If query.next() returns false, throws m::Exception.
+		///
+		/// @throw m::Exception.
+		void			exec_and_next(QSqlQuery& query);
+
+		/// Executes a query and calls query.next().
+		///
+		/// If query.next() returns false, throws m::Exception.
+		///
+		/// @throw m::Exception.
+		QSqlQuery		exec_and_next(const QString& query_string);
+
+		/// Initialize the empty database.
+		///
+		/// Adds fake feeds, etc.
+		///
+		/// @throw m::Exception.
+		void			init_empty_database(void);
+
 		/// Prepares SQL query for execution.
 		///
 		/// @throw m::Exception.
@@ -213,8 +252,9 @@ class Storage: public QObject
 		void	feed_tree_changed(void);
 
 		/// Called when an item is marked as read/unread.
-		void	item_marked_as_read(Big_id feed_id, bool read);
+		void	item_marked_as_read(const QList<Big_id>& feed_ids, bool read);
 };
+
 
 }}
 
