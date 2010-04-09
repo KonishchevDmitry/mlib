@@ -37,10 +37,16 @@ QString EE(const QSqlDatabase& db)
 
 
 
+// TODO: test
 QString EE(const QSqlError& error)
 {
-	// TODO: may be databaseText()?
-	return error.driverText();
+	QString database_text = error.databaseText();
+	QString driver_text = error.driverText();
+
+	if(database_text == driver_text)
+		return database_text;
+	else
+		return driver_text + " (" + database_text + ')';
 }
 
 

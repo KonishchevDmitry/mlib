@@ -414,6 +414,7 @@ void Storage::create_db_tables(void)
 			")"
 		);
 		this->exec(_F("INSERT INTO config VALUES ('version', %1)", CURRENT_DB_FORMAT_VERSION));
+		this->exec(_F("INSERT INTO config VALUES ('mode', '')"));
 
 		this->exec(
 			"CREATE TABLE feeds("
@@ -744,6 +745,22 @@ Db_feed_item Storage::get_item(bool next)
 
 
 
+QString Storage::get_mode(void)
+{
+	QSqlQuery query = this->exec_and_next(
+		"SELECT "
+			"value "
+		"FROM "
+			"config "
+		"WHERE "
+			"name = 'mode'"
+	);
+
+	return query.value(0).toString();
+}
+
+
+
 Db_feed_item Storage::get_next_item(void)
 {
 	// Throws m::Exception
@@ -800,22 +817,6 @@ Changed_feed_item_list Storage::get_user_changes(void)
 	MLIB_D("User changes gotten.");
 
 	return items;
-}
-
-
-
-// TODO: delete
-bool Storage::has_items(void)
-{
-	try
-	{
-		QSqlQuery query = this->exec("SELECT COUNT(*) FROM items");
-		return query.next() && m::qvariant_to_big_id(query.value(0));
-	}
-	catch(m::Exception& e)
-	{
-		M_THROW(PAM( tr("Unable to query feed's items from the database:"), EE(e) ));
-	}
 }
 
 
@@ -946,6 +947,14 @@ QSqlQuery Storage::prepare(const QString& string)
 
 
 
+void Storage::prepare_to_flush_offline_data(void)
+{
+	this->flush_cache();
+	this->reset();
+}
+
+
+
 void Storage::reset(void)
 {
 	MLIB_D("Reseting...");
@@ -972,6 +981,19 @@ void Storage::set_current_source_to_label(Big_id id)
 	this->reset();
 }
 
+
+
+void Storage::set_mode(const QString& mode)
+{
+	this->exec(_F(
+		"UPDATE "
+			"config "
+		"SET "
+			"value = '%1' "
+		"WHERE "
+			"name = 'mode'", mode
+	));
+}
 
 
 void Storage::star(Big_id id, bool is)

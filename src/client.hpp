@@ -98,6 +98,16 @@ class Client: public client::Storage
 		/// @return true if user gave us this information.
 		bool	get_login_data(QString* login, QString* password);
 
+		/// Gets current application mode from DB.
+		///
+		/// @throw m::Exception.
+		Mode	get_mode(void);
+
+		/// Writes current application mode to DB.
+		///
+		/// @throw m::Exception.
+		void	set_mode(Mode mode);
+
 
 	signals:
 		/// Called when current mode changed.

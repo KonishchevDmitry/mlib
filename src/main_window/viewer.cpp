@@ -171,6 +171,13 @@ void Viewer::reset_current_item(void)
 
 
 
+void Viewer::select_no_feed(void)
+{
+	ui->feeds_view->select_no_items();
+}
+
+
+
 void Viewer::set_current_item(const Db_feed_item& item)
 {
 	QString html;

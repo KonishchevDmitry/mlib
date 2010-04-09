@@ -165,10 +165,21 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void			clear(void);
 
-		/// Checks whether storage has any items.
+		/// Gets current application mode from DB.
 		///
 		/// @throw m::Exception.
-		bool			has_items(void);
+		QString			get_mode(void);
+
+		/// Writes current application mode to DB.
+		///
+		/// @throw m::Exception.
+		void			set_mode(const QString& mode);
+
+		/// Prepares the database to flush all offline data - flushes all
+		/// caches, etc.
+		///
+		/// @throw m::Exception.
+		void			prepare_to_flush_offline_data(void);
 
 	private:
 		/// Checks whether we can work with this database format version.

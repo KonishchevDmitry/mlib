@@ -34,7 +34,6 @@
 namespace grov
 {
 
-// TODO: task cancelled
 
 Client::Client(QObject* parent)
 :
@@ -42,10 +41,12 @@ Client::Client(QObject* parent)
 	mode(MODE_NONE)
 {
 	// Throws m::Exception
-	if(this->has_items())
-		this->mode = MODE_OFFLINE;
+	this->mode = this->get_mode();
 
 	this->reader = new client::Reader(this, this);
+
+	connect(this->reader, SIGNAL(cancelled()),
+		this, SLOT(reader_cancelled()) );
 
 	connect(this->reader, SIGNAL(error(const QString&)),
 		this, SLOT(reader_error(const QString&)) );
@@ -61,7 +62,6 @@ Client::Client(QObject* parent)
 
 void Client::change_mode(Mode mode)
 {
-	// TODO: write current mode to the DB to save as from DB clean errors and call clear before mode changes
 	this->mode = mode;
 	emit this->mode_changed(mode);
 }
@@ -81,14 +81,23 @@ void Client::discard_offline_data(void)
 
 	try
 	{
-		this->clear();
+		this->set_mode(MODE_NONE);
+		this->change_mode(MODE_NONE);
 	}
 	catch(m::Exception& e)
 	{
 		MLIB_W(tr("Discarding all offline data failed"), EE(e));
+		return;
 	}
 
-	this->change_mode(MODE_NONE);
+	try
+	{
+		this->clear();
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_W(tr("Error while discarding all offline data"), EE(e));
+	}
 }
 
 
@@ -97,14 +106,23 @@ void Client::flush_offline_data(void)
 {
 	MLIB_A(this->mode == MODE_OFFLINE);
 
-// reset, etc
 	QString login;
 	QString password;
 
 	if(this->get_login_data(&login, &password))
 	{
-		this->change_mode(MODE_GOING_NONE);
-		this->reader->flush_offline_data(login, password);
+		try
+		{
+			// Throws m::Exception
+			this->prepare_to_flush_offline_data();
+
+			this->change_mode(MODE_GOING_NONE);
+			this->reader->flush_offline_data(login, password);
+		}
+		catch(m::Exception& e)
+		{
+			MLIB_W(tr("Error while flushing offline data"), EE(e));
+		}
 	}
 }
 
@@ -147,6 +165,27 @@ bool Client::get_login_data(QString* login, QString* password)
 
 
 
+Client::Mode Client::get_mode(void)
+{
+	try
+	{
+		QString mode = Storage::get_mode();
+
+		if(mode == "" || mode == "none")
+			return MODE_NONE;
+		else if(mode == "offline")
+			return MODE_OFFLINE;
+		else
+			M_THROW(tr("Invalid mode '%1'."), mode);
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to get current application mode from the database:"), EE(e) ));
+	}
+}
+
+
+
 void Client::go_offline(void)
 {
 	MLIB_A(this->mode == MODE_NONE);
@@ -156,8 +195,19 @@ void Client::go_offline(void)
 
 	if(this->get_login_data(&login, &password))
 	{
-		this->change_mode(MODE_GOING_OFFLINE);
-		this->reader->get_reading_list(login, password);
+		try
+		{
+			// In case of an error in the past.
+			// Throws m::Exception.
+			this->clear();
+
+			this->change_mode(MODE_GOING_OFFLINE);
+			this->reader->get_reading_list(login, password);
+		}
+		catch(m::Exception& e)
+		{
+			MLIB_W(tr("Unable to go offline"), EE(e));
+		}
 	}
 }
 
@@ -166,9 +216,26 @@ void Client::go_offline(void)
 void Client::offline_data_flushed(void)
 {
 	MLIB_A(this->mode == MODE_GOING_NONE);
-	this->clear(); // TODO: exception
-	this->change_mode(MODE_NONE);
-	// TODO: clear, etc
+
+	try
+	{
+		try
+		{
+			this->set_mode(MODE_NONE);
+			this->change_mode(MODE_NONE);
+		}
+		catch(m::Exception& e)
+		{
+			this->change_mode(MODE_OFFLINE);
+			throw;
+		}
+
+		this->clear();
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_W(tr("Error while flushing offline data"), EE(e));
+	}
 }
 
 
@@ -176,19 +243,28 @@ void Client::offline_data_flushed(void)
 void Client::offline_data_gotten(void)
 {
 	MLIB_A(this->mode == MODE_GOING_OFFLINE);
-	this->change_mode(MODE_OFFLINE);
+
+	try
+	{
+		this->set_mode(MODE_OFFLINE);
+		this->change_mode(MODE_OFFLINE);
+	}
+	catch(m::Exception& e)
+	{
+		this->change_mode(MODE_NONE);
+		MLIB_W(tr("Unable to go offline"), EE(e));
+	}
 }
 
 
 
-// TODO
 void Client::reader_cancelled(void)
 {
+	// TODO
 }
 
 
 
-// TODO
 void Client::reader_error(const QString& message)
 {
 	Mode new_mode;
@@ -226,6 +302,37 @@ void Client::reader_error(const QString& message)
 
 	MLIB_W(title, message);
 	this->change_mode(new_mode);
+}
+
+
+
+void Client::set_mode(Mode mode)
+{
+	try
+	{
+		QString mode_name;
+
+		switch(mode)
+		{
+			case MODE_NONE:
+				mode_name = "none";
+				break;
+
+			case MODE_OFFLINE:
+				mode_name = "offline";
+				break;
+
+			default:
+				M_THROW(tr("Logical error."));
+				break;
+		}
+
+		Storage::set_mode(mode_name);
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to write current application mode to the database:"), EE(e) ));
+	}
 }
 
 

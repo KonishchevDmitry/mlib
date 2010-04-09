@@ -92,6 +92,7 @@ void Main_window::on_discard_all_offline_data_action_activated(void)
 
 void Main_window::on_flush_offline_data_action_activated(void)
 {
+	ui->viewer->select_no_feed();
 	this->client->flush_offline_data();
 }
 

@@ -58,6 +58,13 @@ void Feeds_view::connect_to_storage(client::Storage* storage)
 
 
 
+void Feeds_view::select_no_items(void)
+{
+	this->selection->clear();
+}
+
+
+
 void Feeds_view::selection_changed(const QItemSelection& selected, const QItemSelection& deselected)
 {
 	QModelIndexList selected_indexes = selected.indexes();

@@ -63,6 +63,9 @@ class Feeds_view: public QTreeView
 		/// Connects view to the storage, so it will display its feeds.
 		void	connect_to_storage(client::Storage* storage);
 
+		/// Sets selection to none.
+		void	select_no_items(void);
+
 
 	signals:
 		/// Emits when user selects a feed.

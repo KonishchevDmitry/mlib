@@ -67,6 +67,9 @@ class Viewer: public QWidget
 		/// Connects viewer to the storage, so it will display its data.
 		void	connect_to_storage(client::Storage* storage);
 
+		/// Sets selection in feed tree to none.
+		void	select_no_feed(void);
+
 	private:
 		/// Sets current_item.id to -1.
 		void	reset_current_item(void);
