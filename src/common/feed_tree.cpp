@@ -28,7 +28,6 @@ namespace grov {
 
 Feed_tree_item::Feed_tree_item(Feed_tree_item* parent, Type type, Big_id id, const QString& name)
 :
-	// TODO
 	unread_items(0),
 	parent(parent),
 	type(type),

@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 2.6)
 	string(COMPARE EQUAL ${CMAKE_BUILD_TYPE} Debug DEVELOP_BUILD)
 
 	if(DEVELOP_BUILD)
-		add_definitions(-DDEBUG_MODE -DDEVELOP_MODE)
+		add_definitions(-DGROV_DEBUG_MODE -DGROV_DEVELOP_MODE)
 	endif()
 # Build type <--
 

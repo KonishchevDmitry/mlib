@@ -93,7 +93,7 @@ void Login_to_google_reader::process(void)
 {
 	MLIB_D("Logining to Google Reader...");
 
-#if OFFLINE_DEVELOPMENT
+#if GROV_OFFLINE_DEVELOPMENT
 	emit this->request_finished("", "Auth=fake_offline_auth_id");
 #else
 	QString post_data = _F(

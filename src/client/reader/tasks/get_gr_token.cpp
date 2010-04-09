@@ -41,7 +41,7 @@ void Get_gr_token::authenticated(void)
 {
 	MLIB_D("Getting Google Reader's API token...");
 
-#if OFFLINE_DEVELOPMENT
+#if GROV_OFFLINE_DEVELOPMENT
 	this->request_finished("", "fake_offline_token");
 #else
 	QString url =

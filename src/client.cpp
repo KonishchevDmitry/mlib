@@ -18,7 +18,7 @@
 **************************************************************************/
 
 
-#if DEVELOP_MODE
+#if GROV_DEVELOP_MODE
 	#include <QtCore/QFile>
 #endif
 
@@ -130,12 +130,12 @@ void Client::flush_offline_data(void)
 
 bool Client::get_login_data(QString* login, QString* password)
 {
-#if OFFLINE_DEVELOPMENT
+#if GROV_OFFLINE_DEVELOPMENT
 	*login = "fake_offline_login";
 	*login = "fake_offline_password";
 	return true;
 #else
-	#if DEVELOP_MODE
+	#if GROV_DEVELOP_MODE
 		QFile login_data("login_data");
 
 		if(login_data.exists() && login_data.open(QIODevice::ReadOnly))
@@ -157,7 +157,7 @@ bool Client::get_login_data(QString* login, QString* password)
 			}
 			else
 				return false;
-	#if DEVELOP_MODE
+	#if GROV_DEVELOP_MODE
 		}
 	#endif
 #endif

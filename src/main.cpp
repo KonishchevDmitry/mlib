@@ -238,7 +238,7 @@ namespace grov { namespace {
 					"Invalid command line options: --verbose must be specified in conjunction with --debug." ));
 				exit(EXIT_FAILURE);
 			}
-		#if DEVELOP_MODE
+		#if GROV_DEVELOP_MODE
 			else
 			{
 				m::set_debug_level(m::DEBUG_LEVEL_ENABLED);
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
 	process_command_line_options(app);
 
 	m::set_message_handler(m::MESSAGE_TYPE_INFO, &message_handler);
-#if DEVELOP_MODE
+#if GROV_DEVELOP_MODE
 	m::set_message_handler(m::MESSAGE_TYPE_SILENT_WARNING, &message_handler);
 #endif
 	m::set_message_handler(m::MESSAGE_TYPE_WARNING, &message_handler);

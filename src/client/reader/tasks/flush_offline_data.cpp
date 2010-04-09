@@ -59,7 +59,7 @@ void Flush_offline_data::authenticated(void)
 
 void Flush_offline_data::flush(void)
 {
-#if OFFLINE_DEVELOPMENT
+#if GROV_OFFLINE_DEVELOPMENT
 	emit this->flushed();
 	this->finish();
 #else
@@ -92,7 +92,7 @@ void Flush_offline_data::flush(void)
 		switch(item.property)
 		{
 			case Changed_feed_item::PROPERTY_READ:
-			#if DEVELOP_MODE
+			#if GROV_DEVELOP_MODE
 				MLIB_D("Skipping flushing for developer mode.");
 				++this->to_flush;
 				this->flush();
@@ -121,7 +121,7 @@ void Flush_offline_data::flush(void)
 				break;
 
 			default:
-			#if DEVELOP_MODE
+			#if GROV_DEVELOP_MODE
 				MLIB_LE();
 			#endif
 				break;

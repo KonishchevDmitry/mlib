@@ -18,7 +18,7 @@
 **************************************************************************/
 
 
-#if DEVELOP_MODE || OFFLINE_DEVELOPMENT
+#if GROV_DEVELOP_MODE || GROV_OFFLINE_DEVELOPMENT
 	#include <QtCore/QFile>
 #endif
 
@@ -51,7 +51,7 @@ void Get_feed_list::authenticated(void)
 {
 	MLIB_D("Getting Google Reader's subscription list...");
 
-#if OFFLINE_DEVELOPMENT
+#if GROV_OFFLINE_DEVELOPMENT
 	QFile list("subscription.list");
 
 	if(list.open(QIODevice::ReadOnly))
@@ -87,7 +87,7 @@ void Get_feed_list::request_finished(const QString& error, const QByteArray& rep
 				}
 			// Checking for errors <--
 
-		#if DEVELOP_MODE && !OFFLINE_DEVELOPMENT
+		#if GROV_DEVELOP_MODE && !GROV_OFFLINE_DEVELOPMENT
 			// For offline development -->
 			{
 				QFile list("subscription.list");

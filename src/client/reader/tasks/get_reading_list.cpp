@@ -18,7 +18,7 @@
 **************************************************************************/
 
 
-#if DEVELOP_MODE || OFFLINE_DEVELOPMENT
+#if GROV_DEVELOP_MODE || GROV_OFFLINE_DEVELOPMENT
 	#include <QtCore/QFile>
 #endif
 
@@ -65,7 +65,7 @@ void Get_reading_list::get_reading_list(void)
 {
 	MLIB_D("Getting Google Reader's reading list...");
 
-#if OFFLINE_DEVELOPMENT
+#if GROV_OFFLINE_DEVELOPMENT
 	QFile list("reading.list");
 
 	if(list.open(QIODevice::ReadOnly))
@@ -106,7 +106,7 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 				}
 			// Checking for errors <--
 
-		#if DEVELOP_MODE && !OFFLINE_DEVELOPMENT
+		#if GROV_DEVELOP_MODE && !GROV_OFFLINE_DEVELOPMENT
 			// For offline development -->
 			{
 				QFile list("reading.list");
@@ -136,13 +136,13 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 		this->storage->add_items(items);
 		this->reading_lists_counter++;
 
-	#if !OFFLINE_DEVELOPMENT
+	#if !GROV_OFFLINE_DEVELOPMENT
 		if(this->continuation_code.isEmpty() || items.empty())
 		{
 	#endif
 			emit this->reading_list_gotten();
 			this->finish();
-	#if !OFFLINE_DEVELOPMENT
+	#if !GROV_OFFLINE_DEVELOPMENT
 		}
 		else
 		{
