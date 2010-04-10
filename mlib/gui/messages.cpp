@@ -18,10 +18,10 @@
 **************************************************************************/
 
 
-#include <QtCore/QCoreApplication>
-
 #include <QtGui/QMessageBox>
 #include <QtGui/QTextDocument>
+
+#include "core.hpp"
 
 #include "messages.hpp"
 
@@ -60,31 +60,25 @@ void show_message(QWidget* parent, Message_type type, QString title, const QStri
 			break;
 	}
 
-	QString window_title = QCoreApplication::applicationName();
-	if(!title.isEmpty())
-		window_title.prepend(title + " - ");
+	QString window_title = m::gui::format_window_title(title);
+	QString message_box_title = "<b>" + Qt::escape(title) + "</b>";
 
-	QString message_box_title = "<b>" + Qt::escape(title) + "</b> ";
-
-	// TODO: dirty hack
-	if(message_box_title.size() < 40)
-	{
-		message_box_title.replace(' ', "&nbsp;");
-
-		for(size_t i = 0; i < 40; i++)
-			message_box_title += "&nbsp;";
-	}
-
-	QMessageBox message_box(icon, window_title, message, QMessageBox::Ok, parent);
+	QMessageBox message_box(icon, window_title, message_box_title, QMessageBox::Ok, parent);
 
 	message_box.setTextFormat(Qt::RichText);
-	message_box.setText(message_box_title);
 	message_box.setInformativeText(Qt::escape(message));
 
 	if(!details.isEmpty())
 		message_box.setDetailedText(Qt::escape(details));
 
 	message_box.setDefaultButton(QMessageBox::Ok);
+
+	// QMessageBox::show() in QMessageBox::exec() resets widget's
+	// minimumWidth(), so we manually show the dialog and set its minimum
+	// width.
+	message_box.show();
+	message_box.setMinimumWidth(300);
+
 	message_box.exec();
 }
 
@@ -99,14 +93,24 @@ void show_warning_message(QWidget* parent, const QString& title, const QString& 
 
 bool yes_no_message(QWidget* parent, const QString& title, const QString& message)
 {
-	QString window_title = title + " - " + QCoreApplication::applicationName();
+	QString window_title = m::gui::format_window_title(title);
+	QString message_title = "<b>" + Qt::escape(title) + "</b>";
 
-	QMessageBox message_box(QMessageBox::Question, window_title, message, QMessageBox::Yes | QMessageBox::No, parent);
+	QMessageBox message_box(
+		QMessageBox::Question, window_title, message_title,
+		QMessageBox::Yes | QMessageBox::No, parent
+	);
 
 	message_box.setTextFormat(Qt::RichText);
-	message_box.setText("<b>" + Qt::escape(title) + "</b>");
 	message_box.setInformativeText(Qt::escape(message));
 	message_box.setDefaultButton(QMessageBox::No);
+
+	// QMessageBox::show() in QMessageBox::exec() resets widget's
+	// minimumWidth(), so we manually show the dialog and set its minimum
+	// width.
+	message_box.show();
+	message_box.setMinimumWidth(300);
+
 	return message_box.exec() == QMessageBox::Yes;
 }
 

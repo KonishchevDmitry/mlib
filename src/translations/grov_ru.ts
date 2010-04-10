@@ -60,18 +60,47 @@ Options:
 <context>
     <name>grov::Client</name>
     <message>
-        <location filename="../client.cpp" line="88"/>
-        <location filename="../client.cpp" line="207"/>
+        <location filename="../client.cpp" line="96"/>
+        <location filename="../client.cpp" line="280"/>
         <source>Discarding all offline data failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client.cpp" line="211"/>
+        <location filename="../client.cpp" line="106"/>
+        <source>Error while discarding all offline data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client.cpp" line="186"/>
+        <source>Invalid mode &apos;%1&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client.cpp" line="190"/>
+        <source>Unable to get current application mode from the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client.cpp" line="216"/>
+        <location filename="../client.cpp" line="262"/>
+        <location filename="../client.cpp" line="308"/>
         <source>Unable to go offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client.cpp" line="218"/>
+        <location filename="../client.cpp" line="342"/>
+        <source>Logical error.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client.cpp" line="350"/>
+        <source>Unable to write current application mode to the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client.cpp" line="131"/>
+        <location filename="../client.cpp" line="244"/>
+        <location filename="../client.cpp" line="312"/>
         <source>Error while flushing offline data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -149,6 +178,36 @@ Options:
         <source>Ctrl+D</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../main_window.cpp" line="104"/>
+        <source>Going offline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.cpp" line="105"/>
+        <source>Please wait while all needed data is being downloaded...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.cpp" line="110"/>
+        <source>Flushing offline data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.cpp" line="111"/>
+        <source>Please wait while all offline data data is being flushed...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.cpp" line="141"/>
+        <source>Discard all offline data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.cpp" line="142"/>
+        <source>Are you sure want to discard all offline data?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>grov::client::Login_dialog</name>
@@ -210,97 +269,92 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="93"/>
+        <location filename="../client/storage.cpp" line="95"/>
         <source>Error while closing database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="178"/>
+        <location filename="../client/storage.cpp" line="180"/>
         <source>Unable to add feeds to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="230"/>
+        <location filename="../client/storage.cpp" line="232"/>
         <source>Gotten item &apos;%1&apos; for unknown feed &apos;%2&apos;. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="257"/>
+        <location filename="../client/storage.cpp" line="259"/>
         <source>Unable to add feeds&apos; items to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="276"/>
+        <location filename="../client/storage.cpp" line="278"/>
         <source>Unable to get the database format version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="281"/>
+        <location filename="../client/storage.cpp" line="283"/>
         <source>Application&apos;s database &apos;%1&apos; has unsupported format version. Please delete it by yourself. If you have an important unsaved offline data in it, please flush this offline data by that version of %2, which you have used to create it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="314"/>
-        <source>Unable to delete data from the database:</source>
+        <location filename="../client/storage.cpp" line="316"/>
+        <source>Unable to delete data from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="324"/>
+        <location filename="../client/storage.cpp" line="326"/>
         <source>Unable to vacuum the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="378"/>
+        <location filename="../client/storage.cpp" line="387"/>
         <source>Logical error (invalid item&apos;s source type).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="464"/>
+        <location filename="../client/storage.cpp" line="475"/>
         <source>Error while creating tables in the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="494"/>
+        <location filename="../client/storage.cpp" line="505"/>
         <source>query did not return a value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="531"/>
+        <location filename="../client/storage.cpp" line="542"/>
         <source>Error while flushing changes&apos; cache to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="568"/>
+        <location filename="../client/storage.cpp" line="579"/>
         <source>Error while getting database&apos;s main information:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="687"/>
+        <location filename="../client/storage.cpp" line="698"/>
         <source>Error while getting feed tree from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="741"/>
+        <location filename="../client/storage.cpp" line="752"/>
         <source>Unable to query a feed&apos;s item from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="797"/>
+        <location filename="../client/storage.cpp" line="824"/>
         <source>Unable to get user changes that he made to the items:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="817"/>
-        <source>Unable to query feed&apos;s items from the database:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../client/storage.cpp" line="929"/>
+        <location filename="../client/storage.cpp" line="940"/>
         <source>Error while synchronizing flushed to Google Reader changes with the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="995"/>
+        <location filename="../client/storage.cpp" line="1027"/>
         <source>Database error:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -456,12 +510,12 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="201"/>
+        <location filename="../main_window/viewer.cpp" line="208"/>
         <source>You have no unread items.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="216"/>
+        <location filename="../main_window/viewer.cpp" line="223"/>
         <source>Please select a label or a feed to view its items.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -508,7 +562,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::tools::Messenger</name>
     <message>
-        <location filename="../tools/messenger.cpp" line="60"/>
+        <location filename="../tools/messenger.cpp" line="58"/>
         <source>Error happened at %1:%2. Please contact to developer.</source>
         <translation type="unfinished"></translation>
     </message>

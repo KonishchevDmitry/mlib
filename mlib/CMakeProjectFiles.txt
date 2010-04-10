@@ -5,6 +5,7 @@ set(MLIB_SOURCES
 	core/types.cpp
 	db/core.cpp
 	db/scoped_transaction.cpp
+	gui/core.cpp
 	gui/messages.cpp
 )
 

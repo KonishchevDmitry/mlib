@@ -40,6 +40,7 @@ Reader::Reader(Storage* storage, QObject* parent)
 
 void Reader::cancel(void)
 {
+	MLIB_D("Cancelling all current tasks...");
 	emit this->cancel_all_tasks();
 }
 

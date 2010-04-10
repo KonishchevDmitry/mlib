@@ -18,7 +18,7 @@
 **************************************************************************/
 
 
-class QMainWindow;
+class QWidget;
 
 #include <src/common.hpp>
 
@@ -26,13 +26,13 @@ class QMainWindow;
 namespace grov {
 
 	/// Returns directory in which application saves all user-specified files.
-	QString			get_app_home_dir(void);
+	QString		get_app_home_dir(void);
 
 	/// Returns main window or NULL if it had not been created yet.
-	QMainWindow*	get_main_window(void);
+	QWidget*	get_main_window(void);
 
 	/// Returns application's user agent string.
-	QString			get_user_agent(void);
+	QString		get_user_agent(void);
 
 }
 

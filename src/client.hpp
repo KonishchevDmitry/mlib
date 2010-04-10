@@ -115,6 +115,9 @@ class Client: public client::Storage
 
 
 	private slots:
+		/// Cancels current task(s).
+		void	cancel_current_task(void);
+
 		/// Called when we flush all offline data.
 		void	offline_data_flushed(void);
 

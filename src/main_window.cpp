@@ -18,6 +18,9 @@
 **************************************************************************/
 
 
+#include <QtGui/QMessageBox>
+
+#include <mlib/gui/core.hpp>
 #include <mlib/gui/messages.hpp>
 
 #include <src/client.hpp>
@@ -33,7 +36,8 @@ namespace grov {
 Main_window::Main_window(QWidget *parent)
 :
 	QMainWindow(parent),
-	ui(new Ui::Main_window)
+	ui(new Ui::Main_window),
+	progress_dialog(new QMessageBox(QMessageBox::Information, "", "", QMessageBox::Cancel, this))
 {
     ui->setupUi(this);
 
@@ -55,6 +59,14 @@ Main_window::Main_window(QWidget *parent)
 			ui->viewer, SLOT(go_to_previous_item()) );
 	// Viewer <--
 
+	// Progress dialog -->
+		this->progress_dialog->setWindowFlags(
+			this->progress_dialog->windowFlags() & ~Qt::WindowCloseButtonHint );
+
+		connect(this->progress_dialog, SIGNAL(buttonClicked(QAbstractButton *)),
+			this->client, SLOT(cancel_current_task()) );
+	// Progress dialog <--
+
 	this->mode_changed(this->client->current_mode());
 }
 
@@ -69,14 +81,57 @@ Main_window::~Main_window()
 
 void Main_window::mode_changed(Client::Mode mode)
 {
-	ui->go_offline_action->setVisible(mode == Client::MODE_NONE);
-	ui->discard_all_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
-	ui->flush_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
+	// Menus -->
+		ui->go_offline_action->setVisible(mode == Client::MODE_NONE);
+		ui->discard_all_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
+		ui->flush_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
 
-	ui->feed_menu->setEnabled(mode == Client::MODE_OFFLINE);
+		ui->feed_menu->setEnabled(mode == Client::MODE_OFFLINE);
+	// Menus <--
 
 	ui->viewer->setVisible(mode == Client::MODE_OFFLINE);
 	ui->viewer->select_no_feed();
+
+	// Progress dialog -->
+	{
+		bool show_progress = false;
+		QString progress_title;
+		QString progress_text;
+
+		switch(mode)
+		{
+			case Client::MODE_GOING_OFFLINE:
+				progress_title = tr("Going offline");
+				progress_text = tr("Please wait while all needed data is being downloaded...");
+				show_progress = true;
+				break;
+
+			case Client::MODE_GOING_NONE:
+				progress_title = tr("Flushing offline data");
+				progress_text = tr("Please wait while all offline data data is being flushed...");
+				show_progress = true;
+				break;
+
+			default:
+				break;
+		}
+
+		if(show_progress)
+		{
+			this->progress_dialog->setWindowTitle(m::gui::format_window_title(progress_title));
+			this->progress_dialog->setText("<b>" + progress_title + "</b>");
+			this->progress_dialog->setInformativeText(progress_text);
+			this->progress_dialog->show();
+
+			// QMessageBox::show() resets widget's minimumWidth(), so we
+			// manually set it after showing.
+			//this->progress_dialog->setMinimumWidth(300);
+			this->progress_dialog->setMinimumWidth(300);
+		}
+		else
+			this->progress_dialog->hide();
+	}
+	// Progress dialog <--
 }
 
 

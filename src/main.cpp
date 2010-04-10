@@ -266,7 +266,7 @@ QString get_app_home_dir(void)
 
 
 
-QMainWindow* get_main_window(void)
+QWidget* get_main_window(void)
 {
 	return MAIN_WINDOW.get();
 }

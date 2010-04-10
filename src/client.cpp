@@ -60,6 +60,13 @@ Client::Client(QObject* parent)
 
 
 
+void Client::cancel_current_task(void)
+{
+	this->reader->cancel();
+}
+
+
+
 void Client::change_mode(Mode mode)
 {
 	this->mode = mode;
@@ -260,17 +267,7 @@ void Client::offline_data_gotten(void)
 
 void Client::reader_cancelled(void)
 {
-	// TODO
-}
-
-
-
-void Client::reader_error(const QString& message)
-{
-	Mode new_mode;
-	QString title;
-
-	switch(this->mode)
+	switch(this->current_mode())
 	{
 		case MODE_GOING_OFFLINE:
 		{
@@ -283,17 +280,37 @@ void Client::reader_error(const QString& message)
 				MLIB_SW(tr("Discarding all offline data failed"), EE(e));
 			}
 
-			new_mode = MODE_NONE;
-			title = tr("Unable to go offline");
+			this->change_mode(MODE_NONE);
 		}
 		break;
 
 		case MODE_GOING_NONE:
-		{
-			new_mode = MODE_OFFLINE;
+			this->change_mode(MODE_OFFLINE);
+			break;
+
+		default:
+			MLIB_LE();
+			break;
+	}
+}
+
+
+
+void Client::reader_error(const QString& message)
+{
+	this->reader_cancelled();
+
+	QString title;
+
+	switch(this->current_mode())
+	{
+		case MODE_GOING_OFFLINE:
+			title = tr("Unable to go offline");
+			break;
+
+		case MODE_GOING_NONE:
 			title = tr("Error while flushing offline data");
-		}
-		break;
+			break;
 
 		default:
 			MLIB_LE();
@@ -301,7 +318,6 @@ void Client::reader_error(const QString& message)
 	}
 
 	MLIB_W(title, message);
-	this->change_mode(new_mode);
 }
 
 

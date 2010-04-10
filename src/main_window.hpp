@@ -21,6 +21,8 @@
 #ifndef GROV_HEADER_MAIN_WINDOW
 #define GROV_HEADER_MAIN_WINDOW
 
+class QMessageBox;
+
 #include <QtGui/QMainWindow>
 
 #include <src/client.hpp>
@@ -52,6 +54,9 @@ class Main_window: public QMainWindow
 
 		/// Represents our Google Reader offline client.
 		Client*				client;
+
+		/// Dialog that shows progress of current operation.
+		QMessageBox*		progress_dialog;
 
 
 	private slots:
