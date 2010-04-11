@@ -30,8 +30,10 @@ Exception::Exception(const char* file, int line, const QString& error)
 :
 	error(error)
 {
-	QString message = _F("Exception: %1", error);
-	_MLIB_SHOW_MESSAGE_FROM(file, line, MESSAGE_TYPE_DEBUG, return, message);
+#if MLIB_DEBUG_MODE
+	if(messages_aux::DEBUG_LEVEL >= DEBUG_LEVEL_ENABLED)
+		_MLIB_SHOW_MESSAGE_FROM(file, line, MESSAGE_TYPE_DEBUG, return, "Exception", error);
+#endif
 }
 
 

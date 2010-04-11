@@ -63,13 +63,16 @@ Storage::Storage(QObject* parent)
 		M_THROW(tr("Can't create directory '%1."), app_home_dir);
 
 	// Opening the database -->
-		this->db->setDatabaseName(QDir(app_home_dir).filePath(GROV_APP_UNIX_NAME ".db"));
+	{
+		QString db_path = QDir(app_home_dir).filePath(GROV_APP_UNIX_NAME ".db");
 
-		MLIB_D("Opening database '%1'...", this->db->databaseName());
+		this->db->setDatabaseName(db_path);
+
+		MLIB_D("Opening database '%1'...", db_path);
 
 		if(!this->db->open())
-			M_THROW(PAM(
-				_F(tr("Unable to open database '%1':"), this->db->databaseName()), EE(*this->db) ));
+			M_THROW(PAM( _F(tr("Unable to open database '%1':"), db_path), EE(*this->db) ));
+	}
 	// Opening the database <--
 
 	// Preparing the database -->
