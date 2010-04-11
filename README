@@ -4,6 +4,6 @@ This program is intended to introduce a facility to read, star and share your
 Google Reader items when you are in offline or have very slow connection
 (transport, etc).
 
-I recently started the development and it has not yet even base features to
-work with it. Also, I am writing this program in order to learn the Qt library,
-so I will write it slowly and exclusively just for fun. :)
+I recently started the development and it has not yet most of features, but it
+is already usable. Also, I am writing this program in order to learn the Qt
+library, so I will write it slowly and exclusively just for fun. :)
