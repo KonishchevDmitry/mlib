@@ -24,6 +24,7 @@
 namespace grov { namespace client {
 	class Web_cache;
 	class Web_cache_entry;
+	class Web_cached_manager;
 }}
 
 #endif

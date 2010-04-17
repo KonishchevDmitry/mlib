@@ -31,6 +31,14 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
+namespace {
+	/// If a feed labeled by name which contains this string we ignore it.
+	// TODO: add to README
+	const char* const GROV_IGNORE_LABEL_MARK = "[non-" GROV_APP_UNIX_NAME "]";
+}
+
+
+
 QDomDocument Gr_xml_parser::get_dom(const QByteArray& data)
 {
 	QDomDocument xml;
@@ -200,6 +208,7 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 		while(!feed_node.isNull())
 		{
 			Gr_feed feed;
+			bool ignore = false;
 			QDomNode prop_node = feed_node.firstChild();
 
 			while(!prop_node.isNull())
@@ -231,6 +240,9 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 						{
 							QString label = category.text();
 
+							if(label.contains(GROV_IGNORE_LABEL_MARK))
+								ignore = true;
+
 							if(label != "-") // Some special label
 							{
 								MLIB_DV("Label: '%1'.", label);
@@ -249,7 +261,10 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 			if(feed.name.isEmpty())
 				feed.name = tr("(title unknown)");
 
-			feeds << feed;
+			if(ignore)
+				MLIB_DV("Skipping this feed - it marked by '%1'.", GROV_IGNORE_LABEL_MARK);
+			else
+				feeds << feed;
 
 			feed_node = feed_node.nextSibling();
 

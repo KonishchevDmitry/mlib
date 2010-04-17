@@ -21,10 +21,6 @@
 #ifndef GROV_HEADER_MAIN_WINDOW_VIEWER
 #define GROV_HEADER_MAIN_WINDOW_VIEWER
 
-	// TODO
-#include <QtNetwork/QNetworkAccessManager>
-	// TODO
-#include <QtNetwork/QNetworkRequest>
 #include <QtGui/QWidget>
 
 #include <src/common.hpp>
@@ -40,20 +36,6 @@ namespace Ui {
 	class Viewer;
 }
 
-	// TODO
-class Manager: public QNetworkAccessManager
-{
-	protected:
-		virtual QNetworkReply *	createRequest ( Operation op, const QNetworkRequest & req, QIODevice * outgoingData = 0 )
-		{
-			QNetworkRequest new_req = req;
-// TODO
-			new_req.setAttribute(QNetworkRequest::CacheSaveControlAttribute, true);
-			//new_req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysCache);
-			new_req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-			return QNetworkAccessManager::createRequest (op, new_req, outgoingData);
-		}
-};
 
 /// A widget that displays all ours offline data.
 ///

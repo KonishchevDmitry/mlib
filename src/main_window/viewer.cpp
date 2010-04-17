@@ -56,15 +56,8 @@ void Viewer::connect_to_storage(client::Storage* storage)
 	MLIB_A(!this->storage);
 	this->storage = storage;
 
-	// Item_view -->
-	{
-		client::Web_cache* web_cache = new client::Web_cache(this->storage, this);
-	// TODO
-	#warning
-	ui->item_view->page()->setNetworkAccessManager(new Manager);
-		ui->item_view->page()->networkAccessManager()->setCache(web_cache);
-	}
-	// Item_view <--
+	ui->item_view->page()->setNetworkAccessManager(
+		new client::Web_cached_manager(this->storage, this) );
 
 	// Feeds_view -->
 		ui->feeds_view->connect_to_storage(this->storage);
@@ -200,12 +193,7 @@ void Viewer::set_current_item(const Db_feed_item& item)
 		html += "<h1 style='font-size: 14pt'>" + item.title + "</h1>";
 	html += item.summary;
 	html += "</body></html>";
-
-	#warning
 	ui->item_view->setHtml(html);
-	//ui->item_view->setUrl(QString("http://192.168.83.6/"));
-	//ui->item_view->setUrl(QString("http://a.ru/"));
-	//ui->item_view->setUrl(QString("http://ya.ru/"));
 
 	this->current_item = item;
 

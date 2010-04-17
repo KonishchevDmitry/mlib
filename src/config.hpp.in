@@ -1,6 +1,9 @@
 #ifndef GROV_HEADER_CONFIG
 #define GROV_HEADER_CONFIG
 
+#include <mlib/core/types.hpp>
+
+
 /// Application name.
 #define GROV_APP_NAME "@APP_NAME@"
 
@@ -23,6 +26,24 @@
 
 /// Application's translations' directory (relative to install prefix).
 #define GROV_APP_TRANSLATIONS_DIR "@APP_TRANSLATIONS_DIR@"
+
+
+namespace grov { namespace config {
+
+	/// Max time in seconds that we wait for data coming from the socket.
+	const int network_reply_timeout = 60;
+
+	/// Max document size that network reply can return.
+	const Size max_network_reply_size = 10 * 1024 * 1024;
+
+	// TODO: choose optimal
+	/// Max time in seconds that page mirroring can require.
+	const int page_mirroring_timeout = 10;
+
+	/// Max document size that can be saved in the web cache.
+	const Size max_cache_data_entry_size = max_network_reply_size;
+
+}}
 
 #endif
 

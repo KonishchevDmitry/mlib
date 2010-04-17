@@ -32,6 +32,7 @@
 #include "download_feeds_items.hpp"
 
 
+// TODO: tries when fails
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
@@ -46,8 +47,7 @@ Download_feeds_items::Download_feeds_items(Storage* storage, QObject* parent)
 	this->web_page->networkAccessManager()->setCache(this->cache);
 
 	this->timeout_timer->setSingleShot(true);
-	// choose optimal
-	this->timeout_timer->setInterval(5000);
+	this->timeout_timer->setInterval(config::page_mirroring_timeout * 1000);
 	connect(this->timeout_timer, SIGNAL(timeout()),
 		this, SLOT(page_loading_timed_out()) );
 

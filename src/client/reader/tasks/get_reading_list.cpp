@@ -98,12 +98,16 @@ void Get_reading_list::on_items_downloaded(void)
 
 void Get_reading_list::on_reading_list_gotten(void)
 {
-	Download_feeds_items* task = new Download_feeds_items(this->storage, this);
+	#if 0 && GROV_DEVELOP_MODE
+		this->on_items_downloaded();
+	#else
+		Download_feeds_items* task = new Download_feeds_items(this->storage, this);
 
-	connect(task, SIGNAL(downloaded()),
-		this, SLOT(on_items_downloaded()) );
+		connect(task, SIGNAL(downloaded()),
+			this, SLOT(on_items_downloaded()) );
 
-	this->process_task(task);
+		this->process_task(task);
+	#endif
 }
 
 

@@ -47,7 +47,7 @@ Network_task::Network_task(QObject* parent)
 	timeout_timer(new QTimer(this))
 {
 	this->timeout_timer->setSingleShot(true);
-	this->timeout_timer->setInterval(60 * 1000);
+	this->timeout_timer->setInterval(config::network_reply_timeout * 1000);
 	connect(this->timeout_timer, SIGNAL(timeout()),
 		this, SLOT(on_timeout()) );
 }
@@ -77,7 +77,7 @@ void Network_task::on_data_gotten(qint64 size, qint64 total_size)
 
 		// Request's reply size limit -->
 		{
-			const qint64 max_size = 10 * 1024 * 1024;
+			const qint64 max_size = config::max_network_reply_size;
 			const qint64 reply_size = std::max(size, total_size);
 
 			if(reply_size > max_size)

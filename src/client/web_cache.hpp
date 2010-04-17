@@ -21,11 +21,14 @@
 #ifndef GROV_HEADER_CLIENT_WEB_CACHE
 #define GROV_HEADER_CLIENT_WEB_CACHE
 
+class QNetworkReply;
+
 #include <QtCore/QByteArray>
 #include <QtCore/QHash>
 #include <QtCore/QIODevice>
 
 #include <QtNetwork/QAbstractNetworkCache>
+#include <QtNetwork/QNetworkAccessManager>
 
 #include <src/common.hpp>
 #include <src/client/storage.hxx>
@@ -86,7 +89,7 @@ namespace Web_cache_aux {
 			Web_cache_entry	cache_entry;
 
 			/// Current position on data (in the reading mode).
-			size_t			pos;
+			size_t			cur_pos;
 
 
 		public:
@@ -99,6 +102,10 @@ namespace Web_cache_aux {
 				virtual bool	atEnd(void) const;
 				virtual qint64	bytesAvailable(void) const;
 				virtual bool	isSequential(void) const;
+				virtual qint64	pos(void) const;
+				virtual bool	reset(void);
+				virtual bool	seek(qint64 pos);
+				virtual qint64	size(void) const;
 				virtual bool	waitForReadyRead(int msecs);
 				virtual bool	waitForBytesWritten(int msecs);
 
@@ -124,16 +131,16 @@ class Web_cache: public QAbstractNetworkCache
 
 
 	public:
-		Web_cache(Storage* storage, bool offline_mode, QObject* parent = NULL);
+		Web_cache(Storage* storage, QObject* parent = NULL);
 		~Web_cache(void);
 
 
 	private:
 		/// Our offline data storage.
-		Storage*	storage;
+		Storage*		storage;
 
-		/// Is we work in offline mode.
-		bool		offline_mode;
+		/// Last requested data.
+		Web_cache_entry	last_data;
 
 		/// Devices that has been created by prepare().
 		QHash<QString, Cache_device*>	prepared_devices;
@@ -142,9 +149,9 @@ class Web_cache: public QAbstractNetworkCache
 	// QAbstractNetworkCache interface -->
 		public:
 			virtual qint64					cacheSize(void) const;
-			virtual QIODevice*				data(const QUrl& url);
+			virtual QIODevice*				data(const QUrl& qurl);
 			virtual void					insert(QIODevice* device);
-			virtual QNetworkCacheMetaData	metaData(const QUrl& url);
+			virtual QNetworkCacheMetaData	metaData(const QUrl& qurl);
 			virtual QIODevice*				prepare(const QNetworkCacheMetaData& metadata);
 			virtual bool					remove(const QUrl& url);
 			virtual void					updateMetaData(const QNetworkCacheMetaData& metadata);
@@ -153,6 +160,19 @@ class Web_cache: public QAbstractNetworkCache
 		public slots:
 			virtual void	clear(void);
 	// QAbstractNetworkCache interface <--
+};
+
+
+
+/// Network access manager with caching facilities.
+class Web_cached_manager: public QNetworkAccessManager
+{
+	public:
+		Web_cached_manager(Storage* storage, QObject* parent = NULL);
+
+
+	protected:
+		virtual QNetworkReply*	createRequest(Operation op, const QNetworkRequest& req, QIODevice* outgoingData = NULL);
 };
 
 

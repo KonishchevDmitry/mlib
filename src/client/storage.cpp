@@ -235,9 +235,10 @@ void Storage::add_items(const Gr_feed_item_list& items)
 						feed_id = -1;
 					else
 					{
-						#warning
-						//MLIB_SW(_F( tr("Gotten item '%1' for unknown feed '%2'. Skipping it."),
-						//	item.gr_id, item.feed_gr_id ));
+						// It may be due an error or when user mark feed's
+						// label by ignore mark.
+						MLIB_D("Gotten item '%1' for unknown feed '%2'. Skipping it.",
+							item.gr_id, item.feed_gr_id );
 						continue;
 					}
 				}
@@ -287,6 +288,7 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 
 		query.bindValue(":url", entry.url);
 		query.bindValue(":content_type", entry.content_type);
+		// TODO: data written in db in some ugly form. fix this
 		query.bindValue(":data", entry.data);
 		this->exec(query);
 	}

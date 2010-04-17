@@ -25,6 +25,6 @@
 #if GROV_DEVELOP_MODE
 	/// If defined, application do not gets any data from the internet - all
 	/// this data gotten from previously prepared files.
-	#define GROV_OFFLINE_DEVELOPMENT 1
+//	#define GROV_OFFLINE_DEVELOPMENT 1
 #endif
 

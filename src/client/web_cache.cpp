@@ -17,14 +17,13 @@
 *                                                                         *
 **************************************************************************/
 
-// TODO: see data in db
 
-// TODO
-#include <QtCore/QFile>
 #include <QtCore/QDateTime>
+#include <QtCore/QLocale>
 #include <QtCore/QUrl>
 
 #include <QtNetwork/QNetworkCacheMetaData>
+#include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
 #include <src/common.hpp>
@@ -42,24 +41,22 @@ namespace Web_cache_aux {
 	Cache_device::Cache_device(const Web_cache_entry& cache_entry, QObject* parent)
 	:
 		cache_entry(cache_entry),
-		pos(0)
+		cur_pos(0)
 	{
+		MLIB_DV("Created for '%1'.", cache_entry.url);
 	}
 
 
 
 	Cache_device::~Cache_device(void)
 	{
-		MLIB_D("~Cache_device()");
+		MLIB_DV("Destroyed for '%1'.", cache_entry.url);
 	}
 
 
 
 	bool Cache_device::atEnd() const
 	{
-		MLIB_D("atEnd()");
-// TODO
-		MLIB_D("atEnd(%1)", !this->bytesAvailable());
 		return !this->bytesAvailable();
 	}
 
@@ -67,15 +64,13 @@ namespace Web_cache_aux {
 
 	qint64 Cache_device::bytesAvailable() const
 	{
-		MLIB_D("bytesAvailable()");
-		return this->cache_entry.data.size() - this->pos;
+		return this->size() - this->cur_pos;
 	}
 
 
 
 	const Web_cache_entry& Cache_device::get_data(void) const
 	{
-		MLIB_D("get_data()");
 		return this->cache_entry;
 	}
 
@@ -83,34 +78,59 @@ namespace Web_cache_aux {
 
 	bool Cache_device::isSequential() const
 	{
-		MLIB_D("isSequential()");
 		// I could not make QtWebKit work with isSequential() == true. :)
 		return false;
 	}
 
 
 
+	qint64 Cache_device::pos(void) const
+	{
+		return this->cur_pos;
+	}
+
+
+
+	bool Cache_device::reset(void)
+	{
+		this->cur_pos = 0;
+		return true;
+	}
+
+
+
+	bool Cache_device::seek(qint64 pos)
+	{
+		if(pos > this->size())
+			return false;
+
+		this->cur_pos = pos;
+		return true;
+	}
+
+
+
+	qint64 Cache_device::size(void) const
+	{
+		return this->cache_entry.data.size();
+	}
+
+
+
 	qint64 Cache_device::readData(char *data, qint64 maxlen)
 	{
-		MLIB_D("readData()");
-
 		if(this->atEnd())
 		{
-#warning
-//			emit readChannelFinished();
+			MLIB_DV("EOF.");
 			return -1;
 		}
 
-		qint64 read_data = qMin(this->bytesAvailable(), maxlen);
-		memcpy(data, this->cache_entry.data.constData() + this->pos, read_data);
-		this->pos += read_data;
+		qint64 read_data = qMin(this->bytesAvailable(), qMax(qint64(0), maxlen));
+		memcpy(data, this->cache_entry.data.constData() + this->cur_pos, read_data);
+		this->cur_pos += read_data;
 
-		// TODO
-		MLIB_D("readData(%1)", read_data);
-#warning
-MLIB_D("%1 read", read_data);
-#warning
-//emit readyRead();
+		MLIB_DV("Read %1 bytes of data from the '%2'.", read_data, this->cache_entry.url);
+
 		return read_data;
 	}
 
@@ -118,7 +138,6 @@ MLIB_D("%1 read", read_data);
 
 	bool Cache_device::waitForReadyRead(int msecs)
 	{
-		MLIB_D("waitForReadyRead()");
 		return true;
 	}
 
@@ -126,7 +145,6 @@ MLIB_D("%1 read", read_data);
 
 	bool Cache_device::waitForBytesWritten(int msecs)
 	{
-		MLIB_D("waitForBytesWritten()");
 		return true;
 	}
 
@@ -134,8 +152,15 @@ MLIB_D("%1 read", read_data);
 
 	qint64 Cache_device::writeData(const char *data, qint64 len)
 	{
-		MLIB_D("writeData()");
-		// TODO: think about limits
+		MLIB_DV("Writing %1 bytes of data for the '%2'...", len, this->cache_entry.url);
+
+		if(this->size() + len > config::max_cache_data_entry_size)
+		{
+			MLIB_D("Gotten too big data for the '%1' (%2). Ignoring it.",
+				this->cache_entry.url, this->size() + len);
+			return -1;
+		}
+
 		this->cache_entry.data.append(data, len);
 		return len;
 	}
@@ -146,12 +171,10 @@ MLIB_D("%1 read", read_data);
 
 
 // Web_cache -->
-	Web_cache::Web_cache(Storage* storage, bool offline_mode, QObject* parent)
+	Web_cache::Web_cache(Storage* storage, QObject* parent)
 	:
 		QAbstractNetworkCache(parent),
-		storage(storage),
-		// TODO
-		offline_mode(offline_mode)
+		storage(storage)
 	{
 	}
 
@@ -174,44 +197,36 @@ MLIB_D("%1 read", read_data);
 
 
 
-	QIODevice* Web_cache::data(const QUrl& url)
+	QIODevice* Web_cache::data(const QUrl& qurl)
 	{
-		MLIB_D("Returning data for '%1'...", url.toString());
+		QString url = qurl.toString();
+		MLIB_D("Returning data for the '%1'...", url);
 
-		try
+		Web_cache_entry data;
+
+		if(this->last_data.url == url)
+			data = this->last_data;
+		else
 		{
-			// Throws m::Exception
-			// TODO
-			Web_cache_entry data = this->storage->get_web_cache_entry(url.toString());
-
-#warning
-//data.data = "<html><body>It works</body></html>";
-			if(data.is_valid())
+			try
 			{
-#warning
-//				static int counter = 0;
-//				QFile* file = new QFile("cache/" + QString::number(counter++));
-//				file->open(QIODevice::WriteOnly);
-//				file->write(data.data);
-//				file->close();
-//				file->open(QIODevice::ReadOnly);
-//				return file;
-
-				Cache_device* device = new Cache_device(data);
-				device->open(QIODevice::ReadOnly);
-#warning
-MLIB_D("%1", data.data);
-MLIB_D("%1", data.data.size());
-				return device;
+				data = this->storage->get_web_cache_entry(url);
 			}
-			else
+			catch(m::Exception& e)
+			{
+				MLIB_SW(EE(e));
 				return NULL;
+			}
 		}
-		catch(m::Exception& e)
+
+		if(data.is_valid())
 		{
-			MLIB_SW(EE(e));
-			return NULL;
+			Cache_device* device = new Cache_device(data);
+			device->open(QIODevice::ReadOnly);
+			return device;
 		}
+		else
+			return NULL;
 	}
 
 
@@ -222,7 +237,8 @@ MLIB_D("%1", data.data.size());
 		Cache_device* cache_device = m::checked_qobject_cast<Cache_device*>(device);
 		QString url = cache_device->get_data().url;
 
-		MLIB_D("Request for inserting data %1 bytes for '%2'.", cache_device->get_data().data.size(), url);
+		MLIB_D("Request for inserting data of %1 bytes for the '%2'.",
+			cache_device->get_data().data.size(), url );
 
 		this->prepared_devices.remove(url);
 		this->storage->add_web_cache_entry(cache_device->get_data());
@@ -231,63 +247,72 @@ MLIB_D("%1", data.data.size());
 
 
 
-	QNetworkCacheMetaData Web_cache::metaData(const QUrl& url)
+	QNetworkCacheMetaData Web_cache::metaData(const QUrl& qurl)
 	{
-		MLIB_D("Returning metadata for '%1'...", url.toString());
+		QString url = qurl.toString();
+		MLIB_D("Returning metadata for the '%1'...", url);
 
-		try
+
+		Web_cache_entry data;
+
+		if(this->last_data.url == url)
+			data = this->last_data;
+		else
 		{
-			// Throws m::Exception
-			Web_cache_entry data = this->storage->get_web_cache_entry(url.toString());
-
-			QNetworkCacheMetaData metadata;
-
-			if(!data.is_valid())
+			try
 			{
-				MLIB_D("There is no metadata for '%1'.", url.toString());
-				return metadata;
+				data = this->storage->get_web_cache_entry(url);
+				this->last_data = data;
 			}
+			catch(m::Exception& e)
+			{
+				MLIB_SW(EE(e));
+				return QNetworkCacheMetaData();
+			}
+		}
 
-			QDateTime current_date = QDateTime::currentDateTime();
-			// TODO
-			QDateTime expiration_date = current_date.addYears(1);
 
-			metadata.setUrl(url);
-			metadata.setExpirationDate(expiration_date);
-			metadata.setSaveToDisk(true);
+		QNetworkCacheMetaData metadata;
 
-			// TODO
-			QNetworkCacheMetaData::AttributesMap attributes;
-			attributes[QNetworkRequest::HttpStatusCodeAttribute] = 200;
-			attributes[QNetworkRequest::HttpReasonPhraseAttribute] = "OK";
-//			attributes[QNetworkRequest::CacheLoadControlAttribute] = QNetworkRequest::AlwaysCache;
-//			attributes[QNetworkRequest::CacheSaveControlAttribute] = true;
-//			attributes[QNetworkRequest::SourceIsFromCacheAttribute] = true;
-			metadata.setAttributes(attributes);
-
-			QNetworkCacheMetaData::RawHeaderList headers;
-	//		headers << QNetworkCacheMetaData::RawHeader("date", QDateTime::currentDateTime().toString(Qt::ISODate).toAscii());
-			// TODO
-			headers << QNetworkCacheMetaData::RawHeader("Date", "Tue, 13 Apr 2010 18:38:27 GMT");
-//			headers << QNetworkCacheMetaData::RawHeader("Date", "Tue, 13 Apr 2010 19:11:17 GMT");
-			//headers << QNetworkCacheMetaData::RawHeader("Content-Type", data.content_type.toAscii());
-			headers << QNetworkCacheMetaData::RawHeader("Content-Type", "text/html");
-//			headers << QNetworkCacheMetaData::RawHeader("Last-Modified","Tue, 12 Jan 2010 15:29:05 GMT");
-//			headers << QNetworkCacheMetaData::RawHeader("Content-Encoding","gzip");
-#warning
-//			headers << QNetworkCacheMetaData::RawHeader("Content-Length", "4963");
-			headers << QNetworkCacheMetaData::RawHeader("Content-Length", QString::number(data.content_length()).toAscii());
-#warning
-MLIB_D("%1", QString::number(data.content_length()).toAscii());
-			metadata.setRawHeaders(headers);
-
+		if(!data.is_valid())
+		{
+			MLIB_D("There is no metadata for the '%1'.", url);
 			return metadata;
 		}
-		catch(m::Exception& e)
+
+		metadata.setUrl(url);
+		metadata.setSaveToDisk(true);
+
+		QNetworkCacheMetaData::RawHeaderList headers;
+
+		// Setting fake date -->
 		{
-			MLIB_SW(EE(e));
-			return QNetworkCacheMetaData();
+			QDateTime current_date = QDateTime::currentDateTime().toUTC();
+
+			QByteArray http_date;
+			QLocale locale(QLocale::C);
+			http_date += locale.toString(current_date, "ddd, dd MMM yyyy");
+			http_date += current_date.toString(" hh:mm:ss");
+			http_date += " GMT";
+
+			headers << QNetworkCacheMetaData::RawHeader("Date", http_date);
+			metadata.setExpirationDate(current_date.addYears(1));
 		}
+		// Setting fake date <--
+
+		if(!data.content_type.isEmpty())
+			headers << QNetworkCacheMetaData::RawHeader("Content-Type", data.content_type.toAscii());
+
+		headers << QNetworkCacheMetaData::RawHeader("Content-Length", QString::number(data.content_length()).toAscii());
+		metadata.setRawHeaders(headers);
+
+		QNetworkCacheMetaData::AttributesMap attributes;
+		attributes[QNetworkRequest::HttpStatusCodeAttribute] = 200;
+		attributes[QNetworkRequest::HttpReasonPhraseAttribute] = "OK";
+		attributes[QNetworkRequest::SourceIsFromCacheAttribute] = true;
+		metadata.setAttributes(attributes);
+
+		return metadata;
 	}
 
 
@@ -295,7 +320,7 @@ MLIB_D("%1", QString::number(data.content_length()).toAscii());
 	QIODevice* Web_cache::prepare(const QNetworkCacheMetaData& metadata)
 	{
 		QString url = metadata.url().toString();
-		MLIB_D("Preparing device for '%1'...", url);
+		MLIB_D("Preparing device for the '%1'...", url);
 
 		if(url.isEmpty())
 		{
@@ -317,27 +342,25 @@ MLIB_D("%1", QString::number(data.content_length()).toAscii());
 
 			if(content_type.isEmpty())
 			{
-				MLIB_SW(_F(tr("Gotten request for saving data with empty Content-Type header in the cache for '%1'. Ignoring it."), url));
-				return NULL;
+				MLIB_D(
+					"Gotten request for saving data with empty Content-Type "
+					"header in the Web cache for the '%1'.", url
+				);
 			}
 		// Content type <--
 
 		if(this->prepared_devices.contains(url))
 		{
 			MLIB_SW(_F(tr(
-				"Gotten request for saving data in the cache for '%1' for which meta data "
+				"Gotten request for saving data in the Web cache for the '%1' for which meta data "
 				"has been already prepared but not inserted or closed. Ignoring it."), url
 			));
 			return NULL;
 		}
 
 		Cache_device* device = new Cache_device( Web_cache_entry(url, content_type), this );
-		this->prepared_devices[url] = device;
-		// TODO
-		qDebug() << metadata.attributes();
-		// TODO
-		qDebug() << metadata.rawHeaders();
 		device->open(QIODevice::WriteOnly);
+		this->prepared_devices[url] = device;
 		return device;
 	}
 
@@ -347,7 +370,7 @@ MLIB_D("%1", QString::number(data.content_length()).toAscii());
 	{
 		QString url_string = url.toString();
 
-		MLIB_D("Request for removing prepared meta data for '%1'.", url_string);
+		MLIB_D("Request for removing prepared meta data for the '%1'.", url_string);
 
 		MLIB_ITER_TYPE(this->prepared_devices) it = this->prepared_devices.find(url_string);
 		if(it != this->prepared_devices.end())
@@ -358,10 +381,10 @@ MLIB_D("%1", QString::number(data.content_length()).toAscii());
 		}
 		else
 		{
-			MLIB_SW(_F(tr(
-				"Gotten request for removing prepared for Web cache saving data for '%1', "
-				"that has not been prepared yet. Ignoring it."), url_string
-			));
+			MLIB_D(
+				"Gotten request for removing data prepared for Web cache saving "
+				"for the '%1', that has not been prepared yet. Ignoring it.", url_string
+			);
 			return false;
 		}
 	}
@@ -370,7 +393,7 @@ MLIB_D("%1", QString::number(data.content_length()).toAscii());
 
 	void Web_cache::updateMetaData(const QNetworkCacheMetaData& metadata)
 	{
-		MLIB_D("Request for updating meta data for '%1'. Ignoring it.", metadata.url().toString());
+		MLIB_D("Request for updating meta data for the '%1'. Ignoring it.", metadata.url().toString());
 	}
 
 
@@ -420,6 +443,28 @@ MLIB_D("%1", QString::number(data.content_length()).toAscii());
 		return !this->url.isEmpty();
 	}
 // Web_cache_entry <--
+
+
+
+// Web_cached_manager -->
+	Web_cached_manager::Web_cached_manager(Storage* storage, QObject* parent)
+	:
+		QNetworkAccessManager(parent)
+	{
+		this->setCache(new Web_cache(storage, this));
+	}
+
+
+
+	QNetworkReply* Web_cached_manager::createRequest(Operation op, const QNetworkRequest& req, QIODevice* outgoingData)
+	{
+		QNetworkRequest request = req;
+		// I could not make QtWebKit work with QNetworkRequest::AlwaysCache. :)
+		request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+		request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, true);
+		return QNetworkAccessManager::createRequest(op, request, outgoingData);
+	}
+// Web_cached_manager <--
 
 }}
 

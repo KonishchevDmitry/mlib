@@ -21,6 +21,8 @@
 #ifndef GROV_HEADER_COMMON_FEED
 #define GROV_HEADER_COMMON_FEED
 
+#include <QtCore/QSet>
+
 #include <src/common.hpp>
 
 #include "feed.hxx"
@@ -34,13 +36,13 @@ class Gr_feed
 {
 	public:
 		/// Feed's Google Reader id.
-		QString		gr_id;
+		QString			gr_id;
 
 		/// Feed name.
-		QString		name;
+		QString			name;
 
 		/// Feed's labels.
-		QStringList	labels;
+		QSet<QString>	labels;
 };
 
 

@@ -37,6 +37,9 @@ namespace m {
 /// Id for databases' entries and for other storages with big amount of data.
 typedef long long Big_id;
 
+/// For file's and other sizes.
+typedef long long Size;
+
 
 /// Converts QVariant to Big_id.
 Big_id	qvariant_to_big_id(const QVariant& variant);
@@ -46,6 +49,7 @@ Big_id	qvariant_to_big_id(const QVariant& variant);
 
 #if MLIB_ENABLE_ALIASES
 	using m::Big_id;
+	using m::Size;
 #endif
 
 #endif
