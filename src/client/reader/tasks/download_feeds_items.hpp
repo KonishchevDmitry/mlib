@@ -73,12 +73,16 @@ class Download_feeds_items: public Task
 		void	downloaded(void);
 
 
+	public slots:
+		/// Cancels the task.
+		virtual void	cancel(void);
+
 	private slots:
 		/// Called when page loading finishes.
-		void	page_load_finished(bool ok);
+		void			page_load_finished(bool ok);
 
 		/// Called when page loading timeout is expired.
-		void	page_loading_timed_out(void);
+		void			page_loading_timed_out(void);
 };
 
 

@@ -76,11 +76,11 @@ class Task: public QObject
 
 	public slots:
 		/// Cancels the task.
-		void	cancel(void);
+		virtual void	cancel(void);
 
 	private slots:
 		/// Called when child task emits error() signal.
-		void	child_task_error(const QString& message);
+		void			child_task_error(const QString& message);
 
 };
 

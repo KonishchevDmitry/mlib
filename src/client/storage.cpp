@@ -1057,28 +1057,39 @@ void Storage::reset(void)
 
 
 
+void Storage::set_current_source(Current_source source, Big_id id)
+{
+	this->current_source = source;
+	this->current_source_id = id;
+	this->reset();
+}
+
+
+
 void Storage::set_current_source_to_all(void)
 {
-	this->current_source = SOURCE_ALL;
-	this->reset();
+	this->set_current_source(SOURCE_ALL, -1);
 }
 
 
 
 void Storage::set_current_source_to_feed(Big_id id)
 {
-	this->current_source = SOURCE_FEED;
-	this->current_source_id = id;
-	this->reset();
+	this->set_current_source(SOURCE_FEED, id);
 }
 
 
 
 void Storage::set_current_source_to_label(Big_id id)
 {
-	this->current_source = SOURCE_LABEL;
-	this->current_source_id = id;
-	this->reset();
+	this->set_current_source(SOURCE_LABEL, id);
+}
+
+
+
+void Storage::set_current_source_to_none(void)
+{
+	this->set_current_source(SOURCE_NONE, -1);
 }
 
 

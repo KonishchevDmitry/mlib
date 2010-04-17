@@ -59,8 +59,8 @@ namespace Web_cache_aux {
 	{
 		MLIB_D("atEnd()");
 // TODO
-		MLIB_D("atEnd(%1)", this->pos >= size_t(this->cache_entry.data.size()));
-		return this->pos >= size_t(this->cache_entry.data.size());
+		MLIB_D("atEnd(%1)", !this->bytesAvailable());
+		return !this->bytesAvailable();
 	}
 
 
@@ -84,7 +84,8 @@ namespace Web_cache_aux {
 	bool Cache_device::isSequential() const
 	{
 		MLIB_D("isSequential()");
-		return true;
+		// I could not make QtWebKit work with isSequential() == true. :)
+		return false;
 	}
 
 
@@ -188,20 +189,20 @@ MLIB_D("%1 read", read_data);
 			if(data.is_valid())
 			{
 #warning
-				static int counter = 0;
-				QFile* file = new QFile("cache/" + QString::number(counter++));
-				file->open(QIODevice::WriteOnly);
-				file->write(data.data);
-				file->close();
-				file->open(QIODevice::ReadOnly);
-				return file;
+//				static int counter = 0;
+//				QFile* file = new QFile("cache/" + QString::number(counter++));
+//				file->open(QIODevice::WriteOnly);
+//				file->write(data.data);
+//				file->close();
+//				file->open(QIODevice::ReadOnly);
+//				return file;
 
-//				Cache_device* device = new Cache_device(data);
-//				device->open(QIODevice::ReadOnly);
-//#warning
-//MLIB_D("%1", data.data);
-//MLIB_D("%1", data.data.size());
-//				return device;
+				Cache_device* device = new Cache_device(data);
+				device->open(QIODevice::ReadOnly);
+#warning
+MLIB_D("%1", data.data);
+MLIB_D("%1", data.data.size());
+				return device;
 			}
 			else
 				return NULL;

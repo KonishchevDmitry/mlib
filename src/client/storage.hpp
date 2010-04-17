@@ -175,6 +175,9 @@ class Storage: public QObject
 		/// Sets current source to a feed with id == \a id.
 		void					set_current_source_to_label(Big_id id);
 
+		/// Sets current source to none.
+		void					set_current_source_to_none(void);
+
 		/// Adds or removes star from item.
 		///
 		/// @throw m::Exception.
@@ -277,6 +280,9 @@ class Storage: public QObject
 		/// Resets current internal state - current position for
 		/// get_next_item() and get_previous_item(), etc.
 		void			reset(void);
+
+		/// Sets current source.
+		void			set_current_source(Current_source source, Big_id id);
 
 
 	signals:

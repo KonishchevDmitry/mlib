@@ -18,16 +18,7 @@
 **************************************************************************/
 
 
-// TODO
-#include <QtCore/QFile>
-#include <QtCore/QDateTime>
 #include <QtCore/QTimer>
-#include <QtCore/QUrl>
-
-#warning
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkCacheMetaData>
-#include <QtNetwork/QNetworkRequest>
 
 #include <QtWebKit/QWebFrame>
 #include <QtWebKit/QWebPage>
@@ -41,8 +32,6 @@
 #include "download_feeds_items.hpp"
 
 
-// TODO: timeouts
-// TODO: cancel webkit signals on finish
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
@@ -56,14 +45,23 @@ Download_feeds_items::Download_feeds_items(Storage* storage, QObject* parent)
 {
 	this->web_page->networkAccessManager()->setCache(this->cache);
 
-	// TODO
 	this->timeout_timer->setSingleShot(true);
+	// choose optimal
 	this->timeout_timer->setInterval(5000);
 	connect(this->timeout_timer, SIGNAL(timeout()),
-		this, SLOT(page_timed_out()) );
+		this, SLOT(page_loading_timed_out()) );
 
 	connect(this->web_page, SIGNAL(loadFinished(bool)),
 		this, SLOT(page_load_finished(bool)) );
+}
+
+
+
+void Download_feeds_items::cancel(void)
+{
+	disconnect(this->timeout_timer, NULL, this, NULL);
+	disconnect(this->web_page, NULL, this, NULL);
+	this->storage->set_current_source_to_none();
 }
 
 
@@ -74,24 +72,24 @@ void Download_feeds_items::mirror_next(void)
 	{
 		Db_feed_item item = this->storage->get_next_item();
 
-		// TODO
-		MLIB_D("Mirroring item '%1' summary...", item.title);
+		// TODO: url
+		MLIB_D("Mirroring item's '%1' summary...", item.title);
+
 		this->web_page->mainFrame()->setHtml(item.summary);
 		this->timeout_timer->start();
 	}
 	catch(Storage::No_more_items&)
 	{
+		this->storage->set_current_source_to_none();
 		emit this->downloaded();
 		this->finish();
 	}
 	catch(Storage::No_selected_items&)
 	{
-		// TODO
 		this->failed(tr("Logical error."));
 	}
 	catch(m::Exception& e)
 	{
-		// TODO
 		this->failed(EE(e));
 	}
 }
@@ -109,7 +107,6 @@ void Download_feeds_items::page_load_finished(bool ok)
 
 void Download_feeds_items::page_loading_timed_out(void)
 {
-	// TODO
 	MLIB_D("Page loading timed out.");
 	this->mirror_next();
 }
@@ -118,16 +115,14 @@ void Download_feeds_items::page_loading_timed_out(void)
 
 void Download_feeds_items::process(void)
 {
-	MLIB_D("Downloading all feeds' items...");
-
-	// TODO: reset at end
-	// TODO: exception
-	this->storage->set_current_source_to_all();
-	this->mirror_next();
+	MLIB_D("Downloading all feeds' items' content...");
 
 #if GROV_OFFLINE_DEVELOPMENT
-	#warning
+	emit this->downloaded();
+	this->finish();
 #else
+	this->storage->set_current_source_to_all();
+	this->mirror_next();
 #endif
 }
 
