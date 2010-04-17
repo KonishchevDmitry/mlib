@@ -22,6 +22,7 @@
 #include <src/common/feed_item.hpp>
 
 #include <src/client/storage.hpp>
+#include <src/client/web_cache.hpp>
 
 #include "viewer.hpp"
 #include "ui_viewer.h"
@@ -55,16 +56,28 @@ void Viewer::connect_to_storage(client::Storage* storage)
 	MLIB_A(!this->storage);
 	this->storage = storage;
 
-	ui->feeds_view->connect_to_storage(this->storage);
+	// Item_view -->
+	{
+		client::Web_cache* web_cache = new client::Web_cache(this->storage, this);
+	// TODO
+	#warning
+	ui->item_view->page()->setNetworkAccessManager(new Manager);
+		ui->item_view->page()->networkAccessManager()->setCache(web_cache);
+	}
+	// Item_view <--
 
-	connect(ui->feeds_view, SIGNAL(unselected()),
-		this, SLOT(set_no_selected_feed()) );
+	// Feeds_view -->
+		ui->feeds_view->connect_to_storage(this->storage);
 
-	connect(ui->feeds_view, SIGNAL(feed_selected(Big_id)),
-		this, SLOT(feed_selected(Big_id)) );
+		connect(ui->feeds_view, SIGNAL(unselected()),
+			this, SLOT(set_no_selected_feed()) );
 
-	connect(ui->feeds_view, SIGNAL(label_selected(Big_id)),
-		this, SLOT(label_selected(Big_id)) );
+		connect(ui->feeds_view, SIGNAL(feed_selected(Big_id)),
+			this, SLOT(feed_selected(Big_id)) );
+
+		connect(ui->feeds_view, SIGNAL(label_selected(Big_id)),
+			this, SLOT(label_selected(Big_id)) );
+	// Feeds_view <--
 }
 
 
@@ -188,7 +201,11 @@ void Viewer::set_current_item(const Db_feed_item& item)
 	html += item.summary;
 	html += "</body></html>";
 
-	ui->items_view->setHtml(html);
+	#warning
+	ui->item_view->setHtml(html);
+	//ui->item_view->setUrl(QString("http://192.168.83.6/"));
+	//ui->item_view->setUrl(QString("http://a.ru/"));
+	//ui->item_view->setUrl(QString("http://ya.ru/"));
 
 	this->current_item = item;
 
@@ -208,7 +225,7 @@ void Viewer::set_no_more_items(void)
 	html += tr("You have no unread items.");
 	html += "</center></body></html>";
 
-	ui->items_view->setHtml(html);
+	ui->item_view->setHtml(html);
 
 	this->reset_current_item();
 }
@@ -223,7 +240,7 @@ void Viewer::set_no_selected_feed(void)
 	html += tr("Please select a label or a feed to view its items.");
 	html += "</center></body></html>";
 
-	ui->items_view->setHtml(html);
+	ui->item_view->setHtml(html);
 
 	this->reset_current_item();
 }

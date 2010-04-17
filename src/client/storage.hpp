@@ -36,6 +36,8 @@ class QSqlQuery;
 #include <src/common/feed_item.hpp>
 #include <src/common/feed_tree.hxx>
 
+#include "web_cache.hxx"
+
 #include "storage.hxx"
 
 
@@ -53,11 +55,14 @@ class Storage: public QObject
 			/// No source has been setted yet.
 			SOURCE_NONE,
 
+			/// All existing items.
+			SOURCE_ALL,
+
 			/// A feed with id this->id.
 			SOURCE_FEED,
 
 			/// A label with id this->id.
-			SOURCE_LABEL,
+			SOURCE_LABEL
 		};
 
 
@@ -118,6 +123,13 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void					add_items(const Gr_feed_item_list& items);
 
+		/// Adds a Web_cache_entry to the storage.
+		///
+		/// If storage already has entry for this URL, it will be replaced.
+		///
+		/// @throw m::Exception.
+		void					add_web_cache_entry(const Web_cache_entry& entry);
+
 		/// Returns current feed tree.
 		///
 		/// @throw m::Exception.
@@ -138,6 +150,12 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		Changed_feed_item_list	get_user_changes(void);
 
+		/// Returns a Web_cache_entry for \a url or invalid Web_cache_entry, if
+		/// we does not have web cache data for \a url.
+		///
+		/// @throw m::Exception.
+		Web_cache_entry			get_web_cache_entry(const QString& url);
+
 		/// Marks item as read.
 		///
 		/// @throw m::Exception.
@@ -147,6 +165,9 @@ class Storage: public QObject
 		///
 		/// @throw m::Exception.
 		void					mark_changes_as_flushed(Changed_feed_item_list::const_iterator begin, Changed_feed_item_list::const_iterator end);
+
+		/// Sets current source to all existing items.
+		void					set_current_source_to_all(void);
 
 		/// Sets current source to a feed with id == \a id.
 		void					set_current_source_to_feed(Big_id id);

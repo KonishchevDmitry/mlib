@@ -30,6 +30,7 @@
 
 #include <src/client/storage.hpp>
 
+#include "download_feeds_items.hpp"
 #include "get_feed_list.hpp"
 #include "gr_xml_parser.hpp"
 
@@ -87,6 +88,26 @@ void Get_reading_list::get_reading_list(void)
 
 
 
+void Get_reading_list::on_items_downloaded(void)
+{
+	emit this->reading_list_gotten();
+	this->finish();
+}
+
+
+
+void Get_reading_list::on_reading_list_gotten(void)
+{
+	Download_feeds_items* task = new Download_feeds_items(this->storage, this);
+
+	connect(task, SIGNAL(downloaded()),
+		this, SLOT(on_items_downloaded()) );
+
+	this->process_task(task);
+}
+
+
+
 void Get_reading_list::request_finished(const QString& error, const QByteArray& reply)
 {
 	MLIB_D("Reading list request finished.");
@@ -138,12 +159,9 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 
 	#if !GROV_OFFLINE_DEVELOPMENT
 		if(this->continuation_code.isEmpty() || items.empty())
-		{
 	#endif
-			emit this->reading_list_gotten();
-			this->finish();
+			this->on_reading_list_gotten();
 	#if !GROV_OFFLINE_DEVELOPMENT
-		}
 		else
 		{
 			if(this->reading_lists_counter >= 100)
@@ -155,8 +173,7 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 						"Please read downloaded items first, than you can download others."
 					), this->reading_lists_counter)
 				);
-				emit this->reading_list_gotten();
-				this->finish();
+				this->on_reading_list_gotten();
 			}
 			else
 				this->get_reading_list();

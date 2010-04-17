@@ -138,10 +138,12 @@ void Main_window::mode_changed(Client::Mode mode)
 
 void Main_window::on_discard_all_offline_data_action_activated(void)
 {
+#if !GROV_DEVELOP_MODE
 	bool is = m::gui::yes_no_message(this, tr("Discard all offline data"),
 		tr("Are you sure want to discard all offline data?") );
 
 	if(is)
+#endif
 		this->client->discard_offline_data();
 }
 

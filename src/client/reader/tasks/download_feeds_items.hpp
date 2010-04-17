@@ -18,53 +18,67 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
-#define GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_DOWNLOAD_FEEDS_ITEMS
+#define GROV_HEADER_CLIENT_READER_TASKS_DOWNLOAD_FEEDS_ITEMS
+
+class QTimer;
+class QWebPage;
 
 #include <src/common.hpp>
 
-#include <src/client/reader/network_task.hpp>
+#include <src/client/reader/task.hpp>
+#include <src/client/storage.hxx>
+#include <src/client/web_cache.hxx>
 
-#include "login_to_google_reader.hxx"
+#include "download_feeds_items.hxx"
 
 
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
-/// Logins to Google Reader.
-class Login_to_google_reader: public Network_task
+/// Downloads all feeds' items' content: images, styles, original page, etc.
+class Download_feeds_items: public Task
 {
 	Q_OBJECT
 
 	public:
-		Login_to_google_reader(const QString& login, const QString& password, QObject* parent = NULL);
+		Download_feeds_items(Storage* storage, QObject* parent = NULL);
 
 
 	private:
-		/// Google Reader's login.
-		QString	login;
+		/// Our offline data storage.
+		Storage*	storage;
 
-		/// Google Reader's password.
-		QString	password;
+		/// Cache to which we will save data.
+		Web_cache*	cache;
+
+		/// Our feed item downloader.
+		QWebPage*	web_page;
+
+		/// Page loading timeout timer.
+		QTimer*		timeout_timer;
 
 
 	public:
 		/// Processes the task.
 		virtual void	process(void);
 
-		/// See Network_task::request_finished().
-		virtual void	request_finished(const QString& error, const QByteArray& reply);
-
 	private:
-		/// Gets Google Reader authentication id from its reply.
-		///
-		/// @throw m::Exception.
-		QString	get_auth_id(const QByteArray& reply);
+		/// Mirrors a next feed item.
+		void			mirror_next(void);
 
 
 	signals:
-		/// This signal is emitted when we successfully login to Google Reader.
-		void	authenticated(const QString& auth_id);
+		/// This signal is emitted when we have downloaded all items.
+		void	downloaded(void);
+
+
+	private slots:
+		/// Called when page loading finishes.
+		void	page_load_finished(bool ok);
+
+		/// Called when page loading timeout is expired.
+		void	page_loading_timed_out(void);
 };
 
 

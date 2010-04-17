@@ -5,6 +5,7 @@ set(GROV_SOURCES
 	client/reader/google_reader_task.cpp
 	client/reader/network_task.cpp
 	client/reader/task.cpp
+	client/reader/tasks/download_feeds_items.cpp
 	client/reader/tasks/flush_offline_data.cpp
 	client/reader/tasks/get_feed_list.cpp
 	client/reader/tasks/get_gr_token.cpp
@@ -12,6 +13,7 @@ set(GROV_SOURCES
 	client/reader/tasks/gr_xml_parser.cpp
 	client/reader/tasks/login_to_google_reader.cpp
 	client/storage.cpp
+	client/web_cache.cpp
 	common/feed_item.cpp
 	common/feed_tree.cpp
 	main.cpp
@@ -29,6 +31,7 @@ set(GROV_MOC_SOURCES
 	client/reader.hpp
 	client/reader/network_task.hpp
 	client/reader/task.hpp
+	client/reader/tasks/download_feeds_items.hpp
 	client/reader/tasks/flush_offline_data.hpp
 	client/reader/tasks/get_feed_list.hpp
 	client/reader/tasks/get_gr_token.hpp
@@ -36,6 +39,7 @@ set(GROV_MOC_SOURCES
 	client/reader/tasks/gr_xml_parser.hpp
 	client/reader/tasks/login_to_google_reader.hpp
 	client/storage.hpp
+	client/web_cache.hpp
 	main_window.hpp
 	main_window/viewer/feeds_model.hpp
 	main_window/viewer/feeds_view.hpp

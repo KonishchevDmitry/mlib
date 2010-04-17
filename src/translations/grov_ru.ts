@@ -199,12 +199,12 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.cpp" line="141"/>
+        <location filename="../main_window.cpp" line="142"/>
         <source>Discard all offline data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.cpp" line="142"/>
+        <location filename="../main_window.cpp" line="143"/>
         <source>Are you sure want to discard all offline data?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -259,103 +259,136 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::Storage</name>
     <message>
-        <location filename="../client/storage.cpp" line="63"/>
+        <location filename="../client/storage.cpp" line="66"/>
         <source>Can&apos;t create directory &apos;%1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="72"/>
+        <location filename="../client/storage.cpp" line="77"/>
         <source>Unable to open database &apos;%1&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="95"/>
+        <location filename="../client/storage.cpp" line="101"/>
         <source>Error while closing database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="180"/>
+        <location filename="../client/storage.cpp" line="186"/>
         <source>Unable to add feeds to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="232"/>
-        <source>Gotten item &apos;%1&apos; for unknown feed &apos;%2&apos;. Skipping it.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../client/storage.cpp" line="259"/>
+        <location filename="../client/storage.cpp" line="266"/>
         <source>Unable to add feeds&apos; items to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="278"/>
+        <location filename="../client/storage.cpp" line="295"/>
+        <source>Error while adding &apos;%1&apos; to the Web cache:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="314"/>
         <source>Unable to get the database format version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="283"/>
+        <location filename="../client/storage.cpp" line="319"/>
         <source>Application&apos;s database &apos;%1&apos; has unsupported format version. Please delete it by yourself. If you have an important unsaved offline data in it, please flush this offline data by that version of %2, which you have used to create it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="316"/>
-        <source>Unable to delete data from the database.</source>
+        <location filename="../client/storage.cpp" line="353"/>
+        <source>Error while deleting data from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="326"/>
+        <location filename="../client/storage.cpp" line="363"/>
         <source>Unable to vacuum the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="387"/>
+        <location filename="../client/storage.cpp" line="425"/>
         <source>Logical error (invalid item&apos;s source type).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="475"/>
+        <location filename="../client/storage.cpp" line="520"/>
         <source>Error while creating tables in the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="505"/>
+        <location filename="../client/storage.cpp" line="550"/>
         <source>query did not return a value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="542"/>
+        <location filename="../client/storage.cpp" line="587"/>
         <source>Error while flushing changes&apos; cache to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="579"/>
+        <location filename="../client/storage.cpp" line="624"/>
         <source>Error while getting database&apos;s main information:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="698"/>
+        <location filename="../client/storage.cpp" line="743"/>
         <source>Error while getting feed tree from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="752"/>
+        <location filename="../client/storage.cpp" line="797"/>
         <source>Unable to query a feed&apos;s item from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="824"/>
+        <location filename="../client/storage.cpp" line="869"/>
         <source>Unable to get user changes that he made to the items:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="940"/>
+        <location filename="../client/storage.cpp" line="909"/>
+        <source>Error while getting web cache for &apos;%1&apos;:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/storage.cpp" line="1021"/>
         <source>Error while synchronizing flushed to Google Reader changes with the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="1027"/>
+        <location filename="../client/storage.cpp" line="1117"/>
         <source>Database error:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>grov::client::Web_cache</name>
+    <message>
+        <location filename="../client/web_cache.cpp" line="124"/>
+        <source>Web cache: we have %1 prepared meta data that has not been inserted or removed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/web_cache.cpp" line="241"/>
+        <source>Gotten request for saving data in the Web cache for empty URL. Ignoring it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/web_cache.cpp" line="259"/>
+        <source>Gotten request for saving data with empty Content-Type header in the cache for &apos;%1&apos;. Ignoring it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/web_cache.cpp" line="266"/>
+        <source>Gotten request for saving data in the cache for &apos;%1&apos; for which meta data has been already prepared but not inserted or closed. Ignoring it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../client/web_cache.cpp" line="300"/>
+        <source>Gotten request for removing prepared for Web cache saving data for &apos;%1&apos;, that has not been prepared yet. Ignoring it.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -369,6 +402,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../client/reader/network_task.cpp" line="157"/>
         <source>Connection timed out.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>grov::client::reader::tasks::Download_feeds_items</name>
+    <message>
+        <location filename="../client/reader/tasks/download_feeds_items.cpp" line="85"/>
+        <source>Unable to login to Google Reader.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -414,22 +455,22 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::reader::tasks::Get_reading_list</name>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="126"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="147"/>
         <source>Parsing error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="132"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="153"/>
         <source>Unable to get Google Reader&apos;s reading list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="151"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="169"/>
         <source>Reading lists number limit exceeded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/get_reading_list.cpp" line="152"/>
+        <location filename="../client/reader/tasks/get_reading_list.cpp" line="170"/>
         <source>Gotten too big number (%1) of reading lists from Google Reader. It seems that program entered in an infinite loop, or you have very big number of unread items. Please read downloaded items first, than you can download others.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -481,12 +522,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::reader::tasks::Login_to_google_reader</name>
     <message>
-        <location filename="../client/reader/tasks/login_to_google_reader.cpp" line="56"/>
+        <location filename="../client/reader/tasks/login_to_google_reader.cpp" line="54"/>
         <source>Server did not return Google Reader&apos;s authentication id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/login_to_google_reader.cpp" line="86"/>
+        <location filename="../client/reader/tasks/login_to_google_reader.cpp" line="84"/>
         <source>Unable to login to Google Reader.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -494,28 +535,28 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::main_window::Viewer</name>
     <message>
-        <location filename="../main_window/viewer.cpp" line="93"/>
+        <location filename="../main_window/viewer.cpp" line="103"/>
         <source>Unable to mark feed&apos;s item as read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="115"/>
-        <location filename="../main_window/viewer.cpp" line="132"/>
+        <location filename="../main_window/viewer.cpp" line="125"/>
+        <location filename="../main_window/viewer.cpp" line="142"/>
         <source>Unable to fetch feed&apos;s item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="160"/>
+        <location filename="../main_window/viewer.cpp" line="170"/>
         <source>Unable to star feed&apos;s item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="208"/>
+        <location filename="../main_window/viewer.cpp" line="220"/>
         <source>You have no unread items.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="223"/>
+        <location filename="../main_window/viewer.cpp" line="235"/>
         <source>Please select a label or a feed to view its items.</source>
         <translation type="unfinished"></translation>
     </message>

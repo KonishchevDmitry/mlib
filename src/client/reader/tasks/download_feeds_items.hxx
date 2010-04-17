@@ -18,56 +18,11 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
-#define GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
-
-#include <src/common.hpp>
-
-#include <src/client/reader/network_task.hpp>
-
-#include "login_to_google_reader.hxx"
-
+#ifndef GROV_HEADER_CLIENT_READER_TASKS_DOWNLOAD_FEEDS_ITEMS_FWD
+#define GROV_HEADER_CLIENT_READER_TASKS_DOWNLOAD_FEEDS_ITEMS_FWD
 
 namespace grov { namespace client { namespace reader { namespace tasks {
-
-
-/// Logins to Google Reader.
-class Login_to_google_reader: public Network_task
-{
-	Q_OBJECT
-
-	public:
-		Login_to_google_reader(const QString& login, const QString& password, QObject* parent = NULL);
-
-
-	private:
-		/// Google Reader's login.
-		QString	login;
-
-		/// Google Reader's password.
-		QString	password;
-
-
-	public:
-		/// Processes the task.
-		virtual void	process(void);
-
-		/// See Network_task::request_finished().
-		virtual void	request_finished(const QString& error, const QByteArray& reply);
-
-	private:
-		/// Gets Google Reader authentication id from its reply.
-		///
-		/// @throw m::Exception.
-		QString	get_auth_id(const QByteArray& reply);
-
-
-	signals:
-		/// This signal is emitted when we successfully login to Google Reader.
-		void	authenticated(const QString& auth_id);
-};
-
-
+	class Download_feeds_items;
 }}}}
 
 #endif

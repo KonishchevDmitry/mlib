@@ -36,13 +36,16 @@
 
 #include <src/main.hpp>
 
+#include "web_cache.hpp"
+
 #include "storage.hpp"
 
 
 namespace grov { namespace client {
 
 
-const int CURRENT_DB_FORMAT_VERSION = 1;
+// TODO
+const int CURRENT_DB_FORMAT_VERSION = 0;
 
 
 Storage::Storage(QObject* parent)
@@ -232,8 +235,9 @@ void Storage::add_items(const Gr_feed_item_list& items)
 						feed_id = -1;
 					else
 					{
-						MLIB_SW(_F( tr("Gotten item '%1' for unknown feed '%2'. Skipping it."),
-							item.gr_id, item.feed_gr_id ));
+						#warning
+						//MLIB_SW(_F( tr("Gotten item '%1' for unknown feed '%2'. Skipping it."),
+						//	item.gr_id, item.feed_gr_id ));
 						continue;
 					}
 				}
@@ -263,6 +267,35 @@ void Storage::add_items(const Gr_feed_item_list& items)
 	}
 
 	MLIB_D("All items successfully added to DB.");
+}
+
+
+
+void Storage::add_web_cache_entry(const Web_cache_entry& entry)
+{
+	MLIB_D("Adding web cache entry for '%1' to the DB...", entry.url);
+
+	try
+	{
+		QSqlQuery query = this->prepare(
+			"INSERT OR REPLACE INTO web_cache ("
+				"url, content_type, data"
+			") values ("
+				":url, :content_type, :data"
+			")"
+		);
+
+		query.bindValue(":url", entry.url);
+		query.bindValue(":content_type", entry.content_type);
+		query.bindValue(":data", entry.data);
+		this->exec(query);
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( _F(tr("Error while adding '%1' to the Web cache:"), entry.url), EE(e) ));
+	}
+
+	MLIB_D("Web cache entry has been added successfully.");
 }
 
 
@@ -307,6 +340,7 @@ void Storage::clear(void)
 			this->exec("DELETE FROM labels");
 			this->exec("DELETE FROM items");
 			this->exec("DELETE FROM labels_to_feeds");
+			this->exec("DELETE FROM web_cache");
 			this->init_empty_database();
 			this->get_db_info();
 		transaction.commit();
@@ -316,7 +350,7 @@ void Storage::clear(void)
 	}
 	catch(m::Exception& e)
 	{
-		M_THROW(PAM( tr("Unable to delete data from the database."), EE(e) ));
+		M_THROW(PAM( tr("Error while deleting data from the database."), EE(e) ));
 	}
 
 	try
@@ -352,24 +386,24 @@ void Storage::create_current_query(void)
 	this->flush_cache();
 
 	QString where;
-	bool bind_source_id = true;
+	bool bind_source_id = false;
 
 	switch(this->current_source)
 	{
+		case SOURCE_ALL:
+			break;
+
 		case SOURCE_FEED:
 		{
 			if(this->current_source_id == this->broadcast_feed_id)
-			{
 				where = "read = 0 AND broadcast = 1";
-				bind_source_id = false;
-			}
 			else if(this->current_source_id == this->starred_feed_id)
-			{
 				where = "starred = 1";
-				bind_source_id = false;
-			}
 			else
+			{
 				where = "feed_id = :source_id AND read = 0";
+				bind_source_id = true;
+			}
 		}
 		break;
 
@@ -383,6 +417,7 @@ void Storage::create_current_query(void)
 						"labels_to_feeds "
 					"WHERE label_id = :source_id "
 				") AND read = 0";
+			bind_source_id = true;
 		}
 		break;
 
@@ -397,10 +432,9 @@ void Storage::create_current_query(void)
 			"id, feed_id, title, summary, broadcast, read, starred "
 		"FROM "
 			"items "
-		"WHERE "
-			"%1 "
+		"%1 "
 		"ORDER BY "
-			"id", where
+			"id", where.isEmpty() ? QString() : "WHERE " + where
 	));
 
 	if(bind_source_id)
@@ -468,6 +502,14 @@ void Storage::create_db_tables(void)
 			")"
 		);
 		this->exec("CREATE INDEX labels_to_feeds_label_id_idx ON labels_to_feeds(label_id)");
+
+		this->exec(
+			"CREATE TABLE web_cache("
+				"url TEXT UNIQUE,"
+				"content_type TEXT,"
+				"data BLOB"
+			")"
+		);
 
 		this->init_empty_database();
 
@@ -834,6 +876,42 @@ Changed_feed_item_list Storage::get_user_changes(void)
 
 
 
+Web_cache_entry Storage::get_web_cache_entry(const QString& url)
+{
+	MLIB_D("Getting web cache for '%1'...", url);
+
+	try
+	{
+		QSqlQuery query = this->prepare(
+			"SELECT "
+				"content_type, "
+				"data "
+			"FROM "
+				"web_cache "
+			"WHERE "
+				"url = :url"
+		);
+		query.bindValue(":url", url);
+		this->exec(query);
+
+		if(query.next())
+		{
+			return Web_cache_entry(url,
+				query.value(0).toString(),
+				query.value(1).toByteArray()
+			);
+		}
+		else
+			return Web_cache_entry();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( _F(tr("Error while getting web cache for '%1':"), url), EE(e) ));
+	}
+}
+
+
+
 void Storage::init_empty_database(void)
 {
 	// "broadcast" and "starred" is a special feeds that must always exists.
@@ -952,6 +1030,7 @@ QSqlQuery Storage::prepare(const QString& string)
 {
 	QSqlQuery query(*this->db);
 
+	MLIB_DV("Preparing SQL query '%1'...", string);
 	if(!query.prepare(string))
 		M_THROW(EE(query));
 
@@ -974,6 +1053,14 @@ void Storage::reset(void)
 	this->current_query.reset();
 	this->current_query_read_cache.clear();
 	this->current_query_star_cache.clear();
+}
+
+
+
+void Storage::set_current_source_to_all(void)
+{
+	this->current_source = SOURCE_ALL;
+	this->reset();
 }
 
 

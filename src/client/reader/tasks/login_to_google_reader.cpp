@@ -20,8 +20,6 @@
 
 #include <QtCore/QUrl>
 
-#include <QtNetwork/QNetworkRequest>
-
 #include <src/common.hpp>
 #include <src/main.hpp>
 
