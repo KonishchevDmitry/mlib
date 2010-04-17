@@ -298,8 +298,6 @@ void Client::reader_cancelled(void)
 
 void Client::reader_error(const QString& message)
 {
-	this->reader_cancelled();
-
 	QString title;
 
 	switch(this->current_mode())
@@ -316,6 +314,8 @@ void Client::reader_error(const QString& message)
 			MLIB_LE();
 			break;
 	}
+
+	this->reader_cancelled();
 
 	MLIB_W(title, message);
 }
