@@ -41,7 +41,6 @@ class Flush_offline_data: public Google_reader_task
 
 	public:
 		Flush_offline_data(Storage* storage, const QString& login, const QString& password, QObject* parent = NULL);
-		~Flush_offline_data(void);
 
 
 	private:
@@ -52,13 +51,13 @@ class Flush_offline_data: public Google_reader_task
 		/// Items that had been changed by the user.
 		Changed_feed_item_list	changed_items;
 
-		/// Points to the first item which needs synchronization with the
-		/// database.
-		Changed_feed_item_list::const_iterator	to_db;
-
 		/// Points to the first item which changes has not been flushed to
 		/// Google Reader.
-		Changed_feed_item_list::const_iterator	to_flush;
+		Changed_feed_item_list::const_iterator	flush_start;
+
+		/// When we send request to Google Reader we post changes for items in
+		/// the interval [flush_start, flush_end).
+		Changed_feed_item_list::const_iterator	flush_end;
 
 
 	protected:
@@ -72,14 +71,6 @@ class Flush_offline_data: public Google_reader_task
 		virtual void	token_gotten(void);
 
 	private:
-		/// Same as sync_with_db() but not throws an exceptions.
-		void			silent_sync_with_db(void);
-
-		/// Synchronizes flushes with the database.
-		///
-		/// @throw m::Exception.
-		void			sync_with_db(void);
-
 		/// Flushes all offline data.
 		void			flush(void);
 
