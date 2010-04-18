@@ -70,12 +70,44 @@ void Download_feeds_items::mirror_next(void)
 {
 	try
 	{
-		Db_feed_item item = this->storage->get_next_item();
+		this->current_item = this->storage->get_next_item();
+		this->summary_mirrored = false;
 
-		// TODO: url
-		MLIB_D("Mirroring item's '%1' summary...", item.title);
+		MLIB_D("");
+		MLIB_D("Mirroring item's '%1' (%2) summary...",
+			this->current_item.title, this->current_item.url );
 
-		this->web_page->mainFrame()->setHtml(item.summary);
+#warning
+//this->web_page->deleteLater();
+//this->web_page = new QWebPage(this);
+//this->web_page->networkAccessManager()->setCache(this->cache);
+//connect(this->web_page, SIGNAL(loadFinished(bool)),
+//	this, SLOT(page_load_finished(bool)) );
+		//this->web_page->mainFrame()->setHtml(item.summary);
+		#warning
+		#warning load
+		this->web_page->mainFrame()->setHtml(this->current_item.summary);
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D(this->web_page->mainFrame()->url().toString());
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MLIB_D("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		this->timeout_timer->start();
 	}
 	catch(Storage::No_more_items&)
@@ -99,8 +131,22 @@ void Download_feeds_items::mirror_next(void)
 void Download_feeds_items::page_load_finished(bool ok)
 {
 	MLIB_D("Page loading finished(%1).", ok);
+
 	this->timeout_timer->stop();
-	this->mirror_next();
+
+	if(this->summary_mirrored)
+		this->mirror_next();
+	else
+	{
+		this->summary_mirrored = true;
+
+		MLIB_D("");
+		MLIB_D("Mirroring item's '%1' (%2) page...",
+			this->current_item.title, this->current_item.url );
+
+		this->web_page->mainFrame()->load(this->current_item.url);
+		this->timeout_timer->start();
+	}
 }
 
 

@@ -110,6 +110,9 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 
 			// Title and summary -->
 			{
+				item.url = entry.firstChildElement("link").attribute("href");
+				MLIB_DV("URL: '%1'.", item.url);
+
 				item.title = entry.firstChildElement("title").text();
 				MLIB_DV("Title: '%1'.", item.title);
 
@@ -122,11 +125,14 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 					//MLIB_DV("Content: '%1'.", item.summary);
 				}
 
-				if(item.title.isEmpty() && item.summary.isEmpty())
+				if(item.url.isEmpty() && item.title.isEmpty() && item.summary.isEmpty())
 				{
-					MLIB_SW(_F( tr("Gotten item [%1] with empty title and summary. Skipping it."), item.gr_id ));
+					MLIB_SW(_F( tr("Gotten item [%1] with empty URL, title and summary. Skipping it."), item.gr_id ));
 					continue;
 				}
+
+				if(item.title.isEmpty())
+					item.title = tr("( No title )");
 			}
 			// Title and summary <--
 

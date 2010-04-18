@@ -209,6 +209,8 @@ void Client::go_offline(void)
 			this->clear();
 
 			this->change_mode(MODE_GOING_OFFLINE);
+			#warning
+			this->start_editing();
 			this->reader->get_reading_list(login, password);
 		}
 		catch(m::Exception& e)
@@ -253,6 +255,8 @@ void Client::offline_data_gotten(void)
 
 	try
 	{
+		#warning
+		this->end_editing();
 		this->set_mode(MODE_OFFLINE);
 		this->change_mode(MODE_OFFLINE);
 	}
@@ -271,6 +275,17 @@ void Client::reader_cancelled(void)
 	{
 		case MODE_GOING_OFFLINE:
 		{
+			try
+			{
+		#warning
+		this->cancel_editing();
+			}
+			catch(m::Exception& e)
+			{
+		#warning
+				MLIB_SW(tr("Discarding all offline data failed"), EE(e));
+			}
+
 			try
 			{
 				this->clear();

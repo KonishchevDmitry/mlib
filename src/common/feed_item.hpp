@@ -34,10 +34,15 @@ class Feed_item
 {
 	protected:
 		Feed_item(void);
-		Feed_item(const QString& title, const QString& summary);
+		Feed_item(const QString& url, const QString& title, const QString& summary);
 
 
 	public:
+		/// URL of the page with this item.
+		///
+		/// May be empty.
+		QString		url;
+
 		/// Title.
 		QString		title;
 
@@ -111,7 +116,7 @@ class Db_feed_item: public Feed_item
 		Db_feed_item(void);
 
 		Db_feed_item(
-			Big_id id, Big_id feed_id,
+			Big_id id, Big_id feed_id, const QString& url,
 			const QString& title, const QString& summary,
 			bool broadcast, bool read, bool starred
 		);

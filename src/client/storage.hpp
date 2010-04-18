@@ -130,6 +130,12 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void					add_web_cache_entry(const Web_cache_entry& entry);
 
+	#warning
+		void					cancel_editing(void);
+
+	#warning
+		void					end_editing(void);
+
 		/// Returns current feed tree.
 		///
 		/// @throw m::Exception.
@@ -155,6 +161,11 @@ class Storage: public QObject
 		///
 		/// @throw m::Exception.
 		Web_cache_entry			get_web_cache_entry(const QString& url);
+
+		/// Checks whether url exists in the Web cache.
+		///
+		/// @throw m::Exception.
+		bool					is_in_web_cache(const QString& url);
 
 		/// Marks item as read.
 		///
@@ -182,6 +193,9 @@ class Storage: public QObject
 		///
 		/// @throw m::Exception.
 		void					star(Big_id id, bool is);
+
+	#warning
+		void					start_editing(void);
 
 	protected:
 		/// Deletes all storage's data.

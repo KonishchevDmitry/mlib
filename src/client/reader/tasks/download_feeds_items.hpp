@@ -26,6 +26,8 @@ class QWebPage;
 
 #include <src/common.hpp>
 
+#include <src/common/feed_item.hpp>
+
 #include <src/client/reader/task.hpp>
 #include <src/client/storage.hxx>
 #include <src/client/web_cache.hxx>
@@ -47,16 +49,22 @@ class Download_feeds_items: public Task
 
 	private:
 		/// Our offline data storage.
-		Storage*	storage;
+		Storage*		storage;
 
 		/// Cache to which we will save data.
-		Web_cache*	cache;
+		Web_cache*		cache;
+
+		/// Item that is mirroring at this moment.
+		Db_feed_item	current_item;
+
+		#warning
+		bool			summary_mirrored;
 
 		/// Our feed item downloader.
-		QWebPage*	web_page;
+		QWebPage*		web_page;
 
 		/// Page loading timeout timer.
-		QTimer*		timeout_timer;
+		QTimer*			timeout_timer;
 
 
 	public:

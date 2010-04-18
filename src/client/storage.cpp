@@ -119,8 +119,9 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 
 	try
 	{
+	#warning
 		// For SQLite it really speeds up many insertions.
-		m::db::Scoped_transaction transaction(*this->db);
+		//m::db::Scoped_transaction transaction(*this->db);
 
 		// Adding feeds -->
 		{
@@ -176,7 +177,8 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 		}
 		// Adding feeds <--
 
-		transaction.commit();
+	#warning
+		//transaction.commit();
 
 		// TODO: odd emits
 		emit feed_tree_changed();
@@ -199,8 +201,9 @@ void Storage::add_items(const Gr_feed_item_list& items)
 	{
 		QHash<QString, Big_id> feeds;
 
+	#warning
 		// For SQLite it really speeds up many insertions.
-		m::db::Scoped_transaction transaction(*this->db);
+	//	m::db::Scoped_transaction transaction(*this->db);
 
 		// Getting all known feeds -->
 		{
@@ -217,10 +220,10 @@ void Storage::add_items(const Gr_feed_item_list& items)
 			QSqlQuery insert_item_query = this->prepare(
 				"INSERT INTO items ("
 					"feed_id, broadcast, read, orig_read, starred, orig_starred,"
-					"gr_id, title, summary"
+					"gr_id, url, title, summary"
 				") values ("
 					":feed_id, :broadcast, :read, :orig_read, :starred, :orig_starred,"
-					":gr_id, :title, :summary"
+					":gr_id, :url, :title, :summary"
 				")"
 			);
 
@@ -250,6 +253,7 @@ void Storage::add_items(const Gr_feed_item_list& items)
 				insert_item_query.bindValue(":starred", int(item.starred));
 				insert_item_query.bindValue(":orig_starred", int(item.starred));
 				insert_item_query.bindValue(":gr_id", item.gr_id);
+				insert_item_query.bindValue(":url", item.url);
 				insert_item_query.bindValue(":title", item.title);
 				insert_item_query.bindValue(":summary", item.summary);
 				this->exec(insert_item_query);
@@ -257,7 +261,8 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		}
 		// Adding items <--
 
-		transaction.commit();
+	#warning
+	//	transaction.commit();
 
 		// TODO: odd emits
 		emit feed_tree_changed();
@@ -298,6 +303,20 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 	}
 
 	MLIB_D("Web cache entry has been added successfully.");
+}
+
+
+
+void Storage::cancel_editing(void)
+{
+	try
+	{
+		this->exec("ROLLBACK");
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to rollback a transaction:"), EE(e) ));
+	}
 }
 
 
@@ -431,7 +450,7 @@ void Storage::create_current_query(void)
 	// Throws m::Exception
 	QSqlQuery query = this->prepare(_F(
 		"SELECT "
-			"id, feed_id, title, summary, broadcast, read, starred "
+			"id, feed_id, url, title, summary, broadcast, read, starred "
 		"FROM "
 			"items "
 		"%1 "
@@ -491,6 +510,7 @@ void Storage::create_db_tables(void)
 				"starred INTEGER,"
 				"orig_starred INTEGER,"
 				"gr_id TEXT,"
+				"url TEXT,"
 				"title TEXT,"
 				"summary TEXT"
 			")"
@@ -520,6 +540,20 @@ void Storage::create_db_tables(void)
 	catch(m::Exception& e)
 	{
 		M_THROW(PAM( tr("Error while creating tables in the database:"), EE(e) ));
+	}
+}
+
+
+
+void Storage::end_editing(void)
+{
+	try
+	{
+		this->exec("COMMIT");
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to commit a transaction:"), EE(e) ));
 	}
 }
 
@@ -781,9 +815,10 @@ Db_feed_item Storage::get_item(bool next)
 				id, m::qvariant_to_big_id(query->value(1)),
 				query->value(2).toString(),
 				query->value(3).toString(),
-				query->value(4).toBool(),
-				this->current_query_read_cache.contains(id) ? true : query->value(5).toBool(),
-				this->current_query_star_cache.value(id, query->value(6).toBool())
+				query->value(4).toString(),
+				query->value(5).toBool(),
+				this->current_query_read_cache.contains(id) ? true : query->value(6).toBool(),
+				this->current_query_star_cache.value(id, query->value(7).toBool())
 			);
 
 			MLIB_D("Item gotten.");
@@ -925,6 +960,31 @@ void Storage::init_empty_database(void)
 
 	query.bindValue(":name", "starred");
 	this->exec(query);
+}
+
+
+
+bool Storage::is_in_web_cache(const QString& url)
+{
+	try
+	{
+		QSqlQuery query = this->prepare(
+			"SELECT "
+				"COUNT(*) "
+			"FROM "
+				"web_cache "
+			"WHERE "
+				"url = :url"
+		);
+		query.bindValue(":url", url);
+		this->exec_and_next(query);
+
+		return query.value(0).toBool();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( _F(tr("Error while getting web cache for '%1':"), url), EE(e) ));
+	}
 }
 
 
@@ -1131,6 +1191,20 @@ void Storage::star(Big_id id, bool is)
 	}
 
 	this->current_query_star_cache[id] = is;
+}
+
+
+
+void Storage::start_editing(void)
+{
+	try
+	{
+		this->exec("BEGIN");
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to begin a transaction:"), EE(e) ));
+	}
 }
 
 

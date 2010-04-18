@@ -18,6 +18,8 @@
 **************************************************************************/
 
 
+#include <QtCore/QUrl>
+
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 
@@ -38,6 +40,11 @@ Viewer::Viewer(QWidget *parent)
 	storage(NULL)
 {
 	ui->setupUi(this);
+
+	ui->item_view->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+	connect(ui->item_view, SIGNAL(linkClicked(const QUrl&)),
+		this, SLOT(link_clicked(const QUrl&)) );
+
 	ui->star_check_box->addAction(ui->star_action);
 	this->set_no_selected_feed();
 }
@@ -150,6 +157,30 @@ void Viewer::label_selected(Big_id id)
 
 
 
+void Viewer::link_clicked(const QUrl& qurl)
+{
+	QString url = qurl.toString();
+	MLIB_D("User clicked link '%1'.", url);
+
+	if(!url.isEmpty() && url == this->current_item.url)
+	{
+		try
+		{
+			if(this->storage->is_in_web_cache(url))
+			{
+				MLIB_D("This is item's cached page. Loading it...");
+				ui->item_view->load(url);
+			}
+		}
+		catch(m::Exception& e)
+		{
+			MLIB_W(tr("Error while loading clicked link's page"), EE(e));
+		}
+	}
+}
+
+
+
 void Viewer::on_star_check_box_stateChanged(int state)
 {
 	try
@@ -186,14 +217,13 @@ void Viewer::select_no_feed(void)
 
 void Viewer::set_current_item(const Db_feed_item& item)
 {
-	QString html;
-
-	html += "<html><body>";
-	if(!item.title.isEmpty())
-		html += "<h1 style='font-size: 14pt'>" + item.title + "</h1>";
-	html += item.summary;
-	html += "</body></html>";
-	ui->item_view->setHtml(html);
+	ui->item_view->setHtml(_F(
+		"<html><body>"
+			"<a href='%1'><h1 style='font-size: 14pt'>%2</h1></a>"
+			"%3"
+		"</body></html>",
+		QUrl::toPercentEncoding(item.url), item.title, item.summary
+	));
 
 	this->current_item = item;
 
