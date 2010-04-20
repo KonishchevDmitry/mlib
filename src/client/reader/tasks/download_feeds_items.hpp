@@ -24,6 +24,10 @@
 class QTimer;
 class QWebPage;
 
+#include <boost/shared_ptr.hpp>
+
+#include <QtCore/QSet>
+
 #include <src/common.hpp>
 
 #include <src/common/feed_item.hpp>
@@ -38,10 +42,79 @@ class QWebPage;
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
+namespace Download_feeds_items_aux {
+
+
+	/// Represents a mirroring stream in which we download all item's summary's
+	/// and page's data.
+	class Mirroring_stream: public QObject
+	{
+		Q_OBJECT
+
+		public:
+			Mirroring_stream(Storage* storage, QObject* parent = NULL);
+			~Mirroring_stream(void);
+
+
+		public:
+			/// Our offline data storage.
+			Storage*		storage;
+
+			/// Cache to which we will save data.
+			Web_cache*		cache;
+
+			/// Our feed item downloader.
+			QWebPage*		web_page;
+
+			/// Page loading timeout timer.
+			QTimer*			timeout_timer;
+
+			/// Item that is mirroring at this moment.
+			Db_feed_item	item;
+
+			/// Is we already mirrored item's summary and now mirroring item's
+			/// page.
+			bool			summary_mirrored;
+
+
+		public:
+			/// Mirrors a next feed item.
+			void	mirror_next(void);
+
+		private:
+			/// Disconnects all signals from us.
+			void	disconnect_all(void);
+
+
+		signals:
+			/// Emitted on error.
+			void	error(const QString& error);
+
+			/// Emitted when all items are mirrored.
+			void	finished(void);
+
+
+		private slots:
+			/// Called when page loading finishes.
+			void	page_load_finished(bool ok);
+
+			/// Called when page loading timeout is expired.
+			void	page_loading_timed_out(void);
+	};
+
+
+}
+
+
+
 /// Downloads all feeds' items' content: images, styles, original page, etc.
 class Download_feeds_items: public Task
 {
 	Q_OBJECT
+
+	private:
+		typedef Download_feeds_items_aux::Mirroring_stream Mirroring_stream;
+
 
 	public:
 		Download_feeds_items(Storage* storage, QObject* parent = NULL);
@@ -49,22 +122,10 @@ class Download_feeds_items: public Task
 
 	private:
 		/// Our offline data storage.
-		Storage*		storage;
+		Storage*				storage;
 
-		/// Cache to which we will save data.
-		Web_cache*		cache;
-
-		/// Item that is mirroring at this moment.
-		Db_feed_item	current_item;
-
-		#warning
-		bool			summary_mirrored;
-
-		/// Our feed item downloader.
-		QWebPage*		web_page;
-
-		/// Page loading timeout timer.
-		QTimer*			timeout_timer;
+		/// Mirroring streams.
+		QSet<Mirroring_stream*>	streams;
 
 
 	public:
@@ -72,13 +133,13 @@ class Download_feeds_items: public Task
 		virtual void	process(void);
 
 	private:
-		/// Mirrors a next feed item.
-		void			mirror_next(void);
+		/// Immediately closes all opened mirroring streams.
+		void			close_all_streams(void);
 
 
 	signals:
 		/// This signal is emitted when we have downloaded all items.
-		void	downloaded(void);
+		void			downloaded(void);
 
 
 	public slots:
@@ -86,11 +147,13 @@ class Download_feeds_items: public Task
 		virtual void	cancel(void);
 
 	private slots:
-		/// Called when page loading finishes.
-		void			page_load_finished(bool ok);
+		/// Called when mirroring fails.
+		void			stream_error(const QString& error);
 
-		/// Called when page loading timeout is expired.
-		void			page_loading_timed_out(void);
+		/// Called when stream finishes mirroring.
+		void			stream_finished(void);
+
+//	private slots:
 };
 
 

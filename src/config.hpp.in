@@ -38,7 +38,7 @@ namespace grov { namespace config {
 
 	// TODO: choose optimal
 	/// Max time in seconds that page mirroring can require.
-	const int page_mirroring_timeout = 60;
+	const int page_mirroring_timeout = 30;
 
 	/// Max document size that can be saved in the web cache.
 	const Size max_cache_data_entry_size = max_network_reply_size;

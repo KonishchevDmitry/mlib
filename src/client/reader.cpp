@@ -68,8 +68,9 @@ void Reader::get_reading_list(const QString& login, const QString& password)
 	reader::tasks::Get_reading_list* task =
 		new reader::tasks::Get_reading_list(this->storage, login, password, this);
 
+	#warning
 	connect(task, SIGNAL(reading_list_gotten()),
-		this, SIGNAL(reading_list_gotten()) );
+		this, SIGNAL(reading_list_gotten()), Qt::QueuedConnection );
 
 	this->process_task(task);
 }

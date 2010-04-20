@@ -90,8 +90,9 @@ void Get_reading_list::get_reading_list(void)
 
 void Get_reading_list::on_items_downloaded(void)
 {
-	emit this->reading_list_gotten();
+	#warning
 	this->finish();
+	emit this->reading_list_gotten();
 }
 
 
