@@ -83,7 +83,7 @@ Options:
     <message>
         <location filename="../client.cpp" line="216"/>
         <location filename="../client.cpp" line="262"/>
-        <location filename="../client.cpp" line="308"/>
+        <location filename="../client.cpp" line="306"/>
         <source>Unable to go offline</source>
         <translation type="unfinished"></translation>
     </message>
@@ -100,7 +100,7 @@ Options:
     <message>
         <location filename="../client.cpp" line="131"/>
         <location filename="../client.cpp" line="244"/>
-        <location filename="../client.cpp" line="312"/>
+        <location filename="../client.cpp" line="310"/>
         <source>Error while flushing offline data</source>
         <translation type="unfinished"></translation>
     </message>
@@ -264,97 +264,97 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="72"/>
+        <location filename="../client/storage.cpp" line="74"/>
         <source>Unable to open database &apos;%1&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="95"/>
+        <location filename="../client/storage.cpp" line="98"/>
         <source>Error while closing database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="180"/>
+        <location filename="../client/storage.cpp" line="183"/>
         <source>Unable to add feeds to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="232"/>
+        <location filename="../client/storage.cpp" line="235"/>
         <source>Gotten item &apos;%1&apos; for unknown feed &apos;%2&apos;. Skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="259"/>
+        <location filename="../client/storage.cpp" line="262"/>
         <source>Unable to add feeds&apos; items to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="278"/>
+        <location filename="../client/storage.cpp" line="281"/>
         <source>Unable to get the database format version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="283"/>
+        <location filename="../client/storage.cpp" line="286"/>
         <source>Application&apos;s database &apos;%1&apos; has unsupported format version. Please delete it by yourself. If you have an important unsaved offline data in it, please flush this offline data by that version of %2, which you have used to create it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="316"/>
+        <location filename="../client/storage.cpp" line="319"/>
         <source>Unable to delete data from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="326"/>
+        <location filename="../client/storage.cpp" line="329"/>
         <source>Unable to vacuum the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="387"/>
+        <location filename="../client/storage.cpp" line="390"/>
         <source>Logical error (invalid item&apos;s source type).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="475"/>
+        <location filename="../client/storage.cpp" line="478"/>
         <source>Error while creating tables in the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="505"/>
+        <location filename="../client/storage.cpp" line="508"/>
         <source>query did not return a value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="542"/>
+        <location filename="../client/storage.cpp" line="545"/>
         <source>Error while flushing changes&apos; cache to the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="579"/>
+        <location filename="../client/storage.cpp" line="582"/>
         <source>Error while getting database&apos;s main information:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="698"/>
+        <location filename="../client/storage.cpp" line="701"/>
         <source>Error while getting feed tree from the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="752"/>
+        <location filename="../client/storage.cpp" line="755"/>
         <source>Unable to query a feed&apos;s item from the database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="824"/>
+        <location filename="../client/storage.cpp" line="827"/>
         <source>Unable to get user changes that he made to the items:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="940"/>
+        <location filename="../client/storage.cpp" line="943"/>
         <source>Error while synchronizing flushed to Google Reader changes with the database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/storage.cpp" line="1027"/>
+        <location filename="../client/storage.cpp" line="1030"/>
         <source>Database error:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -375,12 +375,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::client::reader::tasks::Flush_offline_data</name>
     <message>
-        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="155"/>
+        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="188"/>
         <source>Server returned error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="174"/>
+        <location filename="../client/reader/tasks/flush_offline_data.cpp" line="204"/>
         <source>Unable flush user changes to Google Reader.</source>
         <translation type="unfinished"></translation>
     </message>

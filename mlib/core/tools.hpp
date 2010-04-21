@@ -21,8 +21,8 @@
 #ifndef MLIB_HEADER_CORE_TOOLS
 #define MLIB_HEADER_CORE_TOOLS
 
-#include <boost/typeof/typeof.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/typeof/typeof.hpp>
 
 #if MLIB_DEVELOP_MODE
 	#include <QtCore/QDebug>

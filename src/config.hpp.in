@@ -21,6 +21,9 @@
 /// Application's binaries' directory (relative to install prefix).
 #define GROV_APP_BIN_DIR "@APP_BIN_DIR@"
 
+/// Application's icons' directory (relative to install prefix).
+#define GROV_APP_ICONS_DIR "@APP_ICONS_DIR@"
+
 /// Application's translations' directory (relative to install prefix).
 #define GROV_APP_TRANSLATIONS_DIR "@APP_TRANSLATIONS_DIR@"
 

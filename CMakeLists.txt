@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 2.6)
 	set(APP_VERSION_PATCH 0)
 
 	set(APP_BIN_DIR bin)
+	set(APP_ICONS_DIR share/icons/hicolor)
 	set(APP_TRANSLATIONS_DIR share/${APP_UNIX_NAME}/translations)
 # Application's properties <--
 

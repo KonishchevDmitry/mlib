@@ -21,17 +21,20 @@
 #include <cstdlib>
 #include <cstdio>
 
+#include <boost/foreach.hpp>
 #include <boost/scoped_ptr.hpp>
 
 #include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QLocale>
 #include <QtCore/QProcess>
+#include <QtCore/QSize>
 #include <QtCore/QTextCodec>
 #include <QtCore/QTextStream>
 #include <QtCore/QTranslator>
 
 #include <QtGui/QApplication>
+#include <QtGui/QIcon>
 
 #include <src/client.hpp>
 #include <src/common.hpp>
@@ -345,6 +348,33 @@ int main(int argc, char *argv[])
 		}
 	}
 	// Loading translations <--
+
+	// Setting application icon -->
+		if(!install_dir.isEmpty())
+		{
+			int sizes[] = { 8, 12, 16, 22, 24, 32, 48, 64, 128 };
+
+			QIcon icon;
+
+			BOOST_FOREACH(int size, sizes)
+			{
+				QString size_name = QString::number(size) + "x" + QString::number(size);
+
+				icon.addFile(
+					QDir(install_dir).absoluteFilePath(
+						GROV_APP_ICONS_DIR "/" + size_name + "/apps/" GROV_APP_UNIX_NAME ".png" ),
+					QSize(size, size)
+				);
+			}
+
+			icon.addFile(
+				QDir(install_dir).absoluteFilePath(
+					GROV_APP_ICONS_DIR "/scalable/apps/" GROV_APP_UNIX_NAME ".svg" )
+			);
+
+			app.setWindowIcon(icon);
+		}
+	// Setting application icon <--
 
 	// Creating the main window -->
 		try

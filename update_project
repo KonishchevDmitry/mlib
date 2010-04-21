@@ -20,7 +20,9 @@ update()
 		echo "set(${project_uppercase_name}_SOURCES"
 			find -name '*.cpp' | sed 's/^\.\//\t/' | sort
 		echo ')'
+
 		echo ''
+
 		echo "set(${project_uppercase_name}_MOC_SOURCES"
 			for file in $(find -name '*.hpp')
 			do
@@ -30,11 +32,15 @@ update()
 				fi
 			done | sed 's/^\.\//\t/' | sort
 		echo ')'
+
 		echo ''
+
 		echo "set(${project_uppercase_name}_TRANSLATIONS"
 			find -name '*.ts' | sed 's/^\.\//\t/' | sort
 		echo ')'
+
 		echo ''
+
 		echo "set(${project_uppercase_name}_UIS"
 			find -name '*.ui' | sed 's/^\.\//\t/' | sort
 		echo ')'

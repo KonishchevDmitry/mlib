@@ -42,7 +42,7 @@
 namespace grov { namespace client {
 
 
-const int CURRENT_DB_FORMAT_VERSION = 1;
+const int CURRENT_DB_FORMAT_VERSION = 0;
 
 
 Storage::Storage(QObject* parent)
