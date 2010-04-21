@@ -1,6 +1,4 @@
 * handle application's quit (deleteLater, etc)
-* progress bar
 * unix signals handler
-* browser menu, links, etc
 * rename src to grov
 
