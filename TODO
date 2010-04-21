@@ -1,8 +1,6 @@
-* cmake boost rules
 * handle application's quit (deleteLater, etc)
 * progress bar
 * unix signals handler
-* progress dialog when going offline/online
 * browser menu, links, etc
 * rename src to grov
 

@@ -15,9 +15,20 @@
 #      and functions.
 
 
-find_package(Qt4 COMPONENTS QtCore ${MLIB_APP_QT_MODULES} REQUIRED)
-include(${QT_USE_FILE})
-set(MLIB_LIBRARIES ${MLIB_LIBRARIES} ${QT_LIBRARIES})
+# Boost -->
+	find_package(Boost 1.34 REQUIRED)
+	if(Boost_FOUND)
+		include_directories(${Boost_INCLUDE_DIRS})
+		set(MLIB_LIBRARIES ${MLIB_LIBRARIES} ${Boost_LIBRARIES})
+	endif()
+# Boost <--
+
+
+# Qt -->
+	find_package(Qt4 COMPONENTS QtCore ${MLIB_APP_QT_MODULES} REQUIRED)
+	include(${QT_USE_FILE})
+	set(MLIB_LIBRARIES ${MLIB_LIBRARIES} ${QT_LIBRARIES})
+# Qt <--
 
 
 # Defines -->
