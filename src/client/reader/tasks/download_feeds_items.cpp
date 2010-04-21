@@ -51,13 +51,15 @@ namespace Download_feeds_items_aux {
 
 		this->web_page->networkAccessManager()->setCache(this->cache);
 
+		// Qt::QueuedConnection is to prevent a recursion in case of simple
+		// item's summaries without external elements.
+		connect(this->web_page, SIGNAL(loadFinished(bool)),
+			this, SLOT(page_load_finished(bool)), Qt::QueuedConnection );
+
 		this->timeout_timer->setSingleShot(true);
 		this->timeout_timer->setInterval(config::page_mirroring_timeout * 1000);
 		connect(this->timeout_timer, SIGNAL(timeout()),
 			this, SLOT(page_loading_timed_out()) );
-
-		connect(this->web_page, SIGNAL(loadFinished(bool)),
-			this, SLOT(page_load_finished(bool)), Qt::QueuedConnection );
 	}
 
 
@@ -65,26 +67,18 @@ namespace Download_feeds_items_aux {
 	Mirroring_stream::~Mirroring_stream(void)
 	{
 		MLIB_D("[%1] Destroying...", this);
-		this->disconnect_all();
 	}
 
 
 
-	void Mirroring_stream::disconnect_all(void)
-	{
-		disconnect(this->web_page, NULL, this, NULL);
-		disconnect(this->timeout_timer, NULL, this, NULL);
-	}
-
-
-
-	void Mirroring_stream::mirror_next(void)
+	bool Mirroring_stream::mirror_next(void)
 	{
 		try
 		{
 			this->item = this->storage->get_next_item();
 			#warning
 			this->item.url = "http://server.lab83/papercraft/test/" + QString::number(this->item.id) + "/";
+			//this->item.url = "http://server.lab83/papercraft/test/1/";
 			this->summary_mirrored = false;
 
 			MLIB_D("[%1] Mirroring item's '%2' (%3) summary...", this, this->item.title, this->item.url);
@@ -104,19 +98,20 @@ namespace Download_feeds_items_aux {
 		}
 		catch(Storage::No_more_items&)
 		{
-			this->disconnect_all();
 			emit this->finished();
 		}
 		catch(Storage::No_selected_items&)
 		{
-			this->disconnect_all();
 			emit this->error(tr("Logical error."));
+			return false;
 		}
 		catch(m::Exception& e)
 		{
-			this->disconnect_all();
 			emit this->error(EE(e));
+			return false;
 		}
+
+		return true;
 	}
 
 
@@ -158,38 +153,18 @@ Download_feeds_items::Download_feeds_items(Storage* storage, QObject* parent)
 	Task(parent),
 	storage(storage)
 {
-	#warning
-	for(size_t i = 0; i < 10; i++)
+	for(int i = 0; i < config::mirroring_streams_num; i++)
 	{
 		Mirroring_stream* stream = new Mirroring_stream(storage, this);
 
 		connect(stream, SIGNAL(finished()),
-			this, SLOT(stream_finished()),
-			Qt::QueuedConnection );
+			this, SLOT(stream_finished()) );
 
 		connect(stream, SIGNAL(error(const QString&)),
-			this, SLOT(stream_error(const QString&)),
-			Qt::QueuedConnection );
+			this, SLOT(stream_error(const QString&)) );
 
 		this->streams << stream;
 	}
-}
-
-
-
-void Download_feeds_items::cancel(void)
-{
-	this->close_all_streams();
-	this->storage->set_current_source_to_none();
-}
-
-
-
-void Download_feeds_items::close_all_streams(void)
-{
-	Q_FOREACH(Mirroring_stream* stream, this->streams)
-		delete stream;
-	this->streams.clear();
 }
 
 
@@ -200,8 +175,8 @@ void Download_feeds_items::process(void)
 
 #warning
 #if 0 && GROV_OFFLINE_DEVELOPMENT
-	emit this->downloaded();
 	this->finish();
+	emit this->downloaded();
 #else
 	this->storage->set_current_source_to_all();
 
@@ -209,7 +184,8 @@ void Download_feeds_items::process(void)
 	{
 		QSet<Mirroring_stream*> streams = this->streams;
 		Q_FOREACH(Mirroring_stream* stream, streams)
-			stream->mirror_next();
+			if(!stream->mirror_next())
+				break;
 	}
 	// Running mirroring in all streams <--
 #endif
@@ -219,7 +195,9 @@ void Download_feeds_items::process(void)
 
 void Download_feeds_items::stream_error(const QString& error)
 {
-	this->close_all_streams();
+	Q_FOREACH(Mirroring_stream* stream, this->streams)
+		stream->deleteLater();
+	this->streams.clear();
 	this->failed(error);
 }
 
@@ -229,13 +207,14 @@ void Download_feeds_items::stream_finished(void)
 {
 	Mirroring_stream* stream =
 		m::checked_qobject_cast<Mirroring_stream*>(this->sender());
+
 	this->streams.remove(stream);
-	delete stream;
+	stream->deleteLater();
 
 	if(this->streams.empty())
 	{
-		emit this->downloaded();
 		this->finish();
+		emit this->downloaded();
 	}
 }
 

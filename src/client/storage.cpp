@@ -284,7 +284,7 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 	try
 	{
 		QSqlQuery query = this->prepare(
-			"INSERT OR REPLACE INTO web_cache ("
+			"INSERT OR IGNORE INTO web_cache ("
 				"url, content_type, data"
 			") values ("
 				":url, :content_type, :data"
@@ -547,6 +547,16 @@ void Storage::create_db_tables(void)
 
 void Storage::end_editing(void)
 {
+	#warning
+	#warning
+	#warning
+	#warning
+	#warning
+	#warning
+	#warning
+	#warning
+	#warning
+	this->set_current_source_to_none();
 	try
 	{
 		this->exec("COMMIT");

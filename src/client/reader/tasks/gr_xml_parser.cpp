@@ -168,6 +168,8 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 			}
 			// Labels <--
 
+			#warning
+			if(items.size() < 10)
 			items << item;
 		}
 	}

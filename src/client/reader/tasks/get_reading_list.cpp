@@ -93,6 +93,8 @@ void Get_reading_list::on_items_downloaded(void)
 	#warning
 	this->finish();
 	emit this->reading_list_gotten();
+	#warning
+	disconnect(this, SIGNAL(reading_list_gotten()), NULL, NULL);
 }
 
 

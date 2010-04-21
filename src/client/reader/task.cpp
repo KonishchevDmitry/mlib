@@ -38,6 +38,17 @@ Task::Task(QObject* parent)
 
 Task::~Task(void)
 {
+	#warning
+	{
+		QObjectList children = this->children();
+
+		while(!children.isEmpty())
+		{
+			delete children[0];
+			children = this->children();
+		}
+	}
+
 	if(this->is_cancelled())
 	{
 		MLIB_D("Task [%1] is cancelled.", this);
@@ -91,7 +102,7 @@ bool Task::is_cancelled(void)
 void Task::process_task(Task* task)
 {
 	connect(task, SIGNAL(error(const QString&)),
-		this, SLOT(child_task_error(const QString&)) );
+		this, SLOT(child_task_error(const QString&)), Qt::QueuedConnection );
 
 	task->process();
 }

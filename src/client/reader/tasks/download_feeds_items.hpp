@@ -24,8 +24,6 @@
 class QTimer;
 class QWebPage;
 
-#include <boost/shared_ptr.hpp>
-
 #include <QtCore/QSet>
 
 #include <src/common.hpp>
@@ -79,11 +77,9 @@ namespace Download_feeds_items_aux {
 
 		public:
 			/// Mirrors a next feed item.
-			void	mirror_next(void);
-
-		private:
-			/// Disconnects all signals from us.
-			void	disconnect_all(void);
+			///
+			/// @return false on error.
+			bool	mirror_next(void);
 
 
 		signals:
@@ -132,19 +128,11 @@ class Download_feeds_items: public Task
 		/// Processes the task.
 		virtual void	process(void);
 
-	private:
-		/// Immediately closes all opened mirroring streams.
-		void			close_all_streams(void);
-
 
 	signals:
 		/// This signal is emitted when we have downloaded all items.
 		void			downloaded(void);
 
-
-	public slots:
-		/// Cancels the task.
-		virtual void	cancel(void);
 
 	private slots:
 		/// Called when mirroring fails.
@@ -152,8 +140,6 @@ class Download_feeds_items: public Task
 
 		/// Called when stream finishes mirroring.
 		void			stream_finished(void);
-
-//	private slots:
 };
 
 

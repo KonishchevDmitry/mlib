@@ -251,6 +251,8 @@ void Client::offline_data_flushed(void)
 
 void Client::offline_data_gotten(void)
 {
+	MLIB_D("Offline data gotten.");
+
 	MLIB_A(this->mode == MODE_GOING_OFFLINE);
 
 	try
@@ -271,6 +273,9 @@ void Client::offline_data_gotten(void)
 
 void Client::reader_cancelled(void)
 {
+	#warning
+	MLIB_D("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+
 	switch(this->current_mode())
 	{
 		case MODE_GOING_OFFLINE:

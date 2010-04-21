@@ -82,11 +82,12 @@ void Reader::process_task(reader::Task* task)
 	connect(this, SIGNAL(cancel_all_tasks()),
 		task, SLOT(cancel()) );
 
+	#warning
 	connect(task, SIGNAL(cancelled()),
-		this, SIGNAL(cancelled()) );
+		this, SIGNAL(cancelled()), Qt::QueuedConnection );
 
 	connect(task, SIGNAL(error(const QString&)),
-		this, SIGNAL(error(const QString&)) );
+		this, SIGNAL(error(const QString&)), Qt::QueuedConnection );
 
 	task->process();
 }
