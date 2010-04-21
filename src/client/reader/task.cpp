@@ -38,17 +38,6 @@ Task::Task(QObject* parent)
 
 Task::~Task(void)
 {
-	#warning
-	{
-		QObjectList children = this->children();
-
-		while(!children.isEmpty())
-		{
-			delete children[0];
-			children = this->children();
-		}
-	}
-
 	if(this->is_cancelled())
 	{
 		MLIB_D("Task [%1] is cancelled.", this);

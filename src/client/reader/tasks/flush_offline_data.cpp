@@ -71,14 +71,14 @@ void Flush_offline_data::authenticated(void)
 void Flush_offline_data::flush(void)
 {
 #if GROV_OFFLINE_DEVELOPMENT
-	emit this->flushed();
 	this->finish();
+	emit this->flushed();
 #else
 	// If we flushed all data -->
 		if(this->flush_start == this->changed_items.end())
 		{
-			emit this->flushed();
 			this->finish();
+			emit this->flushed();
 			return;
 		}
 	// If we flushed all data <--

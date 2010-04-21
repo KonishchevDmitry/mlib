@@ -21,7 +21,6 @@
 #ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
 #define GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
 
-
 #include <src/common.hpp>
 
 #include <src/client/storage.hxx>

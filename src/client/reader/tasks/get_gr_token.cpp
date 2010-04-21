@@ -79,8 +79,8 @@ void Get_gr_token::request_finished(const QString& error, const QByteArray& repl
 		}
 
 		MLIB_D("Gotten Google Reader's API token: '%1'.", reply);
-		emit this->token_gotten(reply);
 		this->finish();
+		emit this->token_gotten(reply);
 	}
 	catch(m::Exception& e)
 	{

@@ -55,7 +55,7 @@ void Google_reader_task::get_token(void)
 	tasks::Get_gr_token* task = new tasks::Get_gr_token(this->auth_id, this);
 
 	connect(task, SIGNAL(token_gotten(const QString&)),
-		this, SLOT(on_token_gotten(const QString&)) );
+		this, SLOT(on_token_gotten(const QString&)), Qt::QueuedConnection );
 
 	this->process_task(task);
 }
@@ -96,7 +96,7 @@ void Google_reader_task::process(void)
 			new tasks::Login_to_google_reader(this->login, this->password, this);
 
 		connect(task, SIGNAL(authenticated(const QString&)),
-			this, SLOT(on_authenticated(const QString&)) );
+			this, SLOT(on_authenticated(const QString&)), Qt::QueuedConnection );
 
 		this->process_task(task);
 	}

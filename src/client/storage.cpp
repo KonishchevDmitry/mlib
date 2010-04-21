@@ -78,6 +78,23 @@ Storage::Storage(QObject* parent)
 	}
 	// Opening the database <--
 
+	// Locking the database -->
+		try
+		{
+			this->exec("PRAGMA locking_mode = EXCLUSIVE");
+
+			// We must make some changes to trigger the lock
+			m::db::Scoped_transaction transaction(*this->db);
+				this->exec("CREATE TABLE lock_table (id INTEGER)");
+				this->exec("DROP TABLE lock_table");
+			transaction.commit();
+		}
+		catch(m::Exception& e)
+		{
+			M_THROW(PAM( tr("Error while locking the database."), EE(e) ));
+		}
+	// Locking the database <--
+
 	// Preparing the database -->
 		if(this->db->tables().empty())
 			this->create_db_tables();
@@ -119,10 +136,6 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 
 	try
 	{
-	#warning
-		// For SQLite it really speeds up many insertions.
-		//m::db::Scoped_transaction transaction(*this->db);
-
 		// Adding feeds -->
 		{
 			QSqlQuery insert_feed_query = this->prepare(
@@ -177,9 +190,6 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 		}
 		// Adding feeds <--
 
-	#warning
-		//transaction.commit();
-
 		// TODO: odd emits
 		emit feed_tree_changed();
 	}
@@ -200,10 +210,6 @@ void Storage::add_items(const Gr_feed_item_list& items)
 	try
 	{
 		QHash<QString, Big_id> feeds;
-
-	#warning
-		// For SQLite it really speeds up many insertions.
-	//	m::db::Scoped_transaction transaction(*this->db);
 
 		// Getting all known feeds -->
 		{
@@ -261,9 +267,6 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		}
 		// Adding items <--
 
-	#warning
-	//	transaction.commit();
-
 		// TODO: odd emits
 		emit feed_tree_changed();
 	}
@@ -309,6 +312,10 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 
 void Storage::cancel_editing(void)
 {
+	// We must destroy all queries started inside the transaction before
+	// rolling back it.
+	this->set_current_source_to_none();
+
 	try
 	{
 		this->exec("ROLLBACK");
@@ -547,16 +554,10 @@ void Storage::create_db_tables(void)
 
 void Storage::end_editing(void)
 {
-	#warning
-	#warning
-	#warning
-	#warning
-	#warning
-	#warning
-	#warning
-	#warning
-	#warning
+	// We must destroy all queries started inside the transaction before
+	// committing it.
 	this->set_current_source_to_none();
+
 	try
 	{
 		this->exec("COMMIT");
@@ -1209,6 +1210,7 @@ void Storage::start_editing(void)
 {
 	try
 	{
+		// This is really speeds up many insertions for SQLite
 		this->exec("BEGIN");
 	}
 	catch(m::Exception& e)

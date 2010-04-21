@@ -116,8 +116,8 @@ void Get_feed_list::request_finished(const QString& error, const QByteArray& rep
 		// Throws m::Exception
 		this->storage->add_feeds(feeds);
 
-		emit this->feeds_gotten();
 		this->finish();
+		emit this->feeds_gotten();
 	}
 	catch(m::Exception& e)
 	{

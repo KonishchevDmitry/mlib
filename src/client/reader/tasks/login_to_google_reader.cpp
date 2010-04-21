@@ -75,8 +75,8 @@ void Login_to_google_reader::request_finished(const QString& error, const QByteA
 		// Throws m::Exception.
 		QString auth_id = this->get_auth_id(reply);
 		MLIB_D("Auth id gotten: '%1'.", auth_id);
-		emit this->authenticated(auth_id);
 		this->finish();
+		emit this->authenticated(auth_id);
 	}
 	catch(m::Exception& e)
 	{

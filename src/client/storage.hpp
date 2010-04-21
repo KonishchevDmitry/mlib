@@ -130,10 +130,11 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void					add_web_cache_entry(const Web_cache_entry& entry);
 
-	#warning
+		/// Cancels all changes made in the editing mode, started by
+		/// start_editing(), and ends it.
 		void					cancel_editing(void);
 
-	#warning
+		/// Ends the editing mode started by start_editing().
 		void					end_editing(void);
 
 		/// Returns current feed tree.
@@ -194,7 +195,16 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void					star(Big_id id, bool is);
 
-	#warning
+		/// Switch storage to editing mode.
+		///
+		/// This mode is not necessary but it really speeds up data writing.
+		/// You must call end_editing() or cancel_editing() when you end storage
+		/// editing.
+		///
+		/// \attention
+		/// This method internally starts a SQL transaction so you can call only
+		/// those methods of the storage in the editing mode, which is not using
+		/// transactions internally.
 		void					start_editing(void);
 
 	protected:

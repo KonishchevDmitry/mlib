@@ -94,7 +94,7 @@ namespace Download_feeds_items_aux {
 			#warning
 			//this->web_page->mainFrame()->setHtml(this->item.summary);
 			//this->timeout_timer->start();
-			this->page_load_finished(true);
+			emit this->page_load_finished(true);
 		}
 		catch(Storage::No_more_items&)
 		{
