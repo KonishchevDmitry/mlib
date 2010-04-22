@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# Creates source tarballs and Debian source packages for Ubuntu
+#
+
+
+package_name=""
+package_version=""
+
+
+build_packages()
+{(
+	local src_debian_dir="$src_dir/debian"
+	local package_dir="$package_name-$package_version"
+	local package_debian_dir="$package_dir/debian"
+
+	for dist in karmic lucid
+	do
+		rm -rf "$package_dir"
+		tar -xf "${package_name}_${package_version}.orig.tar.gz"
+
+		# Creating Debian package files -->
+			cp -r "$src_debian_dir" "$package_debian_dir"
+			(
+				sed -n '1,/ --/p' "$src_debian_dir/changelog" | \
+					sed -r '1s/([^ ]+)\s+\(([0-9.]+)[^)]*\)\s+[^;]+/\1 (\2-0ubuntu1~ppa1~'$dist'1) '$dist'/' | \
+					sed '/^  \*/d' | sed '2a\  * '$(echo $dist | awk '{ printf "%s%s", toupper(substr($1, 1, 1)), substr($1, 2) }')' build.'
+				echo ''
+				cat "$src_debian_dir/changelog"
+			) > "$package_debian_dir/changelog"
+		# Creating Debian package files <--
+
+		# Creating package -->
+		(
+			cd "$package_dir"
+			debuild -S -sa || true
+		)
+		# Creating package <--
+
+		rm -rf "$package_dir"
+	done
+)}
+
+
+main()
+{
+	build_dir="package.build"
+
+	(
+		set -e
+
+		mkdir "$build_dir"
+
+		# Creating package's source tarballs
+		( cd "$build_dir" && cmake "$src_dir" && make package_source )
+
+		# Getting package name and version -->
+			package_name=$(basename "$build_dir"/*.tar.gz | awk -F- '{ print $1 }')
+			package_version=$(basename "$build_dir/$package_name"-*.tar.gz | sed 's/\.tar\.gz//' | awk -F- '{ print $2 }')
+
+			if [[ -z "$package_name" || -z "$package_version" ]]
+			then
+				echo "Error! Unable to get package name or version." >&2
+				exit 1
+			fi
+		# Getting package name and version <--
+
+		# Getting *.tar.gz and *.tar.bz2
+		mv "$build_dir/${package_name}-${package_version}.tar."{bz2,gz} .
+
+		# Getting *.orig.tar.gz
+		cp "${package_name}-${package_version}.tar.gz" "${package_name}_${package_version}.orig.tar.gz"
+
+		build_packages
+	)
+
+	rm -rf "$build_dir"
+}
+
+
+if [[ $# -ne 1 || ! -d $1 ]]
+then
+	echo "Usage: $0 /path/to/package/sources" >&2
+	exit 1
+fi
+
+src_dir=$(cd "$1" && pwd) || exit 1
+
+main
+

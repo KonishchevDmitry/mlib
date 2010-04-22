@@ -69,14 +69,14 @@ add_subdirectory(src)
 	set(CPACK_SOURCE_PACKAGE_FILE_NAME "${APP_UNIX_NAME}-${APP_VERSION}")
 	set(CPACK_SOURCE_GENERATOR TGZ TBZ2)
 	set(CPACK_SOURCE_IGNORE_FILES
-		"debian"
-		"src/.vim"
-		"src/tags"
-		"ubuntu"
-		"update_project"
-		"TODO"
-		"\\\\.git"
-		"\\\\.gitignore"
+		"/create_source_packages"
+		"/debian"
+		"/src/.vim"
+		"/src/tags"
+		"/update_project"
+		"/TODO"
+		"/\\\\.git"
+		"/\\\\.gitignore"
 	)
 
 	include(CPack)
