@@ -1,7 +1,32 @@
 #!/bin/bash
 #
-# Updates projects' CMakeProjectFiles.txt
+# Updates all project files before release.
 #
+
+
+create_ubuntu_packages()
+{(
+	local debian_dir="debian"
+	local packages_dir="ubuntu"
+	rm -rf ubuntu/*
+
+	for dist in karmic lucid
+	do
+		local dist_dir="$packages_dir/$dist"
+		local dist_debian_dir="$dist_dir/debian"
+
+		mkdir -p "$dist_dir"
+		cp -r "$debian_dir" "$dist_dir"
+		(
+			sed -n '1,/ --/p' "$debian_dir/changelog" | \
+				sed -r '1s/([^ ]+)\s+\(([0-9.]+)[^)]*\)\s+[^;]+/\1 (\2-0ubuntu1~ppa1~'$dist'1) '$dist'/' | \
+				sed '/^  \*/d' | sed '2a\  * '$(echo $dist | awk '{ printf "%s%s", toupper(substr($1, 1, 1)), substr($1, 2) }')' build.'
+			echo ''
+			cat "$debian_dir/changelog"
+		) > "$dist_debian_dir/changelog"
+	done
+)}
+
 
 update()
 {(
@@ -52,4 +77,5 @@ set -e
 
 update mlib mlib
 update src grov
+create_ubuntu_packages
 

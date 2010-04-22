@@ -1,4 +1,5 @@
 * handle application's quit (deleteLater, etc)
 * unix signals handler
 * rename src to grov
+* rename app from grov to Grov (in debian package too)
 

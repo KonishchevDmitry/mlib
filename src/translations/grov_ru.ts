@@ -4,28 +4,28 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../main.cpp" line="92"/>
-        <location filename="../main.cpp" line="108"/>
+        <location filename="../main.cpp" line="95"/>
+        <location filename="../main.cpp" line="111"/>
         <source>Unable to determine application&apos;s installation directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="93"/>
+        <location filename="../main.cpp" line="96"/>
         <source>Invalid application&apos;s binaries&apos; directory path &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="109"/>
+        <location filename="../main.cpp" line="112"/>
         <source>Invalid application&apos;s binaries&apos; directory path &apos;%1&apos; or gotten application&apos;s binary path &apos;%2&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="174"/>
+        <location filename="../main.cpp" line="177"/>
         <source>Unknown error.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="197"/>
+        <location filename="../main.cpp" line="200"/>
         <source>Usage: %1 [OPTION]...
 
 Options:
@@ -37,22 +37,22 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="222"/>
+        <location filename="../main.cpp" line="225"/>
         <source>Invalid command line option &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="223"/>
+        <location filename="../main.cpp" line="226"/>
         <source>Please run &apos;%2 --help&apos; to view all available options.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="237"/>
+        <location filename="../main.cpp" line="240"/>
         <source>Invalid command line options: --verbose must be specified in conjunction with --debug.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="357"/>
+        <location filename="../main.cpp" line="387"/>
         <source>Unable to start %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -494,28 +494,28 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>grov::main_window::Viewer</name>
     <message>
-        <location filename="../main_window/viewer.cpp" line="93"/>
+        <location filename="../main_window/viewer.cpp" line="152"/>
         <source>Unable to mark feed&apos;s item as read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="115"/>
-        <location filename="../main_window/viewer.cpp" line="132"/>
+        <location filename="../main_window/viewer.cpp" line="174"/>
+        <location filename="../main_window/viewer.cpp" line="191"/>
         <source>Unable to fetch feed&apos;s item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="160"/>
+        <location filename="../main_window/viewer.cpp" line="219"/>
         <source>Unable to star feed&apos;s item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="208"/>
+        <location filename="../main_window/viewer.cpp" line="267"/>
         <source>You have no unread items.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.cpp" line="223"/>
+        <location filename="../main_window/viewer.cpp" line="282"/>
         <source>Please select a label or a feed to view its items.</source>
         <translation type="unfinished"></translation>
     </message>
