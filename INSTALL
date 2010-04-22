@@ -4,4 +4,3 @@ Installation
 Run directly from untar directory:
  $ cmake . && make
  $ sudo make install
-

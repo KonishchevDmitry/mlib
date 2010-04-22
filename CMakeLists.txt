@@ -2,12 +2,14 @@ cmake_minimum_required(VERSION 2.6)
 
 
 # Application's properties -->
-	set(APP_NAME grov)
+	set(APP_NAME Grov)
 	set(APP_UNIX_NAME grov)
+	set(APP_AUTHOR "Dmitry Konishchev")
 
 	set(APP_VERSION_MAJOR 0)
 	set(APP_VERSION_MINOR 1)
 	set(APP_VERSION_PATCH 0)
+	set(APP_VERSION "0.1")
 
 	set(APP_BIN_DIR bin)
 	set(APP_ICONS_DIR share/icons/hicolor)
@@ -47,3 +49,36 @@ cmake_minimum_required(VERSION 2.6)
 
 add_subdirectory(mlib)
 add_subdirectory(src)
+
+
+# CPack -->
+	set(CPACK_PACKAGE_NAME ${APP_UNIX_NAME})
+	set(CPACK_PACKAGE_VENDOR ${APP_AUTHOR})
+
+	set(CPACK_PACKAGE_VERSION_MAJOR ${APP_VERSION_MAJOR})
+	set(CPACK_PACKAGE_VERSION_MINOR ${APP_VERSION_MINOR})
+	set(CPACK_PACKAGE_VERSION_PATCH ${APP_VERSION_PATCH})
+
+	set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
+	set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Google Reader offline viewer")
+
+	set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+	set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README")
+
+
+	set(CPACK_SOURCE_PACKAGE_FILE_NAME "${APP_UNIX_NAME}-${APP_VERSION}")
+	set(CPACK_SOURCE_GENERATOR TGZ TBZ2)
+	set(CPACK_SOURCE_IGNORE_FILES
+		"debian"
+		"src/.vim"
+		"src/tags"
+		"ubuntu"
+		"update_project"
+		"TODO"
+		"\\\\.git"
+		"\\\\.gitignore"
+	)
+
+	include(CPack)
+# CPack <--
+
