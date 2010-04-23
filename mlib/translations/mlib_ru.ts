@@ -33,4 +33,27 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
+<context>
+    <name>m::sys::aux::System_signal_notifier</name>
+    <message>
+        <location filename="../sys/system_signal_notifier.cpp" line="54"/>
+        <source>Operating system signals notifier error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../sys/system_signal_notifier.cpp" line="59"/>
+        <source>Unable to create a pipe:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../sys/system_signal_notifier.cpp" line="69"/>
+        <source>Unable to set non-blocking flag for a pipe:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../sys/system_signal_notifier.cpp" line="93"/>
+        <source>Unable to set signal [%1] handler:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>

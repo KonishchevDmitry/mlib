@@ -25,7 +25,7 @@ update()
 		echo ''
 
 		echo "set(${project_uppercase_name}_MOC_SOURCES"
-			for file in $(find -name '*.hpp')
+			for file in $(find -name '*.hpp' -o  -name '*.hp')
 			do
 				if grep -F Q_OBJECT "$file" > /dev/null
 				then

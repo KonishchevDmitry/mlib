@@ -7,10 +7,12 @@ set(MLIB_SOURCES
 	db/scoped_transaction.cpp
 	gui/core.cpp
 	gui/messages.cpp
+	sys/system_signal_notifier.cpp
 )
 
 set(MLIB_MOC_SOURCES
 	db/scoped_transaction.hpp
+	sys/system_signal_notifier.hp
 )
 
 set(MLIB_TRANSLATIONS

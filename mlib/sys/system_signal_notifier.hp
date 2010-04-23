@@ -18,40 +18,68 @@
 **************************************************************************/
 
 
-#include <QtCore/QtGlobal>
+#ifndef MLIB_HEADER_SYS_SYSTEM_SIGNAL_NOTIFIER_PRIVATE
+#define MLIB_HEADER_SYS_SYSTEM_SIGNAL_NOTIFIER_PRIVATE
 
-#ifdef Q_OS_UNIX
-	#include <cerrno>
-	#include <cstring>
-#endif
-
-#include <mlib/core/messages.hpp>
-
-#include "exception.hpp"
+#include <mlib/core.hpp>
 
 
-namespace m {
-
-
-Exception::Exception(const char* file, int line, const QString& error)
-:
-	error(error)
-{
-#if MLIB_DEBUG_MODE
-	if(messages_aux::DEBUG_LEVEL >= DEBUG_LEVEL_ENABLED)
-		_MLIB_SHOW_MESSAGE_FROM(file, line, MESSAGE_TYPE_DEBUG, return, "Exception", error);
-#endif
-}
-
+namespace m { namespace sys { namespace aux {
 
 
 #ifdef Q_OS_UNIX
-	QString EE(void)
+	/// "Translates" the operating system's signals to Qt's signals.
+	class System_signal_notifier: public QObject
 	{
-		return strerror(errno);
-	}
+		Q_OBJECT
+
+		private:
+			/// Pipes' ids.
+			enum {
+				/// Read pipe.
+				PIPE_READ,
+
+				/// Write pipe.
+				PIPE_WRITE,
+
+				/// Pipes number.
+				PIPE_NUM
+			};
+
+
+		public:
+			System_signal_notifier(void);
+
+
+		private:
+			/// Notifier's singleton.
+			static System_signal_notifier*	singleton;
+
+			/// Pipes through which we transmit the operating system's signals
+			/// to Qt signals.
+			int								pipes[PIPE_NUM];
+
+
+		public:
+			/// Connects a slot to the operating system's signals that
+			/// terminates an application.
+			static void	connect_end_work_signal(QObject* object, const char* slot);
+
+		private:
+			/// Called by the operating system when we get a signal that
+			/// terminates an application.
+			static void	end_work_signal_handler(int signal_no);
+
+
+		signals:
+			/// Emitted when we get a signal from the operating system with
+			/// terminates an application.
+			void	end_work(void);
+	};
 #endif
 
 
-}
+}}}
+
+#endif
 

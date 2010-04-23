@@ -18,40 +18,21 @@
 **************************************************************************/
 
 
-#include <QtCore/QtGlobal>
+#ifndef MLIB_HEADER_SYS_SYSTEM_SIGNAL_NOTIFIER
+#define MLIB_HEADER_SYS_SYSTEM_SIGNAL_NOTIFIER
 
-#ifdef Q_OS_UNIX
-	#include <cerrno>
-	#include <cstring>
+#include <mlib/core.hpp>
+
+
+namespace m { namespace sys {
+
+
+/// Connects a slot to the operating system's signals that terminates an
+/// application.
+void	connect_end_work_system_signal(QObject* object, const char* slot);
+
+
+}}
+
 #endif
-
-#include <mlib/core/messages.hpp>
-
-#include "exception.hpp"
-
-
-namespace m {
-
-
-Exception::Exception(const char* file, int line, const QString& error)
-:
-	error(error)
-{
-#if MLIB_DEBUG_MODE
-	if(messages_aux::DEBUG_LEVEL >= DEBUG_LEVEL_ENABLED)
-		_MLIB_SHOW_MESSAGE_FROM(file, line, MESSAGE_TYPE_DEBUG, return, "Exception", error);
-#endif
-}
-
-
-
-#ifdef Q_OS_UNIX
-	QString EE(void)
-	{
-		return strerror(errno);
-	}
-#endif
-
-
-}
 

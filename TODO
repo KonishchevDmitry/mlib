@@ -1,4 +1,3 @@
 * handle application's quit (deleteLater, etc)
-* unix signals handler
 * disable javascript alert window
 

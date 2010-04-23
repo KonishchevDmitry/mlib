@@ -21,7 +21,8 @@
 #ifndef MLIB_HEADER_CORE_EXCEPTION
 #define MLIB_HEADER_CORE_EXCEPTION
 
-#include <QString>
+#include <QtCore/QString>
+#include <QtCore/QtGlobal>
 
 #include <mlib/core/format.hpp>
 
@@ -50,6 +51,11 @@ class Exception
 };
 
 
+
+#ifdef Q_OS_UNIX
+/// Returns strerror(errno) string.
+QString					EE(void);
+#endif
 
 // Same as std::exception::what(), but returns a QString and may be formats an
 // exception message.

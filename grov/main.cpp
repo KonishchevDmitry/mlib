@@ -36,6 +36,8 @@
 #include <QtGui/QApplication>
 #include <QtGui/QIcon>
 
+#include <mlib/sys/system_signal_notifier.hpp>
+
 #include <grov/client.hpp>
 #include <grov/common.hpp>
 #include <grov/main_window.hpp>
@@ -348,6 +350,9 @@ int main(int argc, char *argv[])
 		}
 	}
 	// Loading translations <--
+
+	// Handle operating system signals
+	m::sys::connect_end_work_system_signal(&app, SLOT(quit()));
 
 	// Setting application icon -->
 		if(!install_dir.isEmpty())
