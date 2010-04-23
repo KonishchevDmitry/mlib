@@ -23,9 +23,9 @@
 
 class QDomDocument;
 
-#include <src/common.hpp>
-#include <src/common/feed.hxx>
-#include <src/common/feed_item.hxx>
+#include <grov/common.hpp>
+#include <grov/common/feed.hxx>
+#include <grov/common/feed_item.hxx>
 
 
 namespace grov { namespace client { namespace reader { namespace tasks {

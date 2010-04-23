@@ -24,10 +24,10 @@
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QMultiMap>
 
-#include <src/common.hpp>
-#include <src/common/feed_tree.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed_tree.hpp>
 
-#include <src/client/storage.hxx>
+#include <grov/client/storage.hxx>
 
 
 namespace grov { namespace main_window { namespace viewer {

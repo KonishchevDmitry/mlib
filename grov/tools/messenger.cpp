@@ -20,8 +20,8 @@
 
 #include <QtCore/QCoreApplication>
 
-#include <src/common.hpp>
-#include <src/main.hpp>
+#include <grov/common.hpp>
+#include <grov/main.hpp>
 
 #include <mlib/gui/messages.hpp>
 

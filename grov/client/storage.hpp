@@ -31,10 +31,10 @@ class QSqlQuery;
 #include <QtCore/QMap>
 #include <QtCore/QSet>
 
-#include <src/common.hpp>
-#include <src/common/feed.hxx>
-#include <src/common/feed_item.hpp>
-#include <src/common/feed_tree.hxx>
+#include <grov/common.hpp>
+#include <grov/common/feed.hxx>
+#include <grov/common/feed_item.hpp>
+#include <grov/common/feed_tree.hxx>
 
 #include "web_cache.hxx"
 

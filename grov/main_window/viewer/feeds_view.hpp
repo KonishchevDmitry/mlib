@@ -26,9 +26,9 @@ class QItemSelectionModel;
 
 #include <QtGui/QTreeView>
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
-#include <src/client/storage.hxx>
+#include <grov/client/storage.hxx>
 
 #include "feeds_model.hxx"
 

@@ -24,7 +24,7 @@
 
 class QNetworkRequest;
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "network_task.hpp"
 

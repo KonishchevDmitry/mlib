@@ -23,8 +23,8 @@
 #include <mlib/gui/core.hpp>
 #include <mlib/gui/messages.hpp>
 
-#include <src/client.hpp>
-#include <src/common.hpp>
+#include <grov/client.hpp>
+#include <grov/common.hpp>
 
 #include "main_window.hpp"
 #include "ui_main_window.h"

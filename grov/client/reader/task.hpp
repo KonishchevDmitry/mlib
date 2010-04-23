@@ -21,7 +21,7 @@
 #ifndef GROV_HEADER_CLIENT_READER_TASK
 #define GROV_HEADER_CLIENT_READER_TASK
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "task.hxx"
 

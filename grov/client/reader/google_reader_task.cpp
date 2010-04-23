@@ -20,7 +20,7 @@
 
 #include <QtNetwork/QNetworkRequest>
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "tasks/get_gr_token.hpp"
 #include "tasks/login_to_google_reader.hpp"

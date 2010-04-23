@@ -21,8 +21,8 @@
 #ifndef GROV_HEADER_CLIENT
 #define GROV_HEADER_CLIENT
 
-#include <src/common.hpp>
-#include <src/common/feed_item.hxx>
+#include <grov/common.hpp>
+#include <grov/common/feed_item.hxx>
 
 #include "client/reader.hxx"
 #include "client/storage.hpp"

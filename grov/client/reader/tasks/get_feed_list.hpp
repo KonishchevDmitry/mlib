@@ -21,10 +21,10 @@
 #ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
 #define GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
-#include <src/client/storage.hxx>
-#include <src/client/reader/google_reader_task.hpp>
+#include <grov/client/storage.hxx>
+#include <grov/client/reader/google_reader_task.hpp>
 
 #include "get_feed_list.hxx"
 

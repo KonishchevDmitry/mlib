@@ -71,8 +71,8 @@ add_subdirectory(${APP_UNIX_NAME})
 	set(CPACK_SOURCE_IGNORE_FILES
 		"/create_source_packages"
 		"/debian"
-		"/src/.vim"
-		"/src/tags"
+		"/grov/.vim"
+		"/grov/tags"
 		"/update_project"
 		"/TODO"
 		"/\\\\.git"

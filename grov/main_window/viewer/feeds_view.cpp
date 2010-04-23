@@ -24,7 +24,7 @@
 #include <QtGui/QItemSelection>
 #include <QtGui/QItemSelectionModel>
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "feeds_model.hpp"
 

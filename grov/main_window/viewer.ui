@@ -126,7 +126,7 @@
   <customwidget>
    <class>grov::main_window::viewer::Feeds_view</class>
    <extends>QTreeView</extends>
-   <header location="global">src/main_window/viewer/feeds_view.hpp</header>
+   <header location="global">grov/main_window/viewer/feeds_view.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

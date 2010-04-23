@@ -23,7 +23,7 @@
 
 #include <QtGui/QDialog>
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 
 namespace grov { namespace client {

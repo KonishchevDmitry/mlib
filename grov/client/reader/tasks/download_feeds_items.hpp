@@ -26,12 +26,12 @@ class QWebPage;
 
 #include <QtCore/QSet>
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
-#include <src/common/feed_item.hpp>
+#include <grov/common/feed_item.hpp>
 
-#include <src/client/reader/task.hpp>
-#include <src/client/storage.hxx>
+#include <grov/client/reader/task.hpp>
+#include <grov/client/storage.hxx>
 
 #include "download_feeds_items.hxx"
 

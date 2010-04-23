@@ -21,7 +21,7 @@
 #ifndef GROV_HEADER_COMMON_FEED_ITEM
 #define GROV_HEADER_COMMON_FEED_ITEM
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "feed_item.hxx"
 

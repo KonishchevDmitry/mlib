@@ -117,7 +117,7 @@
   <customwidget>
    <class>grov::main_window::Viewer</class>
    <extends>QWidget</extends>
-   <header location="global">src/main_window/viewer.hpp</header>
+   <header location="global">grov/main_window/viewer.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

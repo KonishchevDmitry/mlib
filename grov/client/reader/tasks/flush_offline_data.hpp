@@ -22,11 +22,11 @@
 #define GROV_HEADER_CLIENT_READER_TASKS_FLUSH_OFFLINE_DATA
 
 
-#include <src/common.hpp>
-#include <src/common/feed_item.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed_item.hpp>
 
-#include <src/client/storage.hxx>
-#include <src/client/reader/google_reader_task.hpp>
+#include <grov/client/storage.hxx>
+#include <grov/client/reader/google_reader_task.hpp>
 
 #include "flush_offline_data.hxx"
 

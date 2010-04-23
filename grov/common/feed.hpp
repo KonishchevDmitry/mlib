@@ -23,7 +23,7 @@
 
 #include <QtCore/QSet>
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "feed.hxx"
 

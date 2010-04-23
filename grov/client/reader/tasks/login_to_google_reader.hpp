@@ -21,9 +21,9 @@
 #ifndef GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
 #define GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
-#include <src/client/reader/network_task.hpp>
+#include <grov/client/reader/network_task.hpp>
 
 #include "login_to_google_reader.hxx"
 

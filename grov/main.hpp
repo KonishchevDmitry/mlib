@@ -20,7 +20,7 @@
 
 class QWidget;
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 
 namespace grov {

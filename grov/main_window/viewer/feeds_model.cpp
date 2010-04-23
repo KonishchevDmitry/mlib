@@ -22,10 +22,10 @@
 #include <QtCore/QModelIndex>
 #include <QtCore/QVariant>
 
-#include <src/common.hpp>
-#include <src/common/feed_tree.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed_tree.hpp>
 
-#include <src/client/storage.hpp>
+#include <grov/client/storage.hpp>
 
 #include "feeds_model.hpp"
 

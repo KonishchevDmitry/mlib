@@ -26,7 +26,7 @@ class QNetworkReply;
 class QNetworkRequest;
 class QTimer;
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "task.hpp"
 

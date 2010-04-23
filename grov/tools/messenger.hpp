@@ -21,7 +21,7 @@
 #ifndef GROV_HEADER_TOOLS_MESSENGER
 #define GROV_HEADER_TOOLS_MESSENGER
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "messenger.hxx"
 

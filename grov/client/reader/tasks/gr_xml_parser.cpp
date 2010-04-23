@@ -21,9 +21,9 @@
 #include <QtCore/QSet>
 #include <QtXml/QDomDocument>
 
-#include <src/common.hpp>
-#include <src/common/feed.hpp>
-#include <src/common/feed_item.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed.hpp>
+#include <grov/common/feed_item.hpp>
 
 #include "gr_xml_parser.hpp"
 

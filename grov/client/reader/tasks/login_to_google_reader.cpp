@@ -20,8 +20,8 @@
 
 #include <QtCore/QUrl>
 
-#include <src/common.hpp>
-#include <src/main.hpp>
+#include <grov/common.hpp>
+#include <grov/main.hpp>
 
 #include "login_to_google_reader.hpp"
 

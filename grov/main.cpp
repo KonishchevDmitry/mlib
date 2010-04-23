@@ -36,9 +36,9 @@
 #include <QtGui/QApplication>
 #include <QtGui/QIcon>
 
-#include <src/client.hpp>
-#include <src/common.hpp>
-#include <src/main_window.hpp>
+#include <grov/client.hpp>
+#include <grov/common.hpp>
+#include <grov/main_window.hpp>
 
 #include <tools/messenger.hpp>
 

@@ -24,11 +24,11 @@
 
 #include <QtCore/QUrl>
 
-#include <src/common.hpp>
-#include <src/common/feed_item.hpp>
-#include <src/main.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed_item.hpp>
+#include <grov/main.hpp>
 
-#include <src/client/storage.hpp>
+#include <grov/client/storage.hpp>
 
 #include "download_feeds_items.hpp"
 #include "get_feed_list.hpp"

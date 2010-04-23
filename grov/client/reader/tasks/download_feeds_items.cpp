@@ -23,11 +23,11 @@
 #include <QtWebKit/QWebFrame>
 #include <QtWebKit/QWebPage>
 
-#include <src/common.hpp>
-#include <src/common/feed_item.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed_item.hpp>
 
-#include <src/client/storage.hpp>
-#include <src/client/web_cache.hpp>
+#include <grov/client/storage.hpp>
+#include <grov/client/web_cache.hpp>
 
 #include "download_feeds_items.hpp"
 

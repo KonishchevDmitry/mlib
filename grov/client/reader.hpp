@@ -21,7 +21,7 @@
 #ifndef GROV_HEADER_CLIENT_READER
 #define GROV_HEADER_CLIENT_READER
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "storage.hxx"
 

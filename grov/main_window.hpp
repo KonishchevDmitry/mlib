@@ -25,8 +25,8 @@ class QMessageBox;
 
 #include <QtGui/QMainWindow>
 
-#include <src/client.hpp>
-#include <src/common.hpp>
+#include <grov/client.hpp>
+#include <grov/common.hpp>
 
 
 namespace grov {

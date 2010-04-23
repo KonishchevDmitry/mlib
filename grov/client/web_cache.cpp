@@ -26,8 +26,8 @@
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
-#include <src/common.hpp>
-#include <src/client/storage.hpp>
+#include <grov/common.hpp>
+#include <grov/client/storage.hpp>
 
 #include "web_cache.hpp"
 

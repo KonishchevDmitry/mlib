@@ -27,8 +27,8 @@
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
-#include <src/common.hpp>
-#include <src/main.hpp>
+#include <grov/common.hpp>
+#include <grov/main.hpp>
 
 #include "network_task.hpp"
 

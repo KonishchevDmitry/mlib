@@ -21,7 +21,7 @@
 #ifndef GROV_HEADER_COMMON_FEED_ITEM_FWD
 #define GROV_HEADER_COMMON_FEED_ITEM_FWD
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 namespace grov {
 

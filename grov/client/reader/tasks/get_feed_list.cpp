@@ -24,11 +24,11 @@
 
 #include <QtCore/QUrl>
 
-#include <src/common.hpp>
-#include <src/common/feed.hpp>
-#include <src/main.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed.hpp>
+#include <grov/main.hpp>
 
-#include <src/client/storage.hpp>
+#include <grov/client/storage.hpp>
 
 #include "gr_xml_parser.hpp"
 

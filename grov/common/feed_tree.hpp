@@ -23,7 +23,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "feed_tree.hxx"
 

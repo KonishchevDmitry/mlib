@@ -25,10 +25,10 @@ class QUrl;
 
 #include <QtGui/QWidget>
 
-#include <src/common.hpp>
-#include <src/common/feed_item.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed_item.hpp>
 
-#include <src/client/storage.hxx>
+#include <grov/client/storage.hxx>
 
 
 namespace grov { namespace main_window {

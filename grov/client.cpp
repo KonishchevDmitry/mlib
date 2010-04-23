@@ -22,7 +22,7 @@
 	#include <QtCore/QFile>
 #endif
 
-#include <src/common.hpp>
+#include <grov/common.hpp>
 
 #include "client/login_dialog.hpp"
 #include "client/reader.hpp"

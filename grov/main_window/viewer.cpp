@@ -22,11 +22,11 @@
 
 #include <QtCore/QUrl>
 
-#include <src/common.hpp>
-#include <src/common/feed_item.hpp>
+#include <grov/common.hpp>
+#include <grov/common/feed_item.hpp>
 
-#include <src/client/storage.hpp>
-#include <src/client/web_cache.hpp>
+#include <grov/client/storage.hpp>
+#include <grov/client/web_cache.hpp>
 
 #include "viewer.hpp"
 #include "ui_viewer.h"
@@ -97,7 +97,7 @@ Viewer::Viewer(QWidget *parent)
 	ui->setupUi(this);
 
 	BOOST_FOREACH(QWebPage::WebAction action, disabled_web_actions)
-		ui->items_view->pageAction(action)->setVisible(false);
+		ui->item_view->pageAction(action)->setVisible(false);
 
 	ui->item_view->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 	connect(ui->item_view, SIGNAL(linkClicked(const QUrl&)),

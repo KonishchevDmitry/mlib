@@ -30,8 +30,8 @@ class QNetworkReply;
 #include <QtNetwork/QAbstractNetworkCache>
 #include <QtNetwork/QNetworkAccessManager>
 
-#include <src/common.hpp>
-#include <src/client/storage.hxx>
+#include <grov/common.hpp>
+#include <grov/client/storage.hxx>
 
 #include "web_cache.hxx"
 

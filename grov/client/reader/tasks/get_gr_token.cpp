@@ -20,8 +20,8 @@
 
 #include <QtCore/QUrl>
 
-#include <src/common.hpp>
-#include <src/main.hpp>
+#include <grov/common.hpp>
+#include <grov/main.hpp>
 
 #include "get_gr_token.hpp"
 

@@ -20,7 +20,7 @@
 
 #include <mlib/core.hpp>
 
-#include <src/config.hpp>
+#include <grov/config.hpp>
 
 #if GROV_DEVELOP_MODE
 	/// If defined, application do not gets any data from the internet - all
