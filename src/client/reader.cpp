@@ -54,7 +54,7 @@ void Reader::flush_offline_data(const QString& login, const QString& password)
 		new reader::tasks::Flush_offline_data(this->storage, login, password, this);
 
 	connect(task, SIGNAL(flushed()),
-		this, SIGNAL(offline_data_flushed()) );
+		this, SIGNAL(offline_data_flushed()), Qt::QueuedConnection );
 
 	this->process_task(task);
 }
@@ -69,7 +69,7 @@ void Reader::get_reading_list(const QString& login, const QString& password)
 		new reader::tasks::Get_reading_list(this->storage, login, password, this);
 
 	connect(task, SIGNAL(reading_list_gotten()),
-		this, SIGNAL(reading_list_gotten()) );
+		this, SIGNAL(reading_list_gotten()), Qt::QueuedConnection );
 
 	this->process_task(task);
 }
@@ -82,10 +82,10 @@ void Reader::process_task(reader::Task* task)
 		task, SLOT(cancel()) );
 
 	connect(task, SIGNAL(cancelled()),
-		this, SIGNAL(cancelled()) );
+		this, SIGNAL(cancelled()), Qt::QueuedConnection );
 
 	connect(task, SIGNAL(error(const QString&)),
-		this, SIGNAL(error(const QString&)) );
+		this, SIGNAL(error(const QString&)), Qt::QueuedConnection );
 
 	task->process();
 }

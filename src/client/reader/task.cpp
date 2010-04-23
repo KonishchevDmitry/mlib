@@ -91,7 +91,7 @@ bool Task::is_cancelled(void)
 void Task::process_task(Task* task)
 {
 	connect(task, SIGNAL(error(const QString&)),
-		this, SLOT(child_task_error(const QString&)) );
+		this, SLOT(child_task_error(const QString&)), Qt::QueuedConnection );
 
 	task->process();
 }

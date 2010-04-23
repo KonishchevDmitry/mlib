@@ -20,10 +20,13 @@
 
 #include <boost/foreach.hpp>
 
+#include <QtCore/QUrl>
+
 #include <src/common.hpp>
 #include <src/common/feed_item.hpp>
 
 #include <src/client/storage.hpp>
+#include <src/client/web_cache.hpp>
 
 #include "viewer.hpp"
 #include "ui_viewer.h"
@@ -96,6 +99,10 @@ Viewer::Viewer(QWidget *parent)
 	BOOST_FOREACH(QWebPage::WebAction action, disabled_web_actions)
 		ui->items_view->pageAction(action)->setVisible(false);
 
+	ui->item_view->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+	connect(ui->item_view, SIGNAL(linkClicked(const QUrl&)),
+		this, SLOT(link_clicked(const QUrl&)) );
+
 	ui->star_check_box->addAction(ui->star_action);
 	this->set_no_selected_feed();
 }
@@ -114,16 +121,21 @@ void Viewer::connect_to_storage(client::Storage* storage)
 	MLIB_A(!this->storage);
 	this->storage = storage;
 
-	ui->feeds_view->connect_to_storage(this->storage);
+	ui->item_view->page()->setNetworkAccessManager(
+		new client::Web_cached_manager(this->storage, this) );
 
-	connect(ui->feeds_view, SIGNAL(unselected()),
-		this, SLOT(set_no_selected_feed()) );
+	// Feeds_view -->
+		ui->feeds_view->connect_to_storage(this->storage);
 
-	connect(ui->feeds_view, SIGNAL(feed_selected(Big_id)),
-		this, SLOT(feed_selected(Big_id)) );
+		connect(ui->feeds_view, SIGNAL(unselected()),
+			this, SLOT(set_no_selected_feed()) );
 
-	connect(ui->feeds_view, SIGNAL(label_selected(Big_id)),
-		this, SLOT(label_selected(Big_id)) );
+		connect(ui->feeds_view, SIGNAL(feed_selected(Big_id)),
+			this, SLOT(feed_selected(Big_id)) );
+
+		connect(ui->feeds_view, SIGNAL(label_selected(Big_id)),
+			this, SLOT(label_selected(Big_id)) );
+	// Feeds_view <--
 }
 
 
@@ -203,6 +215,30 @@ void Viewer::label_selected(Big_id id)
 
 
 
+void Viewer::link_clicked(const QUrl& qurl)
+{
+	QString url = qurl.toString();
+	MLIB_D("User clicked link '%1'.", url);
+
+	if(!url.isEmpty() && url == this->current_item.url)
+	{
+		try
+		{
+			if(this->storage->is_in_web_cache(url))
+			{
+				MLIB_D("This is item's cached page. Loading it...");
+				ui->item_view->load(url);
+			}
+		}
+		catch(m::Exception& e)
+		{
+			MLIB_W(tr("Error while loading clicked link's page"), EE(e));
+		}
+	}
+}
+
+
+
 void Viewer::on_star_check_box_stateChanged(int state)
 {
 	try
@@ -239,15 +275,13 @@ void Viewer::select_no_feed(void)
 
 void Viewer::set_current_item(const Db_feed_item& item)
 {
-	QString html;
-
-	html += "<html><body>";
-	if(!item.title.isEmpty())
-		html += "<h1 style='font-size: 14pt'>" + item.title + "</h1>";
-	html += item.summary;
-	html += "</body></html>";
-
-	ui->items_view->setHtml(html);
+	ui->item_view->setHtml(_F(
+		"<html><body>"
+			"<a href='%1'><h1 style='font-size: 14pt'>%2</h1></a>"
+			"%3"
+		"</body></html>",
+		QUrl::toPercentEncoding(item.url), item.title, item.summary
+	));
 
 	this->current_item = item;
 
@@ -267,7 +301,7 @@ void Viewer::set_no_more_items(void)
 	html += tr("You have no unread items.");
 	html += "</center></body></html>";
 
-	ui->items_view->setHtml(html);
+	ui->item_view->setHtml(html);
 
 	this->reset_current_item();
 }
@@ -282,7 +316,7 @@ void Viewer::set_no_selected_feed(void)
 	html += tr("Please select a label or a feed to view its items.");
 	html += "</center></body></html>";
 
-	ui->items_view->setHtml(html);
+	ui->item_view->setHtml(html);
 
 	this->reset_current_item();
 }

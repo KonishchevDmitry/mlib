@@ -209,6 +209,7 @@ void Client::go_offline(void)
 			this->clear();
 
 			this->change_mode(MODE_GOING_OFFLINE);
+			this->start_editing();
 			this->reader->get_reading_list(login, password);
 		}
 		catch(m::Exception& e)
@@ -249,10 +250,13 @@ void Client::offline_data_flushed(void)
 
 void Client::offline_data_gotten(void)
 {
+	MLIB_D("Offline data gotten.");
+
 	MLIB_A(this->mode == MODE_GOING_OFFLINE);
 
 	try
 	{
+		this->end_editing();
 		this->set_mode(MODE_OFFLINE);
 		this->change_mode(MODE_OFFLINE);
 	}
@@ -267,12 +271,15 @@ void Client::offline_data_gotten(void)
 
 void Client::reader_cancelled(void)
 {
+	MLIB_D("Operation cancelled.");
+
 	switch(this->current_mode())
 	{
 		case MODE_GOING_OFFLINE:
 		{
 			try
 			{
+				this->cancel_editing();
 				this->clear();
 			}
 			catch(m::Exception& e)
@@ -298,6 +305,8 @@ void Client::reader_cancelled(void)
 
 void Client::reader_error(const QString& message)
 {
+	MLIB_D("Reader error: '%1'.", message);
+
 	QString title;
 
 	switch(this->current_mode())

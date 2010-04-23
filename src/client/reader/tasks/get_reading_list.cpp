@@ -30,6 +30,7 @@
 
 #include <src/client/storage.hpp>
 
+#include "download_feeds_items.hpp"
 #include "get_feed_list.hpp"
 #include "gr_xml_parser.hpp"
 
@@ -54,7 +55,7 @@ void Get_reading_list::authenticated(void)
 	Get_feed_list* task = new Get_feed_list(this->storage, this->auth_id, this);
 
 	connect(task, SIGNAL(feeds_gotten()),
-		this, SLOT(get_reading_list()) );
+		this, SLOT(get_reading_list()), Qt::QueuedConnection );
 
 	this->process_task(task);
 }
@@ -83,6 +84,30 @@ void Get_reading_list::get_reading_list(void)
 
 	this->get(url);
 #endif
+}
+
+
+
+void Get_reading_list::on_items_downloaded(void)
+{
+	this->finish();
+	emit this->reading_list_gotten();
+}
+
+
+
+void Get_reading_list::on_reading_list_gotten(void)
+{
+	#if 0 && GROV_DEVELOP_MODE
+		this->on_items_downloaded();
+	#else
+		Download_feeds_items* task = new Download_feeds_items(this->storage, this);
+
+		connect(task, SIGNAL(downloaded()),
+			this, SLOT(on_items_downloaded()), Qt::QueuedConnection );
+
+		this->process_task(task);
+	#endif
 }
 
 
@@ -138,12 +163,9 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 
 	#if !GROV_OFFLINE_DEVELOPMENT
 		if(this->continuation_code.isEmpty() || items.empty())
-		{
 	#endif
-			emit this->reading_list_gotten();
-			this->finish();
+			this->on_reading_list_gotten();
 	#if !GROV_OFFLINE_DEVELOPMENT
-		}
 		else
 		{
 			if(this->reading_lists_counter >= 100)
@@ -155,8 +177,7 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 						"Please read downloaded items first, than you can download others."
 					), this->reading_lists_counter)
 				);
-				emit this->reading_list_gotten();
-				this->finish();
+				this->on_reading_list_gotten();
 			}
 			else
 				this->get_reading_list();

@@ -36,6 +36,8 @@ class QSqlQuery;
 #include <src/common/feed_item.hpp>
 #include <src/common/feed_tree.hxx>
 
+#include "web_cache.hxx"
+
 #include "storage.hxx"
 
 
@@ -53,11 +55,14 @@ class Storage: public QObject
 			/// No source has been setted yet.
 			SOURCE_NONE,
 
+			/// All existing items.
+			SOURCE_ALL,
+
 			/// A feed with id this->id.
 			SOURCE_FEED,
 
 			/// A label with id this->id.
-			SOURCE_LABEL,
+			SOURCE_LABEL
 		};
 
 
@@ -118,6 +123,20 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void					add_items(const Gr_feed_item_list& items);
 
+		/// Adds a Web_cache_entry to the storage.
+		///
+		/// If storage already has entry for this URL, it will be replaced.
+		///
+		/// @throw m::Exception.
+		void					add_web_cache_entry(const Web_cache_entry& entry);
+
+		/// Cancels all changes made in the editing mode, started by
+		/// start_editing(), and ends it.
+		void					cancel_editing(void);
+
+		/// Ends the editing mode started by start_editing().
+		void					end_editing(void);
+
 		/// Returns current feed tree.
 		///
 		/// @throw m::Exception.
@@ -138,6 +157,17 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		Changed_feed_item_list	get_user_changes(void);
 
+		/// Returns a Web_cache_entry for \a url or invalid Web_cache_entry, if
+		/// we does not have web cache data for \a url.
+		///
+		/// @throw m::Exception.
+		Web_cache_entry			get_web_cache_entry(const QString& url);
+
+		/// Checks whether url exists in the Web cache.
+		///
+		/// @throw m::Exception.
+		bool					is_in_web_cache(const QString& url);
+
 		/// Marks item as read.
 		///
 		/// @throw m::Exception.
@@ -148,16 +178,34 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		void					mark_changes_as_flushed(Changed_feed_item_list::const_iterator begin, Changed_feed_item_list::const_iterator end);
 
+		/// Sets current source to all existing items.
+		void					set_current_source_to_all(void);
+
 		/// Sets current source to a feed with id == \a id.
 		void					set_current_source_to_feed(Big_id id);
 
 		/// Sets current source to a feed with id == \a id.
 		void					set_current_source_to_label(Big_id id);
 
+		/// Sets current source to none.
+		void					set_current_source_to_none(void);
+
 		/// Adds or removes star from item.
 		///
 		/// @throw m::Exception.
 		void					star(Big_id id, bool is);
+
+		/// Switch storage to editing mode.
+		///
+		/// This mode is not necessary but it really speeds up data writing.
+		/// You must call end_editing() or cancel_editing() when you end storage
+		/// editing.
+		///
+		/// \attention
+		/// This method internally starts a SQL transaction so you can call only
+		/// those methods of the storage in the editing mode, which is not using
+		/// transactions internally.
+		void					start_editing(void);
 
 	protected:
 		/// Deletes all storage's data.
@@ -256,6 +304,9 @@ class Storage: public QObject
 		/// Resets current internal state - current position for
 		/// get_next_item() and get_previous_item(), etc.
 		void			reset(void);
+
+		/// Sets current source.
+		void			set_current_source(Current_source source, Big_id id);
 
 
 	signals:

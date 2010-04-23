@@ -21,6 +21,8 @@
 #ifndef GROV_HEADER_MAIN_WINDOW_VIEWER
 #define GROV_HEADER_MAIN_WINDOW_VIEWER
 
+class QUrl;
+
 #include <QtGui/QWidget>
 
 #include <src/common.hpp>
@@ -97,6 +99,9 @@ class Viewer: public QWidget
 
 		/// Called when user selects a label.
 		void	label_selected(Big_id id);
+
+		/// Called when user clicks a URL.
+		void	link_clicked(const QUrl& qurl);
 
 		/// Called when user stars/unstars an item.
 		void	on_star_check_box_stateChanged(int state);

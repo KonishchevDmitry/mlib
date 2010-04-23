@@ -21,9 +21,6 @@
 #ifndef GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
 #define GROV_HEADER_CLIENT_READER_TASKS_LOGIN_TO_GOOGLE_READER
 
-
-class QNetworkRequest;
-
 #include <src/common.hpp>
 
 #include <src/client/reader/network_task.hpp>

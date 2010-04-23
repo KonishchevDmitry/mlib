@@ -32,8 +32,9 @@ Feed_item::Feed_item(void)
 
 
 
-Feed_item::Feed_item(const QString& title, const QString& summary)
+Feed_item::Feed_item(const QString& url, const QString& title, const QString& summary)
 :
+	url(url),
 	title(title),
 	summary(summary)
 {
@@ -70,12 +71,12 @@ Db_feed_item::Db_feed_item(void)
 
 
 Db_feed_item::Db_feed_item(
-	Big_id id, Big_id feed_id,
+	Big_id id, Big_id feed_id, const QString& url,
 	const QString& title, const QString& summary,
 	bool broadcast, bool read, bool starred
 )
 :
-	Feed_item(title, summary),
+	Feed_item(url, title, summary),
 	id(id),
 	feed_id(feed_id),
 	broadcast(broadcast),

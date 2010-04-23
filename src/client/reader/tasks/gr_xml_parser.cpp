@@ -31,6 +31,14 @@
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
+namespace {
+	/// If a feed labeled by name which contains this string we ignore it.
+	// TODO: add to README
+	const char* const GROV_IGNORE_LABEL_MARK = "[non-" GROV_APP_UNIX_NAME "]";
+}
+
+
+
 QDomDocument Gr_xml_parser::get_dom(const QByteArray& data)
 {
 	QDomDocument xml;
@@ -102,6 +110,9 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 
 			// Title and summary -->
 			{
+				item.url = entry.firstChildElement("link").attribute("href");
+				MLIB_DV("URL: '%1'.", item.url);
+
 				item.title = entry.firstChildElement("title").text();
 				MLIB_DV("Title: '%1'.", item.title);
 
@@ -114,11 +125,14 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 					//MLIB_DV("Content: '%1'.", item.summary);
 				}
 
-				if(item.title.isEmpty() && item.summary.isEmpty())
+				if(item.url.isEmpty() && item.title.isEmpty() && item.summary.isEmpty())
 				{
-					MLIB_SW(_F( tr("Gotten item [%1] with empty title and summary. Skipping it."), item.gr_id ));
+					MLIB_SW(_F( tr("Gotten item [%1] with empty URL, title and summary. Skipping it."), item.gr_id ));
 					continue;
 				}
+
+				if(item.title.isEmpty())
+					item.title = tr("( No title )");
 			}
 			// Title and summary <--
 
@@ -200,6 +214,7 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 		while(!feed_node.isNull())
 		{
 			Gr_feed feed;
+			bool ignore = false;
 			QDomNode prop_node = feed_node.firstChild();
 
 			while(!prop_node.isNull())
@@ -231,6 +246,9 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 						{
 							QString label = category.text();
 
+							if(label.contains(GROV_IGNORE_LABEL_MARK))
+								ignore = true;
+
 							if(label != "-") // Some special label
 							{
 								MLIB_DV("Label: '%1'.", label);
@@ -249,7 +267,10 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 			if(feed.name.isEmpty())
 				feed.name = tr("(title unknown)");
 
-			feeds << feed;
+			if(ignore)
+				MLIB_DV("Skipping this feed - it marked by '%1'.", GROV_IGNORE_LABEL_MARK);
+			else
+				feeds << feed;
 
 			feed_node = feed_node.nextSibling();
 

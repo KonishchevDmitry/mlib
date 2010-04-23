@@ -61,15 +61,22 @@ class Get_reading_list: public Google_reader_task
 		/// See Network_task::request_finished().
 		virtual void	request_finished(const QString& error, const QByteArray& reply);
 
+	private:
+		/// Called when we get reading list.
+		void			on_reading_list_gotten(void);
+
 
 	signals:
-		/// Emits when all reading list's items gotten.
+		/// Emitted when all reading list's items gotten.
 		void	reading_list_gotten(void);
 
 
 	private slots:
 		/// Gets reading list.
 		void	get_reading_list(void);
+
+		/// Called when all items has been downloaded.
+		void	on_items_downloaded(void);
 };
 
 

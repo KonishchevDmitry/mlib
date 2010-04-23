@@ -36,12 +36,15 @@
 
 #include <src/main.hpp>
 
+#include "web_cache.hpp"
+
 #include "storage.hpp"
 
 
 namespace grov { namespace client {
 
 
+// TODO
 const int CURRENT_DB_FORMAT_VERSION = 0;
 
 
@@ -74,6 +77,23 @@ Storage::Storage(QObject* parent)
 			M_THROW(PAM( _F(tr("Unable to open database '%1':"), db_path), EE(*this->db) ));
 	}
 	// Opening the database <--
+
+	// Locking the database -->
+		try
+		{
+			this->exec("PRAGMA locking_mode = EXCLUSIVE");
+
+			// We must make some changes to trigger the lock
+			m::db::Scoped_transaction transaction(*this->db);
+				this->exec("CREATE TABLE lock_table (id INTEGER)");
+				this->exec("DROP TABLE lock_table");
+			transaction.commit();
+		}
+		catch(m::Exception& e)
+		{
+			M_THROW(PAM( tr("Error while locking the database."), EE(e) ));
+		}
+	// Locking the database <--
 
 	// Preparing the database -->
 		if(this->db->tables().empty())
@@ -116,9 +136,6 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 
 	try
 	{
-		// For SQLite it really speeds up many insertions.
-		m::db::Scoped_transaction transaction(*this->db);
-
 		// Adding feeds -->
 		{
 			QSqlQuery insert_feed_query = this->prepare(
@@ -173,8 +190,6 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 		}
 		// Adding feeds <--
 
-		transaction.commit();
-
 		// TODO: odd emits
 		emit feed_tree_changed();
 	}
@@ -196,9 +211,6 @@ void Storage::add_items(const Gr_feed_item_list& items)
 	{
 		QHash<QString, Big_id> feeds;
 
-		// For SQLite it really speeds up many insertions.
-		m::db::Scoped_transaction transaction(*this->db);
-
 		// Getting all known feeds -->
 		{
 			QSqlQuery query = this->exec(
@@ -214,10 +226,10 @@ void Storage::add_items(const Gr_feed_item_list& items)
 			QSqlQuery insert_item_query = this->prepare(
 				"INSERT INTO items ("
 					"feed_id, broadcast, read, orig_read, starred, orig_starred,"
-					"gr_id, title, summary"
+					"gr_id, url, title, summary"
 				") values ("
 					":feed_id, :broadcast, :read, :orig_read, :starred, :orig_starred,"
-					":gr_id, :title, :summary"
+					":gr_id, :url, :title, :summary"
 				")"
 			);
 
@@ -232,8 +244,10 @@ void Storage::add_items(const Gr_feed_item_list& items)
 						feed_id = -1;
 					else
 					{
-						MLIB_SW(_F( tr("Gotten item '%1' for unknown feed '%2'. Skipping it."),
-							item.gr_id, item.feed_gr_id ));
+						// It may be due an error or when user mark feed's
+						// label by ignore mark.
+						MLIB_D("Gotten item '%1' for unknown feed '%2'. Skipping it.",
+							item.gr_id, item.feed_gr_id );
 						continue;
 					}
 				}
@@ -245,14 +259,13 @@ void Storage::add_items(const Gr_feed_item_list& items)
 				insert_item_query.bindValue(":starred", int(item.starred));
 				insert_item_query.bindValue(":orig_starred", int(item.starred));
 				insert_item_query.bindValue(":gr_id", item.gr_id);
+				insert_item_query.bindValue(":url", item.url);
 				insert_item_query.bindValue(":title", item.title);
 				insert_item_query.bindValue(":summary", item.summary);
 				this->exec(insert_item_query);
 			}
 		}
 		// Adding items <--
-
-		transaction.commit();
 
 		// TODO: odd emits
 		emit feed_tree_changed();
@@ -263,6 +276,54 @@ void Storage::add_items(const Gr_feed_item_list& items)
 	}
 
 	MLIB_D("All items successfully added to DB.");
+}
+
+
+
+void Storage::add_web_cache_entry(const Web_cache_entry& entry)
+{
+	MLIB_D("Adding web cache entry for '%1' to the DB...", entry.url);
+
+	try
+	{
+		QSqlQuery query = this->prepare(
+			"INSERT OR IGNORE INTO web_cache ("
+				"url, content_type, data"
+			") values ("
+				":url, :content_type, :data"
+			")"
+		);
+
+		query.bindValue(":url", entry.url);
+		query.bindValue(":content_type", entry.content_type);
+		// TODO: data written in db in some ugly form. fix this
+		query.bindValue(":data", entry.data);
+		this->exec(query);
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( _F(tr("Error while adding '%1' to the Web cache:"), entry.url), EE(e) ));
+	}
+
+	MLIB_D("Web cache entry has been added successfully.");
+}
+
+
+
+void Storage::cancel_editing(void)
+{
+	// We must destroy all queries started inside the transaction before
+	// rolling back it.
+	this->set_current_source_to_none();
+
+	try
+	{
+		this->exec("ROLLBACK");
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to rollback a transaction:"), EE(e) ));
+	}
 }
 
 
@@ -307,6 +368,7 @@ void Storage::clear(void)
 			this->exec("DELETE FROM labels");
 			this->exec("DELETE FROM items");
 			this->exec("DELETE FROM labels_to_feeds");
+			this->exec("DELETE FROM web_cache");
 			this->init_empty_database();
 			this->get_db_info();
 		transaction.commit();
@@ -316,7 +378,7 @@ void Storage::clear(void)
 	}
 	catch(m::Exception& e)
 	{
-		M_THROW(PAM( tr("Unable to delete data from the database."), EE(e) ));
+		M_THROW(PAM( tr("Error while deleting data from the database."), EE(e) ));
 	}
 
 	try
@@ -352,24 +414,24 @@ void Storage::create_current_query(void)
 	this->flush_cache();
 
 	QString where;
-	bool bind_source_id = true;
+	bool bind_source_id = false;
 
 	switch(this->current_source)
 	{
+		case SOURCE_ALL:
+			break;
+
 		case SOURCE_FEED:
 		{
 			if(this->current_source_id == this->broadcast_feed_id)
-			{
 				where = "read = 0 AND broadcast = 1";
-				bind_source_id = false;
-			}
 			else if(this->current_source_id == this->starred_feed_id)
-			{
 				where = "starred = 1";
-				bind_source_id = false;
-			}
 			else
+			{
 				where = "feed_id = :source_id AND read = 0";
+				bind_source_id = true;
+			}
 		}
 		break;
 
@@ -383,6 +445,7 @@ void Storage::create_current_query(void)
 						"labels_to_feeds "
 					"WHERE label_id = :source_id "
 				") AND read = 0";
+			bind_source_id = true;
 		}
 		break;
 
@@ -394,13 +457,12 @@ void Storage::create_current_query(void)
 	// Throws m::Exception
 	QSqlQuery query = this->prepare(_F(
 		"SELECT "
-			"id, feed_id, title, summary, broadcast, read, starred "
+			"id, feed_id, url, title, summary, broadcast, read, starred "
 		"FROM "
 			"items "
-		"WHERE "
-			"%1 "
+		"%1 "
 		"ORDER BY "
-			"id", where
+			"id", where.isEmpty() ? QString() : "WHERE " + where
 	));
 
 	if(bind_source_id)
@@ -455,6 +517,7 @@ void Storage::create_db_tables(void)
 				"starred INTEGER,"
 				"orig_starred INTEGER,"
 				"gr_id TEXT,"
+				"url TEXT,"
 				"title TEXT,"
 				"summary TEXT"
 			")"
@@ -469,6 +532,14 @@ void Storage::create_db_tables(void)
 		);
 		this->exec("CREATE INDEX labels_to_feeds_label_id_idx ON labels_to_feeds(label_id)");
 
+		this->exec(
+			"CREATE TABLE web_cache("
+				"url TEXT UNIQUE,"
+				"content_type TEXT,"
+				"data BLOB"
+			")"
+		);
+
 		this->init_empty_database();
 
 		transaction.commit();
@@ -476,6 +547,24 @@ void Storage::create_db_tables(void)
 	catch(m::Exception& e)
 	{
 		M_THROW(PAM( tr("Error while creating tables in the database:"), EE(e) ));
+	}
+}
+
+
+
+void Storage::end_editing(void)
+{
+	// We must destroy all queries started inside the transaction before
+	// committing it.
+	this->set_current_source_to_none();
+
+	try
+	{
+		this->exec("COMMIT");
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to commit a transaction:"), EE(e) ));
 	}
 }
 
@@ -737,9 +826,10 @@ Db_feed_item Storage::get_item(bool next)
 				id, m::qvariant_to_big_id(query->value(1)),
 				query->value(2).toString(),
 				query->value(3).toString(),
-				query->value(4).toBool(),
-				this->current_query_read_cache.contains(id) ? true : query->value(5).toBool(),
-				this->current_query_star_cache.value(id, query->value(6).toBool())
+				query->value(4).toString(),
+				query->value(5).toBool(),
+				this->current_query_read_cache.contains(id) ? true : query->value(6).toBool(),
+				this->current_query_star_cache.value(id, query->value(7).toBool())
 			);
 
 			MLIB_D("Item gotten.");
@@ -834,6 +924,42 @@ Changed_feed_item_list Storage::get_user_changes(void)
 
 
 
+Web_cache_entry Storage::get_web_cache_entry(const QString& url)
+{
+	MLIB_D("Getting web cache for '%1'...", url);
+
+	try
+	{
+		QSqlQuery query = this->prepare(
+			"SELECT "
+				"content_type, "
+				"data "
+			"FROM "
+				"web_cache "
+			"WHERE "
+				"url = :url"
+		);
+		query.bindValue(":url", url);
+		this->exec(query);
+
+		if(query.next())
+		{
+			return Web_cache_entry(url,
+				query.value(0).toString(),
+				query.value(1).toByteArray()
+			);
+		}
+		else
+			return Web_cache_entry();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( _F(tr("Error while getting web cache for '%1':"), url), EE(e) ));
+	}
+}
+
+
+
 void Storage::init_empty_database(void)
 {
 	// "broadcast" and "starred" is a special feeds that must always exists.
@@ -845,6 +971,31 @@ void Storage::init_empty_database(void)
 
 	query.bindValue(":name", "starred");
 	this->exec(query);
+}
+
+
+
+bool Storage::is_in_web_cache(const QString& url)
+{
+	try
+	{
+		QSqlQuery query = this->prepare(
+			"SELECT "
+				"COUNT(*) "
+			"FROM "
+				"web_cache "
+			"WHERE "
+				"url = :url"
+		);
+		query.bindValue(":url", url);
+		this->exec_and_next(query);
+
+		return query.value(0).toBool();
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( _F(tr("Error while getting web cache for '%1':"), url), EE(e) ));
+	}
 }
 
 
@@ -952,6 +1103,7 @@ QSqlQuery Storage::prepare(const QString& string)
 {
 	QSqlQuery query(*this->db);
 
+	MLIB_DV("Preparing SQL query '%1'...", string);
 	if(!query.prepare(string))
 		M_THROW(EE(query));
 
@@ -978,20 +1130,39 @@ void Storage::reset(void)
 
 
 
-void Storage::set_current_source_to_feed(Big_id id)
+void Storage::set_current_source(Current_source source, Big_id id)
 {
-	this->current_source = SOURCE_FEED;
+	this->current_source = source;
 	this->current_source_id = id;
 	this->reset();
 }
 
 
 
+void Storage::set_current_source_to_all(void)
+{
+	this->set_current_source(SOURCE_ALL, -1);
+}
+
+
+
+void Storage::set_current_source_to_feed(Big_id id)
+{
+	this->set_current_source(SOURCE_FEED, id);
+}
+
+
+
 void Storage::set_current_source_to_label(Big_id id)
 {
-	this->current_source = SOURCE_LABEL;
-	this->current_source_id = id;
-	this->reset();
+	this->set_current_source(SOURCE_LABEL, id);
+}
+
+
+
+void Storage::set_current_source_to_none(void)
+{
+	this->set_current_source(SOURCE_NONE, -1);
 }
 
 
@@ -1031,6 +1202,21 @@ void Storage::star(Big_id id, bool is)
 	}
 
 	this->current_query_star_cache[id] = is;
+}
+
+
+
+void Storage::start_editing(void)
+{
+	try
+	{
+		// This is really speeds up many insertions for SQLite
+		this->exec("BEGIN");
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Unable to begin a transaction:"), EE(e) ));
+	}
 }
 
 
