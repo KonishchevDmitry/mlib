@@ -133,11 +133,14 @@ namespace aux {
 #endif
 
 
+
 void connect_end_work_system_signal(QObject* object, const char* slot)
 {
 	MLIB_D("Connecting end application OS signal to the %1::%2...", object, slot);
 #ifdef Q_OS_UNIX
 	aux::System_signal_notifier::connect_end_work_signal(object, slot);
+#else
+	#warning TODO: Signal handling for non-UNIX operating systems.
 #endif
 }
 
