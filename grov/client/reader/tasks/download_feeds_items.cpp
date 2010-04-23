@@ -111,11 +111,21 @@ namespace Download_feeds_items_aux {
 				break;
 
 			case STATE_SUMMARY_DOWNLOADING:
+// TODO
+disconnect(this->summary_downloader, NULL, this, NULL);
 				this->summary_downloader->triggerAction(QWebPage::Stop);
+connect(this->summary_downloader, SIGNAL(loadFinished(bool)),
+	this, SLOT(summary_download_finished(bool)), Qt::QueuedConnection );
+this->summary_download_finished(false);
 				break;
 
 			case STATE_PAGE_DOWNLOADING:
+// TODO
+disconnect(this->page_downloader, NULL, this, NULL);
 				this->page_downloader->triggerAction(QWebPage::Stop);
+connect(this->page_downloader, SIGNAL(loadFinished(bool)),
+	this, SLOT(page_download_finished(bool)), Qt::QueuedConnection );
+this->page_download_finished(false);
 				break;
 
 			default:
@@ -128,7 +138,7 @@ namespace Download_feeds_items_aux {
 
 	void Mirroring_stream::mirror_next(void)
 	{
-		MLIB_D("Mirroring next item...");
+		MLIB_D("[%1] Mirroring next item...", this);
 
 		if(this->state == STATE_CLOSED)
 		{
@@ -140,7 +150,7 @@ namespace Download_feeds_items_aux {
 		{
 			this->item = this->storage->get_next_item();
 			// TODO
-			this->item.url = "http://server.lab83/papercraft/test/" + QString::number(this->item.id) + "/";
+//			this->item.url = "http://server.lab83/papercraft/test/" + QString::number(this->item.id) + "/";
 
 			MLIB_D("[%1] Mirroring item's '%2' (%3) summary...", this, this->item.title, this->item.url);
 			this->state = STATE_SUMMARY_DOWNLOADING;
@@ -250,7 +260,7 @@ void Download_feeds_items::process(void)
 	MLIB_D("Downloading all feeds' items' content...");
 
 // TODO
-#if 1 || GROV_OFFLINE_DEVELOPMENT
+#if 0 && GROV_OFFLINE_DEVELOPMENT
 	this->finish();
 	emit this->downloaded();
 #else
