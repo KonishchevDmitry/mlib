@@ -260,7 +260,7 @@ void Download_feeds_items::process(void)
 	MLIB_D("Downloading all feeds' items' content...");
 
 // TODO
-#if 1 || GROV_OFFLINE_DEVELOPMENT
+#if 0 && GROV_OFFLINE_DEVELOPMENT
 	this->finish();
 	emit this->downloaded();
 #else
