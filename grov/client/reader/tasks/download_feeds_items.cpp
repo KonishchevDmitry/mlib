@@ -50,6 +50,7 @@ namespace Download_feeds_items_aux {
 	{
 		MLIB_D("[%1] Creating...", this);
 
+		// TODO:
 		// QtWebKit is too bugous. But separating downloader to summary and
 		// page downloader helps to avoid some bugs which results Segmentation
 		// faults.
@@ -87,6 +88,11 @@ namespace Download_feeds_items_aux {
 		if(this->state != STATE_CLOSED)
 		{
 			this->state = STATE_CLOSED;
+
+			this->summary_downloader->triggerAction(QWebPage::Stop);
+			this->page_downloader->triggerAction(QWebPage::Stop);
+			this->timeout_timer->stop();
+
 			emit this->finished();
 			this->deleteLater();
 		}
@@ -98,13 +104,24 @@ namespace Download_feeds_items_aux {
 	{
 		MLIB_D("[%1] Downloading [%2] (%3) timed out.", this, this->state, this->item.url);
 
-		if(this->state != STATE_CLOSED)
+		switch(this->state)
 		{
-			this->state = STATE_NONE;
-			this->mirror_next();
+			case STATE_CLOSED:
+				MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
+				break;
+
+			case STATE_SUMMARY_DOWNLOADING:
+				this->summary_downloader->triggerAction(QWebPage::Stop);
+				break;
+
+			case STATE_PAGE_DOWNLOADING:
+				this->page_downloader->triggerAction(QWebPage::Stop);
+				break;
+
+			default:
+				MLIB_D("[%1] Gotten invalid signal (current state is %1). Ignoring it.");
+				break;
 		}
-		else
-			MLIB_D("[%1] Stream closed. Skipping all activity.", this);
 	}
 
 
@@ -115,7 +132,7 @@ namespace Download_feeds_items_aux {
 
 		if(this->state == STATE_CLOSED)
 		{
-			MLIB_D("[%1] Stream closed. Skipping all activity.", this);
+			MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
 			return;
 		}
 
@@ -129,8 +146,8 @@ namespace Download_feeds_items_aux {
 			this->state = STATE_SUMMARY_DOWNLOADING;
 			this->timeout_timer->start();
 // TODO
-			this->summary_download_finished(true);
-//			this->summary_downloader->mainFrame()->setHtml(this->item.summary);
+//			this->summary_download_finished(true);
+			this->summary_downloader->mainFrame()->setHtml(this->item.summary);
 		}
 		catch(Storage::No_more_items&)
 		{
@@ -157,7 +174,7 @@ namespace Download_feeds_items_aux {
 		switch(this->state)
 		{
 			case STATE_CLOSED:
-				MLIB_D("[%1] Stream closed. Skipping all activity.", this);
+				MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
 				break;
 
 			case STATE_PAGE_DOWNLOADING:
@@ -181,7 +198,7 @@ namespace Download_feeds_items_aux {
 		switch(this->state)
 		{
 			case STATE_CLOSED:
-				MLIB_D("[%1] Stream closed. Skipping all activity.", this);
+				MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
 				break;
 
 			case STATE_SUMMARY_DOWNLOADING:

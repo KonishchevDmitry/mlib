@@ -225,7 +225,7 @@ namespace grov { namespace {
 				else
 				{
 					MLIB_W(_F( QApplication::tr("Invalid command line option '%1'"), arg ),
-						_F( QApplication::tr("Please run '%2 --help' to view all available options."), GROV_APP_UNIX_NAME ) );
+						_F( QApplication::tr("Please run '%1 --help' to view all available options."), GROV_APP_UNIX_NAME ) );
 					exit(EXIT_FAILURE);
 				}
 			}
