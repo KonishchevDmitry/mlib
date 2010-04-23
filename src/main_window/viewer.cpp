@@ -162,8 +162,7 @@ void Viewer::link_clicked(const QUrl& qurl)
 	QString url = qurl.toString();
 	MLIB_D("User clicked link '%1'.", url);
 
-	#warning
-//	if(!url.isEmpty() && url == this->current_item.url)
+	if(!url.isEmpty() && url == this->current_item.url)
 	{
 		try
 		{
@@ -223,9 +222,7 @@ void Viewer::set_current_item(const Db_feed_item& item)
 			"<a href='%1'><h1 style='font-size: 14pt'>%2</h1></a>"
 			"%3"
 		"</body></html>",
-		#warning
-		"http://server.lab83/papercraft/test/" + QString::number(item.id) + "/"
-		/*QUrl::toPercentEncoding(item.url)*/, item.title, item.summary
+		QUrl::toPercentEncoding(item.url), item.title, item.summary
 	));
 
 	this->current_item = item;

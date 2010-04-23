@@ -32,7 +32,6 @@ class QWebPage;
 
 #include <src/client/reader/task.hpp>
 #include <src/client/storage.hxx>
-#include <src/client/web_cache.hxx>
 
 #include "download_feeds_items.hxx"
 
@@ -49,6 +48,23 @@ namespace Download_feeds_items_aux {
 	{
 		Q_OBJECT
 
+		private:
+			/// Current downloading state.
+			enum State {
+				/// We are not downloading any item at this moment.
+				STATE_NONE,
+
+				/// We are downloading item's summary at this moment.
+				STATE_SUMMARY_DOWNLOADING,
+
+				/// We are downloading item's page at this moment.
+				STATE_PAGE_DOWNLOADING,
+
+				/// Stream closed, but not destroyed yet.
+				STATE_CLOSED
+			};
+
+
 		public:
 			Mirroring_stream(Storage* storage, QObject* parent = NULL);
 			~Mirroring_stream(void);
@@ -58,11 +74,14 @@ namespace Download_feeds_items_aux {
 			/// Our offline data storage.
 			Storage*		storage;
 
-			/// Cache to which we will save data.
-			Web_cache*		cache;
+			/// Current downloading state.
+			State			state;
 
-			/// Our feed item downloader.
-			QWebPage*		web_page;
+			/// Our item's summary downloader.
+			QWebPage*		summary_downloader;
+
+			/// Our item's page downloader.
+			QWebPage*		page_downloader;
 
 			/// Page loading timeout timer.
 			QTimer*			timeout_timer;
@@ -76,10 +95,13 @@ namespace Download_feeds_items_aux {
 
 
 		public:
+			/// Closes the stream.
+			void	close(void);
+
 			/// Mirrors a next feed item.
 			///
 			/// @return false on error.
-			bool	mirror_next(void);
+			void	mirror_next(void);
 
 
 		signals:
@@ -91,11 +113,14 @@ namespace Download_feeds_items_aux {
 
 
 		private slots:
-			/// Called when page loading finishes.
-			void	page_load_finished(bool ok);
-
 			/// Called when page loading timeout is expired.
-			void	page_loading_timed_out(void);
+			void	download_timed_out(void);
+
+			/// Called when page loading finishes.
+			void	page_download_finished(bool ok);
+
+			/// Called when summary loading finishes.
+			void	summary_download_finished(bool ok);
 	};
 
 
@@ -122,6 +147,9 @@ class Download_feeds_items: public Task
 
 		/// Mirroring streams.
 		QSet<Mirroring_stream*>	streams;
+
+		/// Is mirroring failed.
+		bool					downloading_failed;
 
 
 	public:
