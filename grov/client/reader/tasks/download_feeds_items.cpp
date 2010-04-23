@@ -21,13 +21,13 @@
 #include <QtCore/QTimer>
 
 #include <QtWebKit/QWebFrame>
-#include <QtWebKit/QWebPage>
 
 #include <grov/common.hpp>
 #include <grov/common/feed_item.hpp>
 
 #include <grov/client/storage.hpp>
 #include <grov/client/web_cache.hpp>
+#include <grov/client/web_page.hpp>
 
 #include "download_feeds_items.hpp"
 
@@ -44,8 +44,8 @@ namespace Download_feeds_items_aux {
 		QObject(parent),
 		storage(storage),
 		state(STATE_NONE),
-		summary_downloader(new QWebPage(this)),
-		page_downloader(new QWebPage(this)),
+		summary_downloader(new Web_page(this)),
+		page_downloader(new Web_page(this)),
 		timeout_timer(new QTimer(this))
 	{
 		MLIB_D("[%1] Creating...", this);

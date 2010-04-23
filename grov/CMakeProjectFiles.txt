@@ -14,6 +14,7 @@ set(GROV_SOURCES
 	client/reader/tasks/login_to_google_reader.cpp
 	client/storage.cpp
 	client/web_cache.cpp
+	client/web_page.cpp
 	common/feed_item.cpp
 	common/feed_tree.cpp
 	main.cpp
@@ -40,6 +41,7 @@ set(GROV_MOC_SOURCES
 	client/reader/tasks/login_to_google_reader.hpp
 	client/storage.hpp
 	client/web_cache.hpp
+	client/web_page.hpp
 	main_window.hpp
 	main_window/viewer/feeds_model.hpp
 	main_window/viewer/feeds_view.hpp
