@@ -48,7 +48,7 @@ cmake_minimum_required(VERSION 2.6)
 
 
 add_subdirectory(mlib)
-add_subdirectory(src)
+add_subdirectory(${APP_UNIX_NAME})
 
 
 # CPack -->

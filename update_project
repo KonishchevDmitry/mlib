@@ -7,7 +7,7 @@
 update()
 {(
 	project_path="$1"
-	project_name="$2"
+	project_name="$1"
 	project_uppercase_name=$(echo -n "$project_name" | awk '{ print toupper($0) }')
 
 	cd "$project_path"
@@ -51,6 +51,6 @@ update()
 
 set -e
 
-update mlib mlib
-update src grov
+update mlib
+update grov
 
