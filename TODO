@@ -1,5 +1,4 @@
 * handle application's quit (deleteLater, etc)
 * unix signals handler
-* rename app from grov to Grov (in debian package too)
 * disable javascript alert window
 

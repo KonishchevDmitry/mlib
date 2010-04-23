@@ -1,6 +1,6 @@
 /**************************************************************************
 *                                                                         *
-*   grov - Google Reader offline viewer                                   *
+*   Grov - Google Reader offline viewer                                   *
 *                                                                         *
 *   Copyright (C) 2010, Dmitry Konishchev                                 *
 *   http://konishchevdmitry.blogspot.com/                                 *

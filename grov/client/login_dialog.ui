@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Please enter your Google Reader's login and password - grov</string>
+   <string>Please enter your Google Reader's login and password - Grov</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="sizeConstraint">
