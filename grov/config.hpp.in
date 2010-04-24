@@ -40,7 +40,7 @@ namespace grov { namespace config {
 	const Size max_network_reply_size = 10 * 1024 * 1024;
 
 	// TODO: choose optimal
-	const int mirroring_streams_num = 3;
+	const int mirroring_streams_num = 1;
 
 	// TODO: choose optimal
 	/// Max time in seconds that page mirroring can require.
