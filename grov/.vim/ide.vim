@@ -6,4 +6,5 @@
 "set path+=./netlog
 
 set tags+=~/.vim/tags/qt
+let g:ctags_sources_dirs = ".. ../../grov.build"
 

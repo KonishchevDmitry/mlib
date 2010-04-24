@@ -16,6 +16,7 @@
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
+// TODO: check with attention
 
 
 #include <QtCore/QTimer>
@@ -42,10 +43,16 @@ namespace Download_feeds_items_aux {
 	Mirroring_stream::Mirroring_stream(Storage* storage, QObject* parent)
 	:
 		QObject(parent),
+
 		storage(storage),
 		state(STATE_NONE),
+
+		summary_cache(new Web_cache(storage, this)),
+		page_cache(new Web_cache(storage, this)),
+
 		summary_downloader(new Web_page(this)),
 		page_downloader(new Web_page(this)),
+
 		timeout_timer(new QTimer(this))
 	{
 		MLIB_D("[%1] Creating...", this);
@@ -55,10 +62,8 @@ namespace Download_feeds_items_aux {
 		// page downloader helps to avoid some bugs which results Segmentation
 		// faults.
 		// -->
-			this->summary_downloader->networkAccessManager()->setCache(
-				new Web_cache(storage, this->summary_downloader) );
-			this->page_downloader->networkAccessManager()->setCache(
-				new Web_cache(storage, this->page_downloader) );
+			this->summary_downloader->networkAccessManager()->setCache(this->summary_cache);
+			this->page_downloader->networkAccessManager()->setCache(this->page_cache);
 
 			// Qt::QueuedConnection is to prevent a recursion in case of simple
 			// item's summaries without external elements.
@@ -79,6 +84,9 @@ namespace Download_feeds_items_aux {
 	Mirroring_stream::~Mirroring_stream(void)
 	{
 		MLIB_D("[%1] Destroying...", this);
+		// TODO
+		delete this->summary_downloader;
+		delete this->page_downloader;
 	}
 
 

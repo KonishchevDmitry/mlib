@@ -44,8 +44,17 @@ class Web_cache_entry
 {
 	public:
 		Web_cache_entry(void);
-		Web_cache_entry(const QString& url, const QString& location, const QString& content_type);
-		Web_cache_entry(const QString& url, const QString& location, const QString& content_type, const QByteArray& data);
+
+		Web_cache_entry(
+			const QString& url, const QString& location,
+			const QString& content_type, const QString& content_encoding
+		);
+
+		Web_cache_entry(
+			const QString& url, const QString& location,
+			const QString& content_type, const QString& content_encoding,
+			const QByteArray& data
+		);
 
 
 	public:
@@ -57,6 +66,9 @@ class Web_cache_entry
 
 		/// HTTP's Content-Type header's value.
 		QString		content_type;
+
+		/// HTTP's Content-Encoding header's value.
+		QString		content_encoding;
 
 		/// The document's data.
 		QByteArray	data;

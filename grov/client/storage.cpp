@@ -59,15 +59,21 @@ Storage::Storage(QObject* parent)
 
 	current_source(SOURCE_NONE)
 {
+#if !GROV_DEVELOP_MODE
 	QString app_home_dir = get_app_home_dir();
 
 	// Application's home directory
 	if(!QDir("").mkpath(app_home_dir))
 		M_THROW(tr("Can't create directory '%1."), app_home_dir);
+#endif
 
 	// Opening the database -->
 	{
+	#if GROV_DEVELOP_MODE
+		QString db_path = GROV_APP_UNIX_NAME ".db";
+	#else
 		QString db_path = QDir(app_home_dir).filePath(GROV_APP_UNIX_NAME ".db");
+	#endif
 
 		this->db->setDatabaseName(db_path);
 
@@ -288,15 +294,16 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 	{
 		QSqlQuery query = this->prepare(
 			"INSERT OR IGNORE INTO web_cache ("
-				"url, location, content_type, data"
+				"url, location, content_type, content_encoding, data"
 			") values ("
-				":url, :location, :content_type, :data"
+				":url, :location, :content_type, :content_encoding, :data"
 			")"
 		);
 
 		query.bindValue(":url", entry.url);
 		query.bindValue(":location", entry.location);
 		query.bindValue(":content_type", entry.content_type);
+		query.bindValue(":content_encoding", entry.content_encoding);
 		// TODO: data written in db in some ugly form. fix this
 		query.bindValue(":data", entry.data);
 		this->exec(query);
@@ -538,6 +545,7 @@ void Storage::create_db_tables(void)
 				"url TEXT UNIQUE,"
 				"location TEXT,"
 				"content_type TEXT,"
+				"content_encoding TEXT,"
 				"data BLOB"
 			")"
 		);
@@ -936,6 +944,7 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 			"SELECT "
 				"location, "
 				"content_type, "
+				"content_encoding, "
 				"data "
 			"FROM "
 				"web_cache "
@@ -950,7 +959,8 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 			return Web_cache_entry(url,
 				query.value(0).toString(),
 				query.value(1).toString(),
-				query.value(2).toByteArray()
+				query.value(2).toString(),
+				query.value(3).toByteArray()
 			);
 		}
 		else

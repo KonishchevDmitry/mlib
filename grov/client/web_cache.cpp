@@ -16,6 +16,7 @@
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
+// TODO: check with attention
 
 
 #include <QtCore/QDateTime>
@@ -318,6 +319,9 @@ namespace Web_cache_aux {
 			if(!data.content_type.isEmpty())
 				headers << QNetworkCacheMetaData::RawHeader("Content-Type", data.content_type.toAscii());
 
+			if(!data.content_type.isEmpty())
+				headers << QNetworkCacheMetaData::RawHeader("Content-Encoding", data.content_encoding.toAscii());
+
 			headers << QNetworkCacheMetaData::RawHeader("Content-Length", QString::number(data.content_length()).toAscii());
 
 			metadata.setRawHeaders(headers);
@@ -336,8 +340,8 @@ namespace Web_cache_aux {
 			}
 			else
 			{
-				attributes[QNetworkRequest::HttpStatusCodeAttribute] = 302;
-				attributes[QNetworkRequest::HttpReasonPhraseAttribute] = "Moved Temporarily";
+				attributes[QNetworkRequest::HttpStatusCodeAttribute] = 301;
+				attributes[QNetworkRequest::HttpReasonPhraseAttribute] = "Moved Permanently";
 			}
 
 			attributes[QNetworkRequest::SourceIsFromCacheAttribute] = true;
@@ -362,8 +366,9 @@ namespace Web_cache_aux {
 			return NULL;
 		}
 
-		QString content_type;
 		QString location;
+		QString content_type;
+		QString content_encoding;
 
 		// Headers -->
 		{
@@ -377,8 +382,9 @@ namespace Web_cache_aux {
 				headers[header.first] = header.second;
 			}
 
-			content_type = headers["Content-Type"];
 			location = headers["Location"];
+			content_type = headers["Content-Type"];
+			content_encoding = headers["Content-Encoding"];
 
 			if(content_type.isEmpty() && location.isEmpty())
 			{
@@ -399,7 +405,8 @@ namespace Web_cache_aux {
 			return NULL;
 		}
 
-		Cache_device* device = new Cache_device( Web_cache_entry(url, location, content_type), this );
+		Cache_device* device = new Cache_device(
+			Web_cache_entry(url, location, content_type, content_encoding), this );
 		device->open(QIODevice::WriteOnly);
 		this->prepared_devices[url] = device;
 		return device;
@@ -454,21 +461,30 @@ namespace Web_cache_aux {
 
 
 
-	Web_cache_entry::Web_cache_entry(const QString& url, const QString& location, const QString& content_type)
+	Web_cache_entry::Web_cache_entry(
+		const QString& url, const QString& location,
+		const QString& content_type, const QString& content_encoding
+	)
 	:
 		url(url),
 		location(location),
-		content_type(content_type)
+		content_type(content_type),
+		content_encoding(content_encoding)
 	{
 	}
 
 
 
-	Web_cache_entry::Web_cache_entry(const QString& url, const QString& location, const QString& content_type, const QByteArray& data)
+	Web_cache_entry::Web_cache_entry(
+		const QString& url, const QString& location,
+		const QString& content_type, const QString& content_encoding,
+		const QByteArray& data
+	)
 	:
 		url(url),
 		location(location),
 		content_type(content_type),
+		content_encoding(content_encoding),
 		data(data)
 	{
 	}

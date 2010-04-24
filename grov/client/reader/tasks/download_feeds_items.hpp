@@ -32,6 +32,7 @@ class QWebPage;
 
 #include <grov/client/reader/task.hpp>
 #include <grov/client/storage.hxx>
+#include <grov/client/web_cache.hxx>
 
 #include "download_feeds_items.hxx"
 
@@ -77,21 +78,27 @@ namespace Download_feeds_items_aux {
 			/// Current downloading state.
 			State			state;
 
+
+			/// Cache for the summary_downloader.
+			Web_cache*		summary_cache;
+
+			/// Cache for the page_downloader.
+			Web_cache*		page_cache;
+
+
 			/// Our item's summary downloader.
 			QWebPage*		summary_downloader;
 
 			/// Our item's page downloader.
 			QWebPage*		page_downloader;
 
+
 			/// Page loading timeout timer.
 			QTimer*			timeout_timer;
 
+
 			/// Item that is mirroring at this moment.
 			Db_feed_item	item;
-
-			/// Is we already mirrored item's summary and now mirroring item's
-			/// page.
-			bool			summary_mirrored;
 
 
 		public:

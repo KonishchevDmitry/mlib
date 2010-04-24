@@ -77,8 +77,11 @@ void Get_reading_list::get_reading_list(void)
 	QString url =
 		"https://www.google.com/reader/atom/user/-/state/com.google/reading-list"
 	#warning
+	#if GROV_DEVELOP_MODE
+		"?n=50&r=o&xt=user/-/state/com.google/read"
+	#else
 		"?n=1000&r=o&xt=user/-/state/com.google/read"
-		//"?n=25&r=o&xt=user/-/state/com.google/read"
+	#endif
 		"&client=" + QUrl::toPercentEncoding(get_user_agent());
 
 	if(!this->continuation_code.isEmpty())
@@ -146,7 +149,11 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 			// Getting feeds' items -->
 				try
 				{
+				#if GROV_DEVELOP_MODE
+					items = Gr_xml_parser().reading_list(reply, NULL);
+				#else
 					items = Gr_xml_parser().reading_list(reply, &this->continuation_code);
+				#endif
 				}
 				catch(m::Exception& e)
 				{
@@ -163,8 +170,6 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 		this->storage->add_items(items);
 		this->reading_lists_counter++;
 
-	#warning
-//	this->continuation_code = "";
 	#if !GROV_OFFLINE_DEVELOPMENT
 		if(this->continuation_code.isEmpty() || items.empty())
 	#endif
