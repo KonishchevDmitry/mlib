@@ -20,6 +20,7 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QLocale>
+#include <QtCore/QMap>
 #include <QtCore/QUrl>
 
 #include <QtNetwork/QNetworkCacheMetaData>
@@ -241,7 +242,16 @@ namespace Web_cache_aux {
 			cache_device->get_data().data.size(), url );
 
 		this->prepared_devices.remove(url);
-		this->storage->add_web_cache_entry(cache_device->get_data());
+
+		try
+		{
+			this->storage->add_web_cache_entry(cache_device->get_data());
+		}
+		catch(m::Exception& e)
+		{
+			MLIB_SW(EE(e));
+		}
+
 		cache_device->deleteLater();
 	}
 
@@ -283,34 +293,58 @@ namespace Web_cache_aux {
 		metadata.setUrl(url);
 		metadata.setSaveToDisk(true);
 
-		QNetworkCacheMetaData::RawHeaderList headers;
-
-		// Setting fake date -->
+		// Headers -->
 		{
-			QDateTime current_date = QDateTime::currentDateTime().toUTC();
+			QNetworkCacheMetaData::RawHeaderList headers;
 
-			QByteArray http_date;
-			QLocale locale(QLocale::C);
-			http_date += locale.toString(current_date, "ddd, dd MMM yyyy");
-			http_date += current_date.toString(" hh:mm:ss");
-			http_date += " GMT";
+			// Setting fake date -->
+			{
+				QDateTime current_date = QDateTime::currentDateTime().toUTC();
 
-			headers << QNetworkCacheMetaData::RawHeader("Date", http_date);
-			metadata.setExpirationDate(current_date.addYears(1));
+				QByteArray http_date;
+				QLocale locale(QLocale::C);
+				http_date += locale.toString(current_date, "ddd, dd MMM yyyy");
+				http_date += current_date.toString(" hh:mm:ss");
+				http_date += " GMT";
+
+				headers << QNetworkCacheMetaData::RawHeader("Date", http_date);
+				metadata.setExpirationDate(current_date.addYears(1));
+			}
+			// Setting fake date <--
+
+			if(!data.location.isEmpty())
+				headers << QNetworkCacheMetaData::RawHeader("Location", data.location.toAscii());
+
+			if(!data.content_type.isEmpty())
+				headers << QNetworkCacheMetaData::RawHeader("Content-Type", data.content_type.toAscii());
+
+			headers << QNetworkCacheMetaData::RawHeader("Content-Length", QString::number(data.content_length()).toAscii());
+
+			metadata.setRawHeaders(headers);
 		}
-		// Setting fake date <--
+		// Headers <--
 
-		if(!data.content_type.isEmpty())
-			headers << QNetworkCacheMetaData::RawHeader("Content-Type", data.content_type.toAscii());
+		// Attributes -->
+		{
+			QNetworkCacheMetaData::AttributesMap attributes;
 
-		headers << QNetworkCacheMetaData::RawHeader("Content-Length", QString::number(data.content_length()).toAscii());
-		metadata.setRawHeaders(headers);
+			// TODO: may be is not good
+			if(data.location.isEmpty())
+			{
+				attributes[QNetworkRequest::HttpStatusCodeAttribute] = 200;
+				attributes[QNetworkRequest::HttpReasonPhraseAttribute] = "OK";
+			}
+			else
+			{
+				attributes[QNetworkRequest::HttpStatusCodeAttribute] = 302;
+				attributes[QNetworkRequest::HttpReasonPhraseAttribute] = "Moved Temporarily";
+			}
 
-		QNetworkCacheMetaData::AttributesMap attributes;
-		attributes[QNetworkRequest::HttpStatusCodeAttribute] = 200;
-		attributes[QNetworkRequest::HttpReasonPhraseAttribute] = "OK";
-		attributes[QNetworkRequest::SourceIsFromCacheAttribute] = true;
-		metadata.setAttributes(attributes);
+			attributes[QNetworkRequest::SourceIsFromCacheAttribute] = true;
+
+			metadata.setAttributes(attributes);
+		}
+		// Attributes <--
 
 		return metadata;
 	}
@@ -328,26 +362,33 @@ namespace Web_cache_aux {
 			return NULL;
 		}
 
-		// Content type -->
-			QString content_type;
+		QString content_type;
+		QString location;
+
+		// Headers -->
+		{
+			QMap<QString,QString> headers;
 
 			Q_FOREACH(const QNetworkCacheMetaData::RawHeader& header, metadata.rawHeaders())
 			{
-				if(header.first == "Content-Type")
-				{
-					content_type = header.second;
-					break;
-				}
+				#warning
+				if(headers.contains(header.first))
+					MLIB_SW(tr("We already have '%1' header"), header.first);
+				headers[header.first] = header.second;
 			}
 
-			if(content_type.isEmpty())
+			content_type = headers["Content-Type"];
+			location = headers["Location"];
+
+			if(content_type.isEmpty() && location.isEmpty())
 			{
 				MLIB_D(
 					"Gotten request for saving data with empty Content-Type "
-					"header in the Web cache for the '%1'.", url
+					"and Location headers in the Web cache for the '%1'.", url
 				);
 			}
-		// Content type <--
+		}
+		// Headers <--
 
 		if(this->prepared_devices.contains(url))
 		{
@@ -358,7 +399,7 @@ namespace Web_cache_aux {
 			return NULL;
 		}
 
-		Cache_device* device = new Cache_device( Web_cache_entry(url, content_type), this );
+		Cache_device* device = new Cache_device( Web_cache_entry(url, location, content_type), this );
 		device->open(QIODevice::WriteOnly);
 		this->prepared_devices[url] = device;
 		return device;
@@ -413,18 +454,20 @@ namespace Web_cache_aux {
 
 
 
-	Web_cache_entry::Web_cache_entry(const QString& url, const QString& content_type)
+	Web_cache_entry::Web_cache_entry(const QString& url, const QString& location, const QString& content_type)
 	:
 		url(url),
+		location(location),
 		content_type(content_type)
 	{
 	}
 
 
 
-	Web_cache_entry::Web_cache_entry(const QString& url, const QString& content_type, const QByteArray& data)
+	Web_cache_entry::Web_cache_entry(const QString& url, const QString& location, const QString& content_type, const QByteArray& data)
 	:
 		url(url),
+		location(location),
 		content_type(content_type),
 		data(data)
 	{

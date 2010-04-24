@@ -76,7 +76,9 @@ void Get_reading_list::get_reading_list(void)
 #else
 	QString url =
 		"https://www.google.com/reader/atom/user/-/state/com.google/reading-list"
+	#warning
 		"?n=1000&r=o&xt=user/-/state/com.google/read"
+		//"?n=25&r=o&xt=user/-/state/com.google/read"
 		"&client=" + QUrl::toPercentEncoding(get_user_agent());
 
 	if(!this->continuation_code.isEmpty())
@@ -161,6 +163,8 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 		this->storage->add_items(items);
 		this->reading_lists_counter++;
 
+	#warning
+//	this->continuation_code = "";
 	#if !GROV_OFFLINE_DEVELOPMENT
 		if(this->continuation_code.isEmpty() || items.empty())
 	#endif

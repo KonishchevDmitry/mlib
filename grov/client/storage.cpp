@@ -288,13 +288,14 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 	{
 		QSqlQuery query = this->prepare(
 			"INSERT OR IGNORE INTO web_cache ("
-				"url, content_type, data"
+				"url, location, content_type, data"
 			") values ("
-				":url, :content_type, :data"
+				":url, :location, :content_type, :data"
 			")"
 		);
 
 		query.bindValue(":url", entry.url);
+		query.bindValue(":location", entry.location);
 		query.bindValue(":content_type", entry.content_type);
 		// TODO: data written in db in some ugly form. fix this
 		query.bindValue(":data", entry.data);
@@ -535,6 +536,7 @@ void Storage::create_db_tables(void)
 		this->exec(
 			"CREATE TABLE web_cache("
 				"url TEXT UNIQUE,"
+				"location TEXT,"
 				"content_type TEXT,"
 				"data BLOB"
 			")"
@@ -932,6 +934,7 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 	{
 		QSqlQuery query = this->prepare(
 			"SELECT "
+				"location, "
 				"content_type, "
 				"data "
 			"FROM "
@@ -946,7 +949,8 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 		{
 			return Web_cache_entry(url,
 				query.value(0).toString(),
-				query.value(1).toByteArray()
+				query.value(1).toString(),
+				query.value(2).toByteArray()
 			);
 		}
 		else
@@ -954,7 +958,7 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 	}
 	catch(m::Exception& e)
 	{
-		M_THROW(PAM( _F(tr("Error while getting web cache for '%1':"), url), EE(e) ));
+		M_THROW(PAM( _F(tr("Error while getting web cache for the '%1':"), url), EE(e) ));
 	}
 }
 
