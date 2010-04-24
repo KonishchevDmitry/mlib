@@ -58,7 +58,11 @@ void Messenger::on_message(const char* file, int line, m::Message_type type, con
 		details += _F( tr("Error happened at %1:%2. Please contact to developer."), file, line );
 	}
 
-	m::gui::show_message(get_main_window(), type, title, message, details);
+	m::gui::show_message(
+		get_main_window(), type,
+		title, message, details,
+		type != m::MESSAGE_TYPE_SILENT_WARNING
+	);
 }
 
 

@@ -30,58 +30,8 @@
 namespace m { namespace gui {
 
 
-void show_message(QWidget* parent, Message_type type, QString title, const QString& message, const QString& details)
+void show_message(QWidget* parent, Message_type type, QString title, const QString& message, const QString& details, bool block)
 {
-#if 0
-	QMessageBox::Icon icon;
-
-	switch(type)
-	{
-		case MESSAGE_TYPE_INFO:
-			icon = QMessageBox::Information;
-			if(title.isEmpty())
-				title = QObject::tr("Information");
-			break;
-
-		case MESSAGE_TYPE_SILENT_WARNING:
-		case MESSAGE_TYPE_WARNING:
-			icon = QMessageBox::Warning;
-			if(title.isEmpty())
-				title = QObject::tr("Warning");
-			break;
-
-		case MESSAGE_TYPE_ERROR:
-			icon = QMessageBox::Critical;
-			if(title.isEmpty())
-				title = QObject::tr("Application critical error");
-			break;
-
-		default:
-			icon = QMessageBox::NoIcon;
-			break;
-	}
-
-	QString window_title = m::gui::format_window_title(title);
-	QString message_box_title = "<b>" + Qt::escape(title) + "</b>";
-
-	QMessageBox message_box(icon, window_title, message_box_title, QMessageBox::Ok, parent);
-
-	message_box.setTextFormat(Qt::RichText);
-	message_box.setInformativeText(Qt::escape(message));
-
-	if(!details.isEmpty())
-		message_box.setDetailedText(Qt::escape(details));
-
-	message_box.setDefaultButton(QMessageBox::Ok);
-
-	// QMessageBox::show() in QMessageBox::exec() resets widget's
-	// minimumWidth(), so we manually show the dialog and set its minimum
-	// width.
-	message_box.show();
-	message_box.setMinimumWidth(300);
-
-	message_box.exec();
-#else
 	QMessageBox::Icon icon;
 
 	switch(type)
@@ -129,15 +79,20 @@ void show_message(QWidget* parent, Message_type type, QString title, const QStri
 	message_box->show();
 	message_box->setMinimumWidth(300);
 
-//	message_box->exec();
-#endif
+	if(block)
+	{
+		message_box->exec();
+		delete message_box;
+	}
+	else
+		message_box->connect(message_box, SIGNAL(finished(int)), SLOT(deleteLater()));
 }
 
 
 
-void show_warning_message(QWidget* parent, const QString& title, const QString& message, const QString& details)
+void show_warning_message(QWidget* parent, const QString& title, const QString& message, const QString& details, bool block)
 {
-	show_message(parent, MESSAGE_TYPE_WARNING, title, message, details);
+	show_message(parent, MESSAGE_TYPE_WARNING, title, message, details, block);
 }
 
 

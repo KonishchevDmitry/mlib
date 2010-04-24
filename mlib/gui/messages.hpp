@@ -30,10 +30,10 @@ namespace m { namespace gui {
 
 
 /// Shows GUI message, blocking until the user closes it.
-void	show_message(QWidget* parent, Message_type type, QString title, const QString& message, const QString& details = QString());
+void	show_message(QWidget* parent, Message_type type, QString title, const QString& message, const QString& details = QString(), bool block = true);
 
 /// Shows warning message, blocking until the user closes it.
-void	show_warning_message(QWidget* parent, const QString& title, const QString& message, const QString& details = QString());
+void	show_warning_message(QWidget* parent, const QString& title, const QString& message, const QString& details = QString(), bool block = true);
 
 /// Shows "Yes or No" message.
 ///
