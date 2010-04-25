@@ -1,6 +1,6 @@
 /**************************************************************************
 *                                                                         *
-*   Grov - Google Reader offline viewer                                   *
+*   MLib - library of some useful things for internal usage               *
 *                                                                         *
 *   Copyright (C) 2010, Dmitry Konishchev                                 *
 *   http://konishchevdmitry.blogspot.com/                                 *
@@ -12,71 +12,59 @@
 *                                                                         *
 *   This program is distributed in the hope that it will be useful,       *
 *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_MAIN_WINDOW
-#define GROV_HEADER_MAIN_WINDOW
+#ifndef MLIB_HEADER_GUI_MESSAGE_BOX
+#define MLIB_HEADER_GUI_MESSAGE_BOX
 
-class QMessageBox;
+#include <QtGui/QMessageBox>
 
-#include <QtGui/QMainWindow>
+#include "core.hpp"
 
-#include <mlib/gui/message_box.hxx>
-
-#include <grov/client.hpp>
-#include <grov/common.hpp>
+#include "message_box.hxx"
 
 
-namespace grov {
+namespace m { namespace gui {
 
 
-namespace Ui {
-	class Main_window;
-}
-
-
-/// Application's main window.
-class Main_window: public QMainWindow
+/// Fixes few bugs in QMessageBox and adds extra functionality.
+///
+/// \attention
+/// You are not allowed to use QMessageBox's and QDialog's methods of this
+/// class. Use only this interface.
+class Message_box: public QMessageBox
 {
 	Q_OBJECT
 
 	public:
-		/// @throw m::Exception
-		Main_window(QWidget *parent = 0);
-		~Main_window(void);
+		Message_box(Icon icon, const QString& title, const QString& message, StandardButtons buttons = NoButton, QWidget* parent = 0, Qt::WindowFlags f = Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
 
 
-	private:
-		// Qt Designer-generated widgets.
-		Ui::Main_window*		ui;
+	public:
+		/// Sets message box's details text.
+		void	set_details(const QString& details);
 
-		/// Represents our Google Reader offline client.
-		Client*					client;
+		/// Sets message box's message text.
+		void	set_message(const QString& message);
 
-		/// Dialog that shows progress of current operation.
-		m::gui::Message_box*	progress_dialog;
+		/// Sets message box's title.
+		void	set_title(const QString& title);
 
 
-	private slots:
-		/// Called when current mode changed.
-		void	mode_changed(Client::Mode mode);
+	public slots:
+		/// See QMessageBox::exec().
+		int		exec(void);
 
-		/// When user clicks "Discard all offline data" button.
-		void	on_discard_all_offline_data_action_activated(void);
-
-		/// When user clicks "Flush offline data" button.
-		void	on_flush_offline_data_action_activated(void);
-
-		/// When user clicks "Go offline" button.
-		void	on_go_offline_action_activated(void);
+		/// See QMessageBox::show().
+		void	show(void);
 };
 
 
-}
+}}
 
 #endif
 

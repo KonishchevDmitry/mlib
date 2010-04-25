@@ -2,3 +2,4 @@
 ? Min font size
 * qt children delete order
 * deleteLater() -> signal -> this->sender() == 0 fix
+* translations in update_project

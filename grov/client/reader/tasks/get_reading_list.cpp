@@ -76,7 +76,6 @@ void Get_reading_list::get_reading_list(void)
 #else
 	QString url =
 		"https://www.google.com/reader/atom/user/-/state/com.google/reading-list"
-	#warning
 	#if GROV_DEVELOP_MODE
 		"?n=50&r=o&xt=user/-/state/com.google/read"
 	#else

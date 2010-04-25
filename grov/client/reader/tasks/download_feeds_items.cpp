@@ -98,7 +98,8 @@ namespace Download_feeds_items_aux {
 		}
 
 		this->downloader = new Web_page(this);
-		this->downloader->networkAccessManager()->setCache(new Web_cache(this->storage));
+		this->downloader->networkAccessManager()->setCache(
+			new Web_cache(Web_cache::MODE_ONLINE, this->storage) );
 
 		// Qt::QueuedConnection is to prevent a recursion in case of simple
 		// item's summaries without external elements.

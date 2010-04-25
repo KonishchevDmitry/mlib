@@ -18,10 +18,8 @@
 **************************************************************************/
 
 
-#include <QtGui/QMessageBox>
-
-#include <mlib/gui/core.hpp>
 #include <mlib/gui/messages.hpp>
+#include <mlib/gui/message_box.hpp>
 
 #include <grov/client.hpp>
 #include <grov/common.hpp>
@@ -37,7 +35,7 @@ Main_window::Main_window(QWidget *parent)
 :
 	QMainWindow(parent),
 	ui(new Ui::Main_window),
-	progress_dialog(new QMessageBox(QMessageBox::Information, "", "", QMessageBox::Cancel, this))
+	progress_dialog(new m::gui::Message_box(QMessageBox::Information, "", "", QMessageBox::Cancel, this))
 {
     ui->setupUi(this);
 
@@ -118,15 +116,9 @@ void Main_window::mode_changed(Client::Mode mode)
 
 		if(show_progress)
 		{
-			this->progress_dialog->setWindowTitle(m::gui::format_window_title(progress_title));
-			this->progress_dialog->setText("<b>" + progress_title + "</b>");
-			this->progress_dialog->setInformativeText(progress_text);
+			this->progress_dialog->set_title(progress_title);
+			this->progress_dialog->set_message(progress_text);
 			this->progress_dialog->show();
-
-			// QMessageBox::show() resets widget's minimumWidth(), so we
-			// manually set it after showing.
-			//this->progress_dialog->setMinimumWidth(300);
-			this->progress_dialog->setMinimumWidth(300);
 		}
 		else
 			this->progress_dialog->hide();

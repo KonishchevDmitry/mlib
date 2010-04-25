@@ -173,9 +173,9 @@ namespace Web_cache_aux {
 
 
 // Web_cache -->
-	Web_cache::Web_cache(Storage* storage, QObject* parent)
+	Web_cache::Web_cache(Mode mode, Storage* storage)
 	:
-		QAbstractNetworkCache(parent),
+		mode(mode),
 		storage(storage)
 	{
 	}
@@ -184,9 +184,12 @@ namespace Web_cache_aux {
 
 	Web_cache::~Web_cache(void)
 	{
+// TODO: remove
+#if 0
 		if(!this->prepared_devices.isEmpty())
 			MLIB_SW(_F( tr("Web cache: we have %1 prepared meta data that has not been inserted or removed."),
 				this->prepared_devices.size() ));
+#endif
 	}
 
 
@@ -235,14 +238,14 @@ namespace Web_cache_aux {
 
 	void Web_cache::insert(QIODevice* device)
 	{
-		// TODO: think about database transactions
 		Cache_device* cache_device = m::checked_qobject_cast<Cache_device*>(device);
 		QString url = cache_device->get_data().url;
 
 		MLIB_D("Request for inserting data of %1 bytes for the '%2'.",
 			cache_device->get_data().data.size(), url );
 
-		this->prepared_devices.remove(url);
+// TODO: remove
+//		this->prepared_devices.remove(url);
 
 		try
 		{
@@ -358,6 +361,13 @@ namespace Web_cache_aux {
 	QIODevice* Web_cache::prepare(const QNetworkCacheMetaData& metadata)
 	{
 		QString url = metadata.url().toString();
+
+		if(this->mode != MODE_ONLINE)
+		{
+			MLIB_D("Request for preparing device for the '%1'. Ignoring it.", url);
+			return NULL;
+		}
+
 		MLIB_D("Preparing device for the '%1'...", url);
 
 		if(url.isEmpty())
@@ -375,16 +385,11 @@ namespace Web_cache_aux {
 			QMap<QString,QString> headers;
 
 			Q_FOREACH(const QNetworkCacheMetaData::RawHeader& header, metadata.rawHeaders())
-			{
-				#warning
-				if(headers.contains(header.first))
-					MLIB_SW(tr("We already have '%1' header"), header.first);
-				headers[header.first] = header.second;
-			}
+				headers[header.first.toLower()] = header.second;
 
-			location = headers["Location"];
-			content_type = headers["Content-Type"];
-			content_encoding = headers["Content-Encoding"];
+			location = headers["location"];
+			content_type = headers["content-type"];
+			content_encoding = headers["content-encoding"];
 
 			if(content_type.isEmpty() && location.isEmpty())
 			{
@@ -396,6 +401,8 @@ namespace Web_cache_aux {
 		}
 		// Headers <--
 
+// TODO: remove
+#if 0
 		if(this->prepared_devices.contains(url))
 		{
 			MLIB_SW(_F(tr(
@@ -404,11 +411,13 @@ namespace Web_cache_aux {
 			));
 			return NULL;
 		}
+#endif
 
 		Cache_device* device = new Cache_device(
 			Web_cache_entry(url, location, content_type, content_encoding), this );
 		device->open(QIODevice::WriteOnly);
-		this->prepared_devices[url] = device;
+// TODO: remove
+//		this->prepared_devices[url] = device;
 		return device;
 	}
 
@@ -416,12 +425,12 @@ namespace Web_cache_aux {
 
 	bool Web_cache::remove(const QUrl& url)
 	{
+// TODO: remove
+#if 0
 		QString url_string = url.toString();
 
 		MLIB_D("Request for removing prepared meta data for the '%1'.", url_string);
 
-#warning
-#if 0
 		MLIB_ITER_TYPE(this->prepared_devices) it = this->prepared_devices.find(url_string);
 		if(it != this->prepared_devices.end())
 		{
@@ -438,6 +447,7 @@ namespace Web_cache_aux {
 			return false;
 		}
 #else
+		MLIB_D("Request for removing prepared meta data for the '%1'. Ignoring it.", url.toString());
 		return true;
 #endif
 	}
@@ -515,7 +525,7 @@ namespace Web_cache_aux {
 	:
 		QNetworkAccessManager(parent)
 	{
-		this->setCache(new Web_cache(storage, this));
+		this->setCache(new Web_cache(Web_cache::MODE_OFFLINE, storage));
 	}
 
 

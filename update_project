@@ -13,10 +13,10 @@ update()
 	cd "$project_path"
 
 	(
-		for lang in ru
-		do
-			lupdate . -noobsolete -ts translations/${project_name}_${lang}.ts
-		done
+		#for lang in ru
+		#do
+		#	lupdate . -noobsolete -ts translations/${project_name}_${lang}.ts
+		#done
 
 		echo "set(${project_uppercase_name}_SOURCES"
 			find -name '*.cpp' | sed 's/^\.\//\t/' | sort

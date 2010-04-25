@@ -24,7 +24,8 @@
 class QNetworkReply;
 
 #include <QtCore/QByteArray>
-#include <QtCore/QHash>
+// TODO: remove
+//#include <QtCore/QHash>
 #include <QtCore/QIODevice>
 
 #include <QtNetwork/QAbstractNetworkCache>
@@ -137,28 +138,59 @@ namespace Web_cache_aux {
 
 /// Object that is used to track QtWebKit's requests and save gotten data to
 /// storage in online mode and to get saved data from storage in offline mode.
+///
+/// \attention
+///
+/// This cache class is slightly different from QAbstractNetworkCache. It does
+/// not really remove prepared devices in remove() method. This is done because
+/// QAbstractNetworkCache does not intended for using in several requests that
+/// run simultaneously and may have the same URL, but QtWebKit uses this model
+/// of loading it's pages.
+///
+/// So this class is expected to use in the following manner:
+/// - In online mode you always create a new instance of QWebPage for every page
+/// that needs to load and create a new Web_cache for this QWebPage. All
+/// prepared devices does not removed by remove() which results to additional
+/// memory usage, but when QWebPage will be destroyed, Web_cache also will be
+/// destroyed and all devices that has not been removed will be destroyed.
+/// - In offline mode the cache object is works in read only mode, so there is
+/// no additional memory usage.
 class Web_cache: public QAbstractNetworkCache
 {
 	Q_OBJECT
+
+	public:
+		/// Cache using mode.
+		enum Mode {
+			/// We can read data from the cache and write new data to it.
+			MODE_ONLINE,
+
+			/// We can only read data from the cache. All new data is ignored.
+			MODE_OFFLINE
+		};
 
 	private:
 		typedef Web_cache_aux::Cache_device Cache_device;
 
 
 	public:
-		Web_cache(Storage* storage, QObject* parent = NULL);
+		Web_cache(Mode mode, Storage* storage);
 		~Web_cache(void);
 
 
 	private:
+		/// Mode in which the cache works.
+		Mode			mode;
+
 		/// Our offline data storage.
 		Storage*		storage;
 
 		/// Last requested data.
 		Web_cache_entry	last_data;
 
+// TODO: remove
 		/// Devices that has been created by prepare().
-		QHash<QString, Cache_device*>	prepared_devices;
+//		QHash<QString, Cache_device*>	prepared_devices;
 
 
 	// QAbstractNetworkCache interface -->
@@ -179,7 +211,7 @@ class Web_cache: public QAbstractNetworkCache
 
 
 
-/// Network access manager with caching facilities.
+/// Network access manager with access to cached data.
 class Web_cached_manager: public QNetworkAccessManager
 {
 	public:

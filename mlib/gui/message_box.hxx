@@ -18,65 +18,12 @@
 **************************************************************************/
 
 
-#ifndef GROV_HEADER_MAIN_WINDOW
-#define GROV_HEADER_MAIN_WINDOW
+#ifndef MLIB_HEADER_GUI_MESSAGE_BOX_FWD
+#define MLIB_HEADER_GUI_MESSAGE_BOX_FWD
 
-class QMessageBox;
-
-#include <QtGui/QMainWindow>
-
-#include <mlib/gui/message_box.hxx>
-
-#include <grov/client.hpp>
-#include <grov/common.hpp>
-
-
-namespace grov {
-
-
-namespace Ui {
-	class Main_window;
-}
-
-
-/// Application's main window.
-class Main_window: public QMainWindow
-{
-	Q_OBJECT
-
-	public:
-		/// @throw m::Exception
-		Main_window(QWidget *parent = 0);
-		~Main_window(void);
-
-
-	private:
-		// Qt Designer-generated widgets.
-		Ui::Main_window*		ui;
-
-		/// Represents our Google Reader offline client.
-		Client*					client;
-
-		/// Dialog that shows progress of current operation.
-		m::gui::Message_box*	progress_dialog;
-
-
-	private slots:
-		/// Called when current mode changed.
-		void	mode_changed(Client::Mode mode);
-
-		/// When user clicks "Discard all offline data" button.
-		void	on_discard_all_offline_data_action_activated(void);
-
-		/// When user clicks "Flush offline data" button.
-		void	on_flush_offline_data_action_activated(void);
-
-		/// When user clicks "Go offline" button.
-		void	on_go_offline_action_activated(void);
-};
-
-
-}
+namespace m { namespace gui {
+	class Message_box;
+}}
 
 #endif
 
