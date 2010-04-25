@@ -84,6 +84,16 @@ class QTextStream;
 /// @param message (QString) - message to show.
 #define MLIB_SW(args...) _MLIB_SHOW_MESSAGE(::m::MESSAGE_TYPE_SILENT_WARNING, return, args)
 
+/// Shows a silent warning message in the develop mode and a debug message in
+/// the other case.
+///
+/// @param args - the same arguments as in m::_F().
+#if MLIB_DEVELOP_MODE
+	#define MLIB_DW(args...) MLIB_SW("", _F(args))
+#else
+	#define MLIB_DW(args...) MLIB_D(args)
+#endif
+
 /// Shows an error message.
 ///
 /// @param title (QString) - message title (optional).

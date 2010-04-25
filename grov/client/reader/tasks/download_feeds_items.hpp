@@ -32,7 +32,6 @@ class QWebPage;
 
 #include <grov/client/reader/task.hpp>
 #include <grov/client/storage.hxx>
-#include <grov/client/web_cache.hxx>
 
 #include "download_feeds_items.hxx"
 
@@ -78,32 +77,29 @@ namespace Download_feeds_items_aux {
 			/// Current downloading state.
 			State			state;
 
+			/// Item that is mirroring at this moment.
+			Db_feed_item	item;
 
-			/// Cache for the summary_downloader.
-			Web_cache*		summary_cache;
-
-			/// Cache for the page_downloader.
-			Web_cache*		page_cache;
-
-
-			/// Our item's summary downloader.
-			QWebPage*		summary_downloader;
-
-			/// Our item's page downloader.
-			QWebPage*		page_downloader;
-
+			/// Our item downloader.
+			QWebPage*		downloader;
 
 			/// Page loading timeout timer.
 			QTimer*			timeout_timer;
 
 
-			/// Item that is mirroring at this moment.
-			Db_feed_item	item;
-
-
 		public:
 			/// Closes the stream.
 			void	close(void);
+
+		private:
+			/// Creates a new downloader.
+			void	create_downloader(void);
+
+			/// Asynchronously destroys current downloader.
+			void	destroy_downloader(void);
+
+			/// Called when download finishes.
+			void	download_finished(void);
 
 			/// Mirrors a next feed item.
 			///
@@ -124,10 +120,10 @@ namespace Download_feeds_items_aux {
 			void	download_timed_out(void);
 
 			/// Called when page loading finishes.
-			void	page_download_finished(bool ok);
+			void	page_load_finished(bool ok);
 
-			/// Called when summary loading finishes.
-			void	summary_download_finished(bool ok);
+			/// Starts mirroring process.
+			void	start(void);
 	};
 
 
@@ -167,6 +163,10 @@ class Download_feeds_items: public Task
 	signals:
 		/// This signal is emitted when we have downloaded all items.
 		void			downloaded(void);
+
+		/// This signal is emitted in process() to asynchronously start all
+		/// mirroring streams.
+		void			start_mirroring(void);
 
 
 	private slots:

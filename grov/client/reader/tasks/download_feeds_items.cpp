@@ -46,32 +46,10 @@ namespace Download_feeds_items_aux {
 
 		storage(storage),
 		state(STATE_NONE),
-
-		summary_cache(new Web_cache(storage, this)),
-		page_cache(new Web_cache(storage, this)),
-
-		summary_downloader(new Web_page(this)),
-		page_downloader(new Web_page(this)),
-
+		downloader(NULL),
 		timeout_timer(new QTimer(this))
 	{
 		MLIB_D("[%1] Creating...", this);
-
-		// TODO:
-		// QtWebKit is too bugous. But separating downloader to summary and
-		// page downloader helps to avoid some bugs which results Segmentation
-		// faults.
-		// -->
-			this->summary_downloader->networkAccessManager()->setCache(this->summary_cache);
-			this->page_downloader->networkAccessManager()->setCache(this->page_cache);
-
-			// Qt::QueuedConnection is to prevent a recursion in case of simple
-			// item's summaries without external elements.
-			connect(this->summary_downloader, SIGNAL(loadFinished(bool)),
-				this, SLOT(summary_download_finished(bool)), Qt::QueuedConnection );
-			connect(this->page_downloader, SIGNAL(loadFinished(bool)),
-				this, SLOT(page_download_finished(bool)), Qt::QueuedConnection );
-		// <--
 
 		this->timeout_timer->setSingleShot(true);
 		this->timeout_timer->setInterval(config::page_mirroring_timeout * 1000);
@@ -84,25 +62,89 @@ namespace Download_feeds_items_aux {
 	Mirroring_stream::~Mirroring_stream(void)
 	{
 		MLIB_D("[%1] Destroying...", this);
-		// TODO
-		delete this->summary_downloader;
-		delete this->page_downloader;
 	}
 
 
 
 	void Mirroring_stream::close(void)
 	{
+		MLIB_D("[%1] Closing...", this);
+
 		if(this->state != STATE_CLOSED)
 		{
 			this->state = STATE_CLOSED;
 
-			this->summary_downloader->triggerAction(QWebPage::Stop);
-			this->page_downloader->triggerAction(QWebPage::Stop);
+			this->destroy_downloader();
 			this->timeout_timer->stop();
 
 			emit this->finished();
 			this->deleteLater();
+		}
+	}
+
+
+
+	void Mirroring_stream::create_downloader(void)
+	{
+		MLIB_D("[%1] Creating a new downloader...", this);
+
+		if(this->downloader)
+		{
+			MLIB_DW(
+				"[%1] Gotten request for creating a new downloader when downloader "
+				"is already exists. Destroying current downloader...", this
+			);
+			this->destroy_downloader();
+		}
+
+		this->downloader = new Web_page(this);
+		this->downloader->networkAccessManager()->setCache(new Web_cache(this->storage));
+
+		// Qt::QueuedConnection is to prevent a recursion in case of simple
+		// item's summaries without external elements.
+		connect(this->downloader, SIGNAL(loadFinished(bool)),
+			this, SLOT(page_load_finished(bool)), Qt::QueuedConnection );
+	}
+
+
+
+	void Mirroring_stream::destroy_downloader(void)
+	{
+		if(this->downloader)
+		{
+			MLIB_D("Destroying current downloader...");
+			disconnect(this->downloader, NULL, this, NULL);
+			this->downloader->triggerAction(QWebPage::Stop);
+			this->downloader->deleteLater();
+			this->downloader = NULL;
+		}
+	}
+
+
+
+	void Mirroring_stream::download_finished(void)
+	{
+		this->destroy_downloader();
+		this->timeout_timer->stop();
+
+		switch(this->state)
+		{
+			case STATE_SUMMARY_DOWNLOADING:
+				MLIB_D("[%1] Mirroring item's '%2' (%3) page...", this, this->item.title, this->item.url);
+				this->state = STATE_PAGE_DOWNLOADING;
+				this->timeout_timer->start();
+				this->create_downloader();
+				this->downloader->mainFrame()->load(this->item.url);
+				break;
+
+			case STATE_PAGE_DOWNLOADING:
+				this->state = STATE_NONE;
+				this->mirror_next();
+				break;
+
+			default:
+				MLIB_LE();
+				break;
 		}
 	}
 
@@ -114,30 +156,13 @@ namespace Download_feeds_items_aux {
 
 		switch(this->state)
 		{
-			case STATE_CLOSED:
-				MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
-				break;
-
 			case STATE_SUMMARY_DOWNLOADING:
-// TODO
-disconnect(this->summary_downloader, NULL, this, NULL);
-				this->summary_downloader->triggerAction(QWebPage::Stop);
-connect(this->summary_downloader, SIGNAL(loadFinished(bool)),
-	this, SLOT(summary_download_finished(bool)), Qt::QueuedConnection );
-this->summary_download_finished(false);
-				break;
-
 			case STATE_PAGE_DOWNLOADING:
-// TODO
-disconnect(this->page_downloader, NULL, this, NULL);
-				this->page_downloader->triggerAction(QWebPage::Stop);
-connect(this->page_downloader, SIGNAL(loadFinished(bool)),
-	this, SLOT(page_download_finished(bool)), Qt::QueuedConnection );
-this->page_download_finished(false);
+				this->download_finished();
 				break;
 
 			default:
-				MLIB_D("[%1] Gotten invalid signal (current state is %1). Ignoring it.");
+				MLIB_DW("[%1] Gotten invalid timeout signal (current state is %2). Ignoring it.", this, this->state);
 				break;
 		}
 	}
@@ -147,12 +172,7 @@ this->page_download_finished(false);
 	void Mirroring_stream::mirror_next(void)
 	{
 		MLIB_D("[%1] Mirroring next item...", this);
-
-		if(this->state == STATE_CLOSED)
-		{
-			MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
-			return;
-		}
+		MLIB_A(this->state == STATE_NONE);
 
 		try
 		{
@@ -163,9 +183,8 @@ this->page_download_finished(false);
 			MLIB_D("[%1] Mirroring item's '%2' (%3) summary...", this, this->item.title, this->item.url);
 			this->state = STATE_SUMMARY_DOWNLOADING;
 			this->timeout_timer->start();
-// TODO
-//			this->summary_download_finished(true);
-			this->summary_downloader->mainFrame()->setHtml(this->item.summary);
+			this->create_downloader();
+			this->downloader->mainFrame()->setHtml(this->item.summary);
 		}
 		catch(Storage::No_more_items&)
 		{
@@ -185,53 +204,34 @@ this->page_download_finished(false);
 
 
 
-	void Mirroring_stream::page_download_finished(bool ok)
+	void Mirroring_stream::page_load_finished(bool ok)
 	{
-		MLIB_D("[%1] Page downloading finished(%2).", this, ok);
+		MLIB_D("[%1] Page loading finished(%2).", this, ok);
 
-		switch(this->state)
-		{
-			case STATE_CLOSED:
-				MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
-				break;
-
-			case STATE_PAGE_DOWNLOADING:
-				this->timeout_timer->stop();
-				this->state = STATE_NONE;
-				this->mirror_next();
-				break;
-
-			default:
-				MLIB_D("[%1] Gotten an out-of-date signal (current state is %1). Ignoring it.");
-				break;
-		}
+		if(this->downloader == m::checked_qobject_cast<QWebPage*>(this->sender()))
+			this->download_finished();
+		else
+			MLIB_D("[%1] Gotten the out of date downloader's signal. Ignoring it.", this);
 	}
 
 
 
-	void Mirroring_stream::summary_download_finished(bool ok)
+	void Mirroring_stream::start(void)
 	{
-		MLIB_D("[%1] Summary downloading finished(%2).", this, ok);
+		MLIB_D("[%1] Starting...", this);
 
 		switch(this->state)
 		{
-			case STATE_CLOSED:
-				MLIB_D("[%1] Stream is closed. Skipping all activity.", this);
+			case STATE_NONE:
+				this->mirror_next();
 				break;
 
-			case STATE_SUMMARY_DOWNLOADING:
-			{
-				this->timeout_timer->stop();
-
-				MLIB_D("[%1] Mirroring item's '%2' (%3) page...", this, this->item.title, this->item.url);
-				this->state = STATE_PAGE_DOWNLOADING;
-				this->timeout_timer->start();
-				this->page_downloader->mainFrame()->load(this->item.url);
-			}
-			break;
+			case STATE_CLOSED:
+				MLIB_D("[%1] Cancel starting - stream has been closed.", this);
+				break;
 
 			default:
-				MLIB_D("[%1] Gotten an out-of-date signal (current state is %1). Ignoring it.");
+				MLIB_DW("[%1] Gotten invalid start signal (current state is %2). Ignoring it.", this, this->state);
 				break;
 		}
 	}
@@ -251,11 +251,14 @@ Download_feeds_items::Download_feeds_items(Storage* storage, QObject* parent)
 	{
 		Mirroring_stream* stream = new Mirroring_stream(storage, this);
 
+		connect(this, SIGNAL(start_mirroring()),
+			stream, SLOT(start()), Qt::QueuedConnection );
+
 		connect(stream, SIGNAL(finished()),
-			this, SLOT(stream_finished()), Qt::QueuedConnection );
+			SLOT(stream_finished()), Qt::QueuedConnection );
 
 		connect(stream, SIGNAL(error(const QString&)),
-			this, SLOT(stream_error(const QString&)) );
+			SLOT(stream_error(const QString&)) );
 
 		this->streams << stream;
 	}
@@ -273,14 +276,7 @@ void Download_feeds_items::process(void)
 	emit this->downloaded();
 #else
 	this->storage->set_current_source_to_all();
-
-	// Running mirroring in all streams -->
-	{
-		QSet<Mirroring_stream*> streams = this->streams;
-		Q_FOREACH(Mirroring_stream* stream, streams)
-			stream->mirror_next();
-	}
-	// Running mirroring in all streams <--
+	emit this->start_mirroring();
 #endif
 }
 
@@ -293,10 +289,11 @@ void Download_feeds_items::stream_error(const QString& error)
 	if(!this->downloading_failed)
 	{
 		this->downloading_failed = true;
-		this->failed(error);
 
 		Q_FOREACH(Mirroring_stream* stream, this->streams)
 			stream->close();
+
+		this->failed(error);
 	}
 }
 
