@@ -420,6 +420,8 @@ namespace Web_cache_aux {
 
 		MLIB_D("Request for removing prepared meta data for the '%1'.", url_string);
 
+#warning
+#if 0
 		MLIB_ITER_TYPE(this->prepared_devices) it = this->prepared_devices.find(url_string);
 		if(it != this->prepared_devices.end())
 		{
@@ -435,6 +437,9 @@ namespace Web_cache_aux {
 			);
 			return false;
 		}
+#else
+		return true;
+#endif
 	}
 
 
