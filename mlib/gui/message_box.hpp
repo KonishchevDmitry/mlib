@@ -33,7 +33,7 @@ namespace m { namespace gui {
 
 /// Fixes few bugs in QMessageBox and adds extra functionality.
 ///
-/// \attention
+/// @ATTENTION
 /// You are not allowed to use QMessageBox's and QDialog's methods of this
 /// class. Use only this interface.
 class Message_box: public QMessageBox

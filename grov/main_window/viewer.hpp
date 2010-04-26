@@ -77,9 +77,7 @@ class Viewer: public QWidget
 		void	reset_current_item(void);
 
 		/// Sets current feed item.
-// TODO
-		//void	set_current_item(const Db_feed_item& item);
-		void	set_current_item(Db_feed_item item);
+		void	set_current_item(const Db_feed_item& item);
 
 		/// Displays "There is no more unread items" message instead of item.
 		void	set_no_more_items(void);

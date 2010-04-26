@@ -16,7 +16,6 @@
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
-// TODO: check with attention
 
 
 #include <QtCore/QTimer>
@@ -37,7 +36,6 @@
 #include "download_feeds_items_private.hpp"
 
 
-// TODO: tries when fails
 namespace grov { namespace client { namespace reader { namespace tasks {
 
 
@@ -238,7 +236,7 @@ namespace Download_feeds_items_aux {
 					try
 					{
 						Q_FOREACH(const QString& url, this->gotten_urls)
-							if(!this->storage->has_web_cache_entry(url))
+							if(!this->storage->is_in_web_cache(url))
 								this->needs_download.enqueue(url);
 					}
 					catch(m::Exception& e)
@@ -445,7 +443,7 @@ namespace Download_feeds_items_aux {
 					// Server may redirect us to the page with unique URL but with
 					// the same contents that the page which downloader got. So we
 					// must download it too.
-					if(!location.isEmpty() && !this->storage->has_web_cache_entry(location))
+					if(!location.isEmpty() && !this->storage->is_in_web_cache(location))
 						this->needs_download << location;
 
 					this->storage->add_web_cache_entry(

@@ -124,8 +124,9 @@ namespace aux {
 
 	void System_signal_notifier::end_work_signal_handler(int signal_no)
 	{
-		char value;
-		::write(singleton->pipes[PIPE_WRITE], &value, sizeof value);
+		ssize_t value;
+		// To suppress the compiler warning
+		value = ::write(singleton->pipes[PIPE_WRITE], &value, 1);
 	}
 
 

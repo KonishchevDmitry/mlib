@@ -116,7 +116,7 @@ namespace m {
 
 /// Message type.
 ///
-/// \attention
+/// @ATTENTION
 /// (( For the library's developers ))
 /// If you change the types order you must adjust this changes to
 /// MESSAGES_* arrays.
@@ -176,7 +176,7 @@ void		set_debug_level(Debug_level level);
 
 /// Sets message handler.
 ///
-/// \attention
+/// @ATTENTION
 /// Error message handler must terminate the program.
 void		set_message_handler(Message_type type, Message_handler handler);
 

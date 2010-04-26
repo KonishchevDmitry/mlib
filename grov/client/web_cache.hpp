@@ -24,8 +24,6 @@
 class QNetworkReply;
 
 #include <QtCore/QByteArray>
-// TODO: remove
-//#include <QtCore/QHash>
 #include <QtCore/QIODevice>
 
 #include <QtNetwork/QAbstractNetworkCache>
@@ -80,7 +78,7 @@ class Web_cache_entry
 		size_t	content_length(void) const;
 
 		/// Return false if this is invalid cache item.
-		bool	is_valid(void) const;
+		bool	valid(void) const;
 };
 
 
@@ -88,14 +86,13 @@ class Web_cache_entry
 namespace Web_cache_aux {
 
 
-	/// Device that Web_cache creates to provide QtWebKit a way to get cached
+	/// Device that Web_cache creates to provide QtWebKit a way to get a cached
 	/// data.
 	class Cache_device: public QIODevice
 	{
 		Q_OBJECT
 
 		public:
-			/// @param write - is device creating for writing or for reading.
 			Cache_device(const Web_cache_entry& cache_entry, QObject* parent = NULL);
 			~Cache_device(void);
 
@@ -139,7 +136,7 @@ namespace Web_cache_aux {
 /// Object that is used to track QtWebKit's requests and save gotten data to
 /// storage in online mode and to get saved data from storage in offline mode.
 ///
-/// \attention
+/// @ATTENTION
 ///
 /// This cache class is slightly different from QAbstractNetworkCache. It does
 /// not really remove prepared devices in remove() method. This is done because
@@ -155,6 +152,10 @@ namespace Web_cache_aux {
 /// destroyed and all devices that has not been removed will be destroyed.
 /// - In offline mode the cache object is works in read only mode, so there is
 /// no additional memory usage.
+///
+/// @TODO
+/// http://some/url and http://some/url#anchor is the same URLs, but our cache
+/// does not know about this.
 class Web_cache: public QAbstractNetworkCache
 {
 	Q_OBJECT
@@ -175,7 +176,6 @@ class Web_cache: public QAbstractNetworkCache
 
 	public:
 		Web_cache(Mode mode, Storage* storage);
-		~Web_cache(void);
 
 
 	private:
@@ -187,10 +187,6 @@ class Web_cache: public QAbstractNetworkCache
 
 		/// Last requested data.
 		Web_cache_entry	last_data;
-
-// TODO: remove
-		/// Devices that has been created by prepare().
-//		QHash<QString, Cache_device*>	prepared_devices;
 
 
 	// QAbstractNetworkCache interface -->

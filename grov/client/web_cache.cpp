@@ -16,8 +16,6 @@
 *   GNU General Public License for more details.                          *
 *                                                                         *
 **************************************************************************/
-// TODO: check with attention
-// TODO: http://some/url and http://some/url#anchor is the same URLs, but our cache does not know this.
 
 
 #include <QtCore/QDateTime>
@@ -183,18 +181,6 @@ namespace Web_cache_aux {
 
 
 
-	Web_cache::~Web_cache(void)
-	{
-// TODO: remove
-#if 0
-		if(!this->prepared_devices.isEmpty())
-			MLIB_SW(_F( tr("Web cache: we have %1 prepared meta data that has not been inserted or removed."),
-				this->prepared_devices.size() ));
-#endif
-	}
-
-
-
 	qint64 Web_cache::cacheSize(void) const
 	{
 		MLIB_D("Cache size request. Returning 0.");
@@ -225,7 +211,7 @@ namespace Web_cache_aux {
 			}
 		}
 
-		if(data.is_valid())
+		if(data.valid())
 		{
 			Cache_device* device = new Cache_device(data);
 			device->open(QIODevice::ReadOnly);
@@ -244,9 +230,6 @@ namespace Web_cache_aux {
 
 		MLIB_D("Request for inserting data of %1 bytes for the '%2'.",
 			cache_device->get_data().data.size(), entry.url );
-
-// TODO: remove
-//		this->prepared_devices.remove(url);
 
 		try
 		{
@@ -289,7 +272,7 @@ namespace Web_cache_aux {
 
 		QNetworkCacheMetaData metadata;
 
-		if(!data.is_valid())
+		if(!data.valid())
 		{
 			MLIB_D("There is no metadata for the '%1'.", url);
 			return metadata;
@@ -302,7 +285,7 @@ namespace Web_cache_aux {
 		{
 			QNetworkCacheMetaData::RawHeaderList headers;
 
-			// Setting fake date -->
+			// Setting a fake date -->
 			{
 				QDateTime current_date = QDateTime::currentDateTime().toUTC();
 
@@ -315,7 +298,7 @@ namespace Web_cache_aux {
 				headers << QNetworkCacheMetaData::RawHeader("Date", http_date);
 				metadata.setExpirationDate(current_date.addYears(1));
 			}
-			// Setting fake date <--
+			// Setting a fake date <--
 
 			if(!data.location.isEmpty())
 				headers << QNetworkCacheMetaData::RawHeader("Location", data.location.toAscii());
@@ -336,7 +319,6 @@ namespace Web_cache_aux {
 		{
 			QNetworkCacheMetaData::AttributesMap attributes;
 
-			// TODO: may be is not good
 			if(data.location.isEmpty())
 			{
 				attributes[QNetworkRequest::HttpStatusCodeAttribute] = 200;
@@ -402,23 +384,9 @@ namespace Web_cache_aux {
 		}
 		// Headers <--
 
-// TODO: remove
-#if 0
-		if(this->prepared_devices.contains(url))
-		{
-			MLIB_SW(_F(tr(
-				"Gotten request for saving data in the Web cache for the '%1' for which meta data "
-				"has been already prepared but not inserted or closed. Ignoring it."), url
-			));
-			return NULL;
-		}
-#endif
-
 		Cache_device* device = new Cache_device(
 			Web_cache_entry(url, location, content_type, content_encoding), this );
 		device->open(QIODevice::WriteOnly);
-// TODO: remove
-//		this->prepared_devices[url] = device;
 		return device;
 	}
 
@@ -426,31 +394,8 @@ namespace Web_cache_aux {
 
 	bool Web_cache::remove(const QUrl& url)
 	{
-// TODO: remove
-#if 0
-		QString url_string = url.toString();
-
-		MLIB_D("Request for removing prepared meta data for the '%1'.", url_string);
-
-		MLIB_ITER_TYPE(this->prepared_devices) it = this->prepared_devices.find(url_string);
-		if(it != this->prepared_devices.end())
-		{
-			(*it)->deleteLater();
-			this->prepared_devices.erase(it);
-			return true;
-		}
-		else
-		{
-			MLIB_D(
-				"Gotten request for removing data prepared for Web cache saving "
-				"for the '%1', that has not been prepared yet. Ignoring it.", url_string
-			);
-			return false;
-		}
-#else
 		MLIB_D("Request for removing prepared meta data for the '%1'. Ignoring it.", url.toString());
 		return true;
-#endif
 	}
 
 
@@ -513,7 +458,7 @@ namespace Web_cache_aux {
 	}
 
 
-	bool Web_cache_entry::is_valid(void) const
+	bool Web_cache_entry::valid(void) const
 	{
 		return !this->url.isEmpty();
 	}
@@ -536,6 +481,7 @@ namespace Web_cache_aux {
 		QNetworkRequest request = req;
 		// I could not make QtWebKit work with QNetworkRequest::AlwaysCache. :)
 		request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+#warning remove and test
 		request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, true);
 		return QNetworkAccessManager::createRequest(op, request, outgoingData);
 	}

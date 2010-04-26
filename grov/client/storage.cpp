@@ -981,13 +981,6 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 
 
 
-bool Storage::has_web_cache_entry(const QString& url)
-{
-	return this->get_web_cache_entry(url).is_valid();
-}
-
-
-
 void Storage::init_empty_database(void)
 {
 	// "broadcast" and "starred" is a special feeds that must always exists.

@@ -1,3 +1,23 @@
+/**************************************************************************
+*                                                                         *
+*   Grov - Google Reader offline viewer                                   *
+*                                                                         *
+*   Copyright (C) 2010, Dmitry Konishchev                                 *
+*   http://konishchevdmitry.blogspot.com/                                 *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; either version 3 of the License, or     *
+*   (at your option) any later version.                                   *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+**************************************************************************/
+
+
 #ifndef GROV_HEADER_CONFIG
 #define GROV_HEADER_CONFIG
 
@@ -39,11 +59,9 @@ namespace grov { namespace config {
 	/// Max document size that network reply can return.
 	const Size max_network_reply_size = 10 * 1024 * 1024;
 
-	// TODO: choose optimal
 	/// Number of streams which we use to mirror items.
 	const int mirroring_streams_num = 5;
 
-	// TODO: choose optimal
 	/// Max time in seconds that page mirroring can require.
 	const int page_mirroring_timeout = 30;
 

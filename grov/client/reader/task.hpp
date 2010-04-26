@@ -51,7 +51,7 @@ class Task: public QObject
 	protected:
 		/// Returns true if task cancelled.
 		///
-		/// \attention
+		/// @ATTENTION
 		/// Must be used only in destructors - in other methods the return
 		/// value is undefined.
 		bool			is_cancelled(void);

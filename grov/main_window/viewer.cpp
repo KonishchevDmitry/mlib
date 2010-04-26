@@ -168,7 +168,6 @@ void Viewer::link_clicked(const QUrl& qurl)
 	{
 		try
 		{
-			// TODO: check for location existance
 			if(this->storage->is_in_web_cache(url))
 			{
 				MLIB_D("This is item's cached page. Loading it...");
@@ -218,12 +217,8 @@ void Viewer::select_no_feed(void)
 
 
 
-// TODO
-//void Viewer::set_current_item(const Db_feed_item& item)
-void Viewer::set_current_item(Db_feed_item item)
+void Viewer::set_current_item(const Db_feed_item& item)
 {
-	// TODO
-//	item.url = "http://server.lab83/papercraft/test/" + QString::number(item.id) + "/";
 	ui->item_view->setHtml(_F(
 		"<html><body>"
 			"<a href='%1'><h1 style='font-size: 14pt'>%2</h1></a>"

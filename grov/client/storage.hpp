@@ -163,11 +163,6 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		Web_cache_entry			get_web_cache_entry(const QString& url);
 
-		/// Checks whether we have a cache for the url.
-		///
-		/// @throw m::Exception.
-		bool					has_web_cache_entry(const QString& url);
-
 		/// Checks whether url exists in the Web cache.
 		///
 		/// @throw m::Exception.
@@ -206,7 +201,7 @@ class Storage: public QObject
 		/// You must call end_editing() or cancel_editing() when you end storage
 		/// editing.
 		///
-		/// \attention
+		/// @ATTENTION
 		/// This method internally starts a SQL transaction so you can call only
 		/// those methods of the storage in the editing mode, which is not using
 		/// transactions internally.
