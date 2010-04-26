@@ -63,13 +63,23 @@ class Network_task: public Task
 		/// Error string if request failed.
 		QString					request_error;
 
+		/// If true and HTTP status code will be != 200, error will be
+		/// returned.
+		bool					check_status_code;
+
 
 	protected:
 		/// Sends an HTTP GET request.
-		void					get(const QString& url);
+		///
+		/// @param check_status_code - if true and HTTP status code != 200,
+		/// error will be returned.
+		void					get(const QString& url, bool check_status_code = true);
 
 		/// Sends an HTTP POST request.
-		void					post(const QString& url, const QString& data);
+		///
+		/// @param check_status_code - if true and HTTP status code != 200,
+		/// error will be returned.
+		void					post(const QString& url, const QString& data, bool check_status_code = true);
 
 		/// Returns a QNetworkRequest object with the common HTTP headers
 		/// and Cookies setted.
@@ -83,7 +93,7 @@ class Network_task: public Task
 		/// error.isEmpty() == true.
 		///
 		/// When request fails, the fails_count is incremented.
-		virtual void			request_finished(const QString& error, const QByteArray& reply) = 0;
+		virtual void			request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data) = 0;
 
 		/// This is convenient method for checking the \a error parameter of
 		/// request_finished() method.
@@ -102,7 +112,7 @@ class Network_task: public Task
 
 	private:
 		/// Starts processing the reply.
-		void					process_reply(QNetworkReply* reply);
+		void					process_reply(QNetworkReply* reply, bool check_status_code);
 
 
 	private slots:

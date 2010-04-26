@@ -165,10 +165,20 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 
 				MLIB_DV("Broadcast: %1.", item.broadcast);
 				MLIB_DV("Starred: %1.", item.starred);
+
+				#warning
+			#if GROV_DEVELOP_MODE
+				if(item.title != "single sign on")
+					continue;
+			#endif
 			}
 			// Labels <--
 
 			items << item;
+				#warning
+			#if GROV_DEVELOP_MODE
+				break;
+			#endif
 		}
 	}
 	// Entries <--

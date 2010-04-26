@@ -42,7 +42,7 @@ void Get_gr_token::authenticated(void)
 	MLIB_D("Getting Google Reader's API token...");
 
 #if GROV_OFFLINE_DEVELOPMENT
-	this->request_finished("", "fake_offline_token");
+	this->request_finished(NULL, "", "fake_offline_token");
 #else
 	QString url =
 		"https://www.google.com/reader/api/0/token"
@@ -53,7 +53,7 @@ void Get_gr_token::authenticated(void)
 
 
 
-void Get_gr_token::request_finished(const QString& error, const QByteArray& reply)
+void Get_gr_token::request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data)
 {
 	MLIB_D("Google Reader's API token request finished.");
 
@@ -70,7 +70,7 @@ void Get_gr_token::request_finished(const QString& error, const QByteArray& repl
 				}
 			// Checking for errors <--
 
-			if(reply.isEmpty())
+			if(data.isEmpty())
 				M_THROW(tr("Gotten empty token."));
 		}
 		catch(m::Exception& e)
@@ -78,9 +78,9 @@ void Get_gr_token::request_finished(const QString& error, const QByteArray& repl
 			M_THROW(PAM( tr("Unable to get Google Reader's API token."), EE(e) ));
 		}
 
-		MLIB_D("Gotten Google Reader's API token: '%1'.", reply);
+		MLIB_D("Gotten Google Reader's API token: '%1'.", data);
 		this->finish();
-		emit this->token_gotten(reply);
+		emit this->token_gotten(data);
 	}
 	catch(m::Exception& e)
 	{

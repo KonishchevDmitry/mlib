@@ -56,7 +56,7 @@ QString Login_to_google_reader::get_auth_id(const QByteArray& reply)
 
 
 
-void Login_to_google_reader::request_finished(const QString& error, const QByteArray& reply)
+void Login_to_google_reader::request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data)
 {
 	MLIB_D("Authentication request finished.");
 
@@ -73,7 +73,7 @@ void Login_to_google_reader::request_finished(const QString& error, const QByteA
 
 		// Getting Google Reader's authentication id
 		// Throws m::Exception.
-		QString auth_id = this->get_auth_id(reply);
+		QString auth_id = this->get_auth_id(data);
 		MLIB_D("Auth id gotten: '%1'.", auth_id);
 		this->finish();
 		emit this->authenticated(auth_id);
@@ -92,7 +92,7 @@ void Login_to_google_reader::process(void)
 	MLIB_D("Logining to Google Reader...");
 
 #if GROV_OFFLINE_DEVELOPMENT
-	emit this->request_finished("", "Auth=fake_offline_auth_id");
+	emit this->request_finished(NULL, "", "Auth=fake_offline_auth_id");
 #else
 	QString post_data = _F(
 		"accountType=GOOGLE&"

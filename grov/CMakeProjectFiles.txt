@@ -33,6 +33,7 @@ set(GROV_MOC_SOURCES
 	client/reader/network_task.hpp
 	client/reader/task.hpp
 	client/reader/tasks/download_feeds_items.hpp
+	client/reader/tasks/download_feeds_items_private.hpp
 	client/reader/tasks/flush_offline_data.hpp
 	client/reader/tasks/get_feed_list.hpp
 	client/reader/tasks/get_gr_token.hpp

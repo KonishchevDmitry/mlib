@@ -53,7 +53,7 @@ class Login_to_google_reader: public Network_task
 		virtual void	process(void);
 
 		/// See Network_task::request_finished().
-		virtual void	request_finished(const QString& error, const QByteArray& reply);
+		virtual void	request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data);
 
 	private:
 		/// Gets Google Reader authentication id from its reply.

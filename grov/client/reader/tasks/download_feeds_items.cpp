@@ -21,6 +21,9 @@
 
 #include <QtCore/QTimer>
 
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+
 #include <QtWebKit/QWebFrame>
 
 #include <grov/common.hpp>
@@ -31,6 +34,7 @@
 #include <grov/client/web_page.hpp>
 
 #include "download_feeds_items.hpp"
+#include "download_feeds_items_private.hpp"
 
 
 // TODO: tries when fails
@@ -40,9 +44,80 @@ namespace grov { namespace client { namespace reader { namespace tasks {
 namespace Download_feeds_items_aux {
 
 
+// Logging_network_access_manager -->
+	Logging_network_access_manager::Logging_network_access_manager(QObject* parent)
+	:
+		QNetworkAccessManager(parent)
+	{
+	}
+
+
+
+	QNetworkReply* Logging_network_access_manager::createRequest(Operation op, const QNetworkRequest& req, QIODevice* outgoingData)
+	{
+		MLIB_D("Creating a request for the '%1'...", req.url().toString());
+
+		QNetworkReply* reply = QNetworkAccessManager::createRequest(op, req, outgoingData);
+
+		if(op == QNetworkAccessManager::GetOperation)
+			connect( reply, SIGNAL(finished()), SLOT(reply_finished()) );
+
+		return reply;
+	}
+
+
+
+	bool Logging_network_access_manager::is_successful(QNetworkReply* reply)
+	{
+		#warning
+		using ::metaObject;
+
+		QString error;
+
+		if(reply->error())
+		{
+			error = reply->errorString();
+
+			if(error.isEmpty())
+				error = "Unknown error";
+		}
+		else
+		{
+			#warning
+//			int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+//
+//			if(code != 200)
+//				error = _F("Server returned error: %1 (%2).",
+//					reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), code );
+		}
+
+		if(error.isEmpty())
+			MLIB_D("Request is successful.");
+		else
+			MLIB_D(PAM("Request is not successful.", error));
+
+		return error.isEmpty();
+	}
+
+
+
+	void Logging_network_access_manager::reply_finished(void)
+	{
+		QNetworkReply* reply = m::checked_qobject_cast<QNetworkReply*>(this->sender());
+
+		MLIB_D("Request for the '%1' finished...", reply->url().toString());
+
+		if(this->is_successful(reply))
+			emit this->url_gotten(reply->url().toString());
+	}
+// Logging_network_access_manager -->
+
+
+
+// Mirroring_stream -->
 	Mirroring_stream::Mirroring_stream(Storage* storage, QObject* parent)
 	:
-		QObject(parent),
+		Network_task(parent),
 
 		storage(storage),
 		state(STATE_NONE),
@@ -66,6 +141,7 @@ namespace Download_feeds_items_aux {
 
 
 
+	#warning for new mode
 	void Mirroring_stream::close(void)
 	{
 		MLIB_D("[%1] Closing...", this);
@@ -98,8 +174,20 @@ namespace Download_feeds_items_aux {
 		}
 
 		this->downloader = new Web_page(this);
-		this->downloader->networkAccessManager()->setCache(
-			new Web_cache(Web_cache::MODE_ONLINE, this->storage) );
+
+		// Our services -->
+		{
+			Logging_network_access_manager* manager =
+				new Logging_network_access_manager(this->downloader);
+
+			manager->setCache( new Web_cache(Web_cache::MODE_ONLINE, this->storage) );
+
+			connect(manager, SIGNAL(url_gotten(const QString&)),
+				SLOT(url_gotten(const QString&)) );
+
+			this->downloader->setNetworkAccessManager(manager);
+		}
+		// Our services <--
 
 		// Qt::QueuedConnection is to prevent a recursion in case of simple
 		// item's summaries without external elements.
@@ -131,17 +219,47 @@ namespace Download_feeds_items_aux {
 		switch(this->state)
 		{
 			case STATE_SUMMARY_DOWNLOADING:
+			{
 				MLIB_D("[%1] Mirroring item's '%2' (%3) page...", this, this->item.title, this->item.url);
+
 				this->state = STATE_PAGE_DOWNLOADING;
 				this->timeout_timer->start();
 				this->create_downloader();
 				this->downloader->mainFrame()->load(this->item.url);
-				break;
+			}
+			break;
 
 			case STATE_PAGE_DOWNLOADING:
-				this->state = STATE_NONE;
-				this->mirror_next();
-				break;
+			{
+				// Getting URLs that we must download on our own -->
+					try
+					{
+						Q_FOREACH(const QString& url, this->gotten_urls)
+							if(!this->storage->has_web_cache_entry(url))
+								this->needs_download.enqueue(url);
+					}
+					catch(m::Exception& e)
+					{
+						emit this->error(EE(e));
+						this->close();
+						return;
+					}
+
+					this->gotten_urls.clear();
+
+					if(!this->needs_download.empty())
+					{
+						MLIB_D("[%1] Pages that we must download on our own:", this);
+
+						Q_FOREACH(const QString& url, this->needs_download)
+							MLIB_D("[%1] %2", this, url);
+					}
+				// Getting URLs that we must download on our own <--
+
+				this->state = STATE_URLS_DOWNLOADING;
+				this->download_urls();
+			}
+			break;
 
 			default:
 				MLIB_LE();
@@ -170,6 +288,28 @@ namespace Download_feeds_items_aux {
 
 
 
+	void Mirroring_stream::download_urls(void)
+	{
+		MLIB_D("[%1] Downloading next URL...", this);
+		MLIB_A(this->state == STATE_URLS_DOWNLOADING);
+
+		if(this->needs_download.empty())
+		{
+			MLIB_D("[%1] All URLs downloaded.", this);
+			this->state = STATE_NONE;
+			this->mirror_next();
+		}
+		else
+		{
+			QString url = this->needs_download.dequeue();
+			MLIB_D("[%1] Getting '%2'.", this, url);
+			#warning fails count
+			this->get(url, false);
+		}
+	}
+
+
+
 	void Mirroring_stream::mirror_next(void)
 	{
 		MLIB_D("[%1] Mirroring next item...", this);
@@ -179,7 +319,8 @@ namespace Download_feeds_items_aux {
 		{
 			this->item = this->storage->get_next_item();
 			// TODO
-//			this->item.url = "http://server.lab83/papercraft/test/" + QString::number(this->item.id) + "/";
+			//this->item.url = "http://server.lab83/papercraft/test/" + QString::number(this->item.id) + "/";
+			//this->item.url = "http://server.lab83/tracs/prefix/doxygen";
 
 			MLIB_D("[%1] Mirroring item's '%2' (%3) summary...", this, this->item.title, this->item.url);
 			this->state = STATE_SUMMARY_DOWNLOADING;
@@ -217,7 +358,7 @@ namespace Download_feeds_items_aux {
 
 
 
-	void Mirroring_stream::start(void)
+	void Mirroring_stream::process(void)
 	{
 		MLIB_D("[%1] Starting...", this);
 
@@ -238,6 +379,78 @@ namespace Download_feeds_items_aux {
 	}
 
 
+
+	void Mirroring_stream::request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data)
+	{
+		QString url = reply->url().toString();
+		MLIB_D("[%1] GET request for the '%2' finished.", this, url);
+
+		try
+		{
+			// Checking for errors -->
+				if(this->throw_if_fatal_error(error))
+				{
+					MLIB_D("[%1] Request failed. Trying again...", this);
+					this->get(url, false);
+					return;
+				}
+			// Checking for errors <--
+
+// TODO: check for location existance
+			QString location;
+			QString content_type;
+			QString content_encoding;
+
+			// Headers -->
+				Q_FOREACH(const QByteArray& header, reply->rawHeaderList())
+				{
+					QString header_uni_name = header.toLower();
+
+					if(header_uni_name == "location")
+						location = reply->rawHeader(header);
+					else if(header_uni_name == "content-type")
+						content_type = reply->rawHeader(header);
+					else if(header_uni_name == "content-encoding")
+						content_encoding = reply->rawHeader(header);
+				}
+
+				if(content_type.isEmpty() && location.isEmpty())
+					MLIB_D("[%1] Gotten data with empty Content-Type and Location headers.", this);
+			// Headers <--
+
+#warning
+if(!location.isEmpty() && !this->storage->has_web_cache_entry(location))
+	this->needs_download << location;
+			try
+			{
+				this->storage->add_web_cache_entry(
+					Web_cache_entry(url, location, content_type, content_encoding, data) );
+			}
+			catch(m::Exception& e)
+			{
+				#warning
+				MLIB_SW(EE(e));
+			}
+		}
+		catch(m::Exception& e)
+		{
+			MLIB_D("[%1] Request failed. %2", this, EE(e));
+		}
+
+		this->download_urls();
+	}
+
+
+
+	void Mirroring_stream::url_gotten(const QString& url)
+	{
+		#warning filter by state
+		MLIB_D("[%1] Downloader got a '%2'.", this, url);
+		this->gotten_urls << url;
+	}
+// Mirroring_stream <--
+
+
 }
 
 
@@ -253,7 +466,7 @@ Download_feeds_items::Download_feeds_items(Storage* storage, QObject* parent)
 		Mirroring_stream* stream = new Mirroring_stream(storage, this);
 
 		connect(this, SIGNAL(start_mirroring()),
-			stream, SLOT(start()), Qt::QueuedConnection );
+			stream, SLOT(process()), Qt::QueuedConnection );
 
 		connect(stream, SIGNAL(finished()),
 			SLOT(stream_finished()), Qt::QueuedConnection );

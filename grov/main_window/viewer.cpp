@@ -217,8 +217,12 @@ void Viewer::select_no_feed(void)
 
 
 
-void Viewer::set_current_item(const Db_feed_item& item)
+// TODO
+//void Viewer::set_current_item(const Db_feed_item& item)
+void Viewer::set_current_item(Db_feed_item item)
 {
+	// TODO
+//	item.url = "http://server.lab83/papercraft/test/" + QString::number(item.id) + "/";
 	ui->item_view->setHtml(_F(
 		"<html><body>"
 			"<a href='%1'><h1 style='font-size: 14pt'>%2</h1></a>"

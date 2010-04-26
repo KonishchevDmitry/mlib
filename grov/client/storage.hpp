@@ -163,6 +163,11 @@ class Storage: public QObject
 		/// @throw m::Exception.
 		Web_cache_entry			get_web_cache_entry(const QString& url);
 
+		/// Checks whether we have a cache for the url.
+		///
+		/// @throw m::Exception.
+		bool					has_web_cache_entry(const QString& url);
+
 		/// Checks whether url exists in the Web cache.
 		///
 		/// @throw m::Exception.

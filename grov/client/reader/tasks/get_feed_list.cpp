@@ -55,9 +55,9 @@ void Get_feed_list::authenticated(void)
 	QFile list("subscription.list");
 
 	if(list.open(QIODevice::ReadOnly))
-		this->request_finished("", list.readAll());
+		this->request_finished(NULL, "", list.readAll());
 	else
-		this->request_finished(_F("Error while reading '%1'.", list.fileName()), "");
+		this->request_finished(NULL, _F("Error while reading '%1'.", list.fileName()), "");
 #else
 	QString url =
 		"https://www.google.com/reader/api/0/subscription/list?output=xml"
@@ -68,7 +68,7 @@ void Get_feed_list::authenticated(void)
 
 
 
-void Get_feed_list::request_finished(const QString& error, const QByteArray& reply)
+void Get_feed_list::request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data)
 {
 	MLIB_D("Subscription list request finished.");
 
@@ -92,7 +92,7 @@ void Get_feed_list::request_finished(const QString& error, const QByteArray& rep
 			{
 				QFile list("subscription.list");
 				list.open(QIODevice::WriteOnly);
-				list.write(reply);
+				list.write(data);
 			}
 			// For offline development <--
 		#endif
@@ -100,7 +100,7 @@ void Get_feed_list::request_finished(const QString& error, const QByteArray& rep
 			// Getting feeds -->
 				try
 				{
-					feeds = Gr_xml_parser().subscription_list(reply);
+					feeds = Gr_xml_parser().subscription_list(data);
 				}
 				catch(m::Exception& e)
 				{

@@ -21,15 +21,9 @@
 #ifndef GROV_HEADER_CLIENT_READER_TASKS_DOWNLOAD_FEEDS_ITEMS
 #define GROV_HEADER_CLIENT_READER_TASKS_DOWNLOAD_FEEDS_ITEMS
 
-class QTimer;
-class QWebPage;
-
 #include <QtCore/QSet>
 
 #include <grov/common.hpp>
-
-#include <grov/common/feed_item.hpp>
-
 #include <grov/client/reader/task.hpp>
 #include <grov/client/storage.hxx>
 
@@ -37,98 +31,6 @@ class QWebPage;
 
 
 namespace grov { namespace client { namespace reader { namespace tasks {
-
-
-namespace Download_feeds_items_aux {
-
-
-	/// Represents a mirroring stream in which we download all item's summary's
-	/// and page's data.
-	class Mirroring_stream: public QObject
-	{
-		Q_OBJECT
-
-		private:
-			/// Current downloading state.
-			enum State {
-				/// We are not downloading any item at this moment.
-				STATE_NONE,
-
-				/// We are downloading item's summary at this moment.
-				STATE_SUMMARY_DOWNLOADING,
-
-				/// We are downloading item's page at this moment.
-				STATE_PAGE_DOWNLOADING,
-
-				/// Stream closed, but not destroyed yet.
-				STATE_CLOSED
-			};
-
-
-		public:
-			Mirroring_stream(Storage* storage, QObject* parent = NULL);
-			~Mirroring_stream(void);
-
-
-		public:
-			/// Our offline data storage.
-			Storage*		storage;
-
-			/// Current downloading state.
-			State			state;
-
-			/// Item that is mirroring at this moment.
-			Db_feed_item	item;
-
-			/// Our item downloader.
-			QWebPage*		downloader;
-
-			/// Page loading timeout timer.
-			QTimer*			timeout_timer;
-
-
-		public:
-			/// Closes the stream.
-			void	close(void);
-
-		private:
-			/// Creates a new downloader.
-			void	create_downloader(void);
-
-			/// Asynchronously destroys current downloader.
-			void	destroy_downloader(void);
-
-			/// Called when download finishes.
-			void	download_finished(void);
-
-			/// Mirrors a next feed item.
-			///
-			/// @return false on error.
-			void	mirror_next(void);
-
-
-		signals:
-			/// Emitted on error.
-			void	error(const QString& error);
-
-			/// Emitted when all items are mirrored.
-			void	finished(void);
-
-
-		private slots:
-			/// Called when page loading timeout is expired.
-			void	download_timed_out(void);
-
-			/// Called when page loading finishes.
-			void	page_load_finished(bool ok);
-
-			/// Starts mirroring process.
-			void	start(void);
-	};
-
-
-}
-
 
 
 /// Downloads all feeds' items' content: images, styles, original page, etc.

@@ -54,12 +54,12 @@ Network_task::Network_task(QObject* parent)
 
 
 
-void Network_task::get(const QString& url)
+void Network_task::get(const QString& url, bool check_status_code)
 {
 	MLIB_D("Processing a HTTP GET to '%1'...", url);
 
 	QNetworkRequest request = this->prepare_request(url);
-	this->process_reply(manager->get(request));
+	this->process_reply(manager->get(request), check_status_code);
 }
 
 
@@ -123,13 +123,14 @@ void Network_task::on_finished(void)
 			M_THROW(CSF(reply->errorString()));
 
 		// Checking HTTP status code -->
-		{
-			int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+			if(this->check_status_code)
+			{
+				int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-			if(code != 200)
-				M_THROW("Server returned error: %1 (%2).",
-					reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), code );
-		}
+				if(code != 200)
+					M_THROW("Server returned error: %1 (%2).",
+						reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), code );
+			}
 		// Checking HTTP status code <--
 
 		reply_data = reply->readAll();
@@ -144,7 +145,7 @@ void Network_task::on_finished(void)
 	}
 
 	reply->deleteLater();
-	this->request_finished(reply_error, reply_data);
+	this->request_finished(reply, reply_error, reply_data);
 }
 
 
@@ -161,11 +162,11 @@ void Network_task::on_timeout(void)
 
 
 
-void Network_task::post(const QString& url, const QString& data)
+void Network_task::post(const QString& url, const QString& data, bool check_status_code)
 {
 	MLIB_D("Processing a HTTP POST to '%1' with data '%2'...", url, data);
 	QNetworkRequest request = this->prepare_request(url);
-	this->process_reply(this->manager->post(request, data.toAscii()));
+	this->process_reply(this->manager->post(request, data.toAscii()), check_status_code);
 }
 
 
@@ -179,12 +180,13 @@ QNetworkRequest Network_task::prepare_request(const QString& url)
 
 
 
-void Network_task::process_reply(QNetworkReply* reply)
+void Network_task::process_reply(QNetworkReply* reply, bool check_status_code)
 {
 	MLIB_A(!this->current_reply);
 
 	this->current_reply = reply;
 	this->request_error.clear();
+	this->check_status_code = check_status_code;
 	this->timeout_timer->start();
 
 	connect(reply, SIGNAL(downloadProgress(qint64, qint64)),

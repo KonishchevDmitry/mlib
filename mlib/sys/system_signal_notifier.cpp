@@ -32,8 +32,8 @@
 
 #include <mlib/core.hpp>
 
-#include "system_signal_notifier.hp"
 #include "system_signal_notifier.hpp"
+#include "system_signal_notifier_private.hpp"
 
 
 namespace m { namespace sys {

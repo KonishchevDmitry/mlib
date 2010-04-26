@@ -14,7 +14,7 @@ set(MLIB_SOURCES
 set(MLIB_MOC_SOURCES
 	db/scoped_transaction.hpp
 	gui/message_box.hpp
-	sys/system_signal_notifier.hp
+	sys/system_signal_notifier_private.hpp
 )
 
 set(MLIB_TRANSLATIONS

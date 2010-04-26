@@ -46,7 +46,7 @@ class Get_gr_token: public Google_reader_task
 		virtual void	authenticated(void);
 
 		/// See Network_task::request_finished().
-		virtual void	request_finished(const QString& error, const QByteArray& reply);
+		virtual void	request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data);
 
 
 	signals:

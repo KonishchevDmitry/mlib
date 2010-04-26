@@ -23,6 +23,10 @@
 
 namespace grov { namespace client { namespace reader { namespace tasks {
 	class Download_feeds_items;
+
+	namespace Download_feeds_items_aux {
+		class Mirroring_stream;
+	}
 }}}}
 
 #endif

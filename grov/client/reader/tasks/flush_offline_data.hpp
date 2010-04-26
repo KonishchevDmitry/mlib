@@ -65,7 +65,7 @@ class Flush_offline_data: public Google_reader_task
 		virtual void	authenticated(void);
 
 		/// See Network_task::request_finished().
-		virtual void	request_finished(const QString& error, const QByteArray& reply);
+		virtual void	request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data);
 
 		/// Google Reader's API token gotten.
 		virtual void	token_gotten(void);

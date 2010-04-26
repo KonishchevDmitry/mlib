@@ -70,17 +70,18 @@ void Get_reading_list::get_reading_list(void)
 	QFile list("reading.list");
 
 	if(list.open(QIODevice::ReadOnly))
-		this->request_finished("", list.readAll());
+		this->request_finished(NULL, "", list.readAll());
 	else
-		this->request_finished(_F("Error while reading '%1'.", list.fileName()), "");
+		this->request_finished(NULL, _F("Error while reading '%1'.", list.fileName()), "");
 #else
 	QString url =
 		"https://www.google.com/reader/atom/user/-/state/com.google/reading-list"
-	#if GROV_DEVELOP_MODE
-		"?n=50&r=o&xt=user/-/state/com.google/read"
-	#else
+	// TODO
+//	#if GROV_DEVELOP_MODE
+//		"?n=50&r=o&xt=user/-/state/com.google/read"
+//	#else
 		"?n=1000&r=o&xt=user/-/state/com.google/read"
-	#endif
+//	#endif
 		"&client=" + QUrl::toPercentEncoding(get_user_agent());
 
 	if(!this->continuation_code.isEmpty())
@@ -116,7 +117,7 @@ void Get_reading_list::on_reading_list_gotten(void)
 
 
 
-void Get_reading_list::request_finished(const QString& error, const QByteArray& reply)
+void Get_reading_list::request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data)
 {
 	MLIB_D("Reading list request finished.");
 
@@ -140,7 +141,7 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 			{
 				QFile list("reading.list");
 				list.open(QIODevice::WriteOnly);
-				list.write(reply);
+				list.write(data);
 			}
 			// For offline development <--
 		#endif
@@ -148,11 +149,12 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 			// Getting feeds' items -->
 				try
 				{
-				#if GROV_DEVELOP_MODE
-					items = Gr_xml_parser().reading_list(reply, NULL);
-				#else
-					items = Gr_xml_parser().reading_list(reply, &this->continuation_code);
-				#endif
+	// TODO
+	//			#if GROV_DEVELOP_MODE
+	//				items = Gr_xml_parser().reading_list(data, NULL);
+	//			#else
+					items = Gr_xml_parser().reading_list(data, &this->continuation_code);
+	//			#endif
 				}
 				catch(m::Exception& e)
 				{
@@ -170,7 +172,9 @@ void Get_reading_list::request_finished(const QString& error, const QByteArray& 
 		this->reading_lists_counter++;
 
 	#if !GROV_OFFLINE_DEVELOPMENT
-		if(this->continuation_code.isEmpty() || items.empty())
+		#warning
+		if(this->continuation_code.isEmpty())
+		//if(this->continuation_code.isEmpty() || items.empty())
 	#endif
 			this->on_reading_list_gotten();
 	#if !GROV_OFFLINE_DEVELOPMENT

@@ -245,7 +245,8 @@ void Storage::add_items(const Gr_feed_item_list& items)
 
 				if(feed_id < 0)
 				{
-					if(item.broadcast)
+					// TODO: ?
+					if(item.starred || item.broadcast)
 						// TODO:
 						feed_id = -1;
 					else
@@ -970,6 +971,13 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 	{
 		M_THROW(PAM( _F(tr("Error while getting web cache for the '%1':"), url), EE(e) ));
 	}
+}
+
+
+
+bool Storage::has_web_cache_entry(const QString& url)
+{
+	return this->get_web_cache_entry(url).is_valid();
 }
 
 

@@ -169,7 +169,7 @@ void Flush_offline_data::flush(void)
 
 
 
-void Flush_offline_data::request_finished(const QString& error, const QByteArray& reply)
+void Flush_offline_data::request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data)
 {
 	MLIB_D("Flushing item's changes request finished.");
 
@@ -180,7 +180,7 @@ void Flush_offline_data::request_finished(const QString& error, const QByteArray
 			// Checking for errors -->
 			{
 				QString general_error = error;
-				QString server_answer = reply.trimmed();
+				QString server_answer = data.trimmed();
 
 				if(general_error.isEmpty() && server_answer != "OK")
 				{
