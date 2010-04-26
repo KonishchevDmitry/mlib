@@ -17,6 +17,7 @@
 *                                                                         *
 **************************************************************************/
 // TODO: check with attention
+// TODO: http://some/url and http://some/url#anchor is the same URLs, but our cache does not know this.
 
 
 #include <QtCore/QDateTime>
@@ -239,17 +240,17 @@ namespace Web_cache_aux {
 	void Web_cache::insert(QIODevice* device)
 	{
 		Cache_device* cache_device = m::checked_qobject_cast<Cache_device*>(device);
-		QString url = cache_device->get_data().url;
+		const Web_cache_entry& entry = cache_device->get_data();
 
 		MLIB_D("Request for inserting data of %1 bytes for the '%2'.",
-			cache_device->get_data().data.size(), url );
+			cache_device->get_data().data.size(), entry.url );
 
 // TODO: remove
 //		this->prepared_devices.remove(url);
 
 		try
 		{
-			this->storage->add_web_cache_entry(cache_device->get_data());
+			this->storage->add_web_cache_entry(entry);
 		}
 		catch(m::Exception& e)
 		{

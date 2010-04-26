@@ -69,9 +69,6 @@ namespace Download_feeds_items_aux {
 
 	bool Logging_network_access_manager::is_successful(QNetworkReply* reply)
 	{
-		#warning
-		using ::metaObject;
-
 		QString error;
 
 		if(reply->error())
@@ -83,18 +80,22 @@ namespace Download_feeds_items_aux {
 		}
 		else
 		{
-			#warning
-//			int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//
-//			if(code != 200)
-//				error = _F("Server returned error: %1 (%2).",
-//					reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), code );
+			int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+			// Simple check - we need not more.
+			if(code < 200 || code >= 400)
+				error = _F("Server returned error: %1 (%2).",
+					reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString(), code );
 		}
 
-		if(error.isEmpty())
-			MLIB_D("Request is successful.");
-		else
-			MLIB_D(PAM("Request is not successful.", error));
+		{
+			MLIB_STATIC_METHOD_DEBUG_WORKAROUND
+
+			if(error.isEmpty())
+				MLIB_D("Request is successful.");
+			else
+				MLIB_D(PAM("Request is not successful.", error));
+		}
 
 		return error.isEmpty();
 	}
@@ -105,7 +106,7 @@ namespace Download_feeds_items_aux {
 	{
 		QNetworkReply* reply = m::checked_qobject_cast<QNetworkReply*>(this->sender());
 
-		MLIB_D("Request for the '%1' finished...", reply->url().toString());
+		MLIB_D("Request for the '%1' finished.", reply->url().toString());
 
 		if(this->is_successful(reply))
 			emit this->url_gotten(reply->url().toString());
@@ -126,6 +127,9 @@ namespace Download_feeds_items_aux {
 	{
 		MLIB_D("[%1] Creating...", this);
 
+		this->set_timeout(config::page_mirroring_timeout, true);
+		this->set_max_fails(0);
+
 		this->timeout_timer->setSingleShot(true);
 		this->timeout_timer->setInterval(config::page_mirroring_timeout * 1000);
 		connect(this->timeout_timer, SIGNAL(timeout()),
@@ -141,7 +145,6 @@ namespace Download_feeds_items_aux {
 
 
 
-	#warning for new mode
 	void Mirroring_stream::close(void)
 	{
 		MLIB_D("[%1] Closing...", this);
@@ -257,6 +260,7 @@ namespace Download_feeds_items_aux {
 				// Getting URLs that we must download on our own <--
 
 				this->state = STATE_URLS_DOWNLOADING;
+				this->downloads_limit = this->needs_download.size() * 3;
 				this->download_urls();
 			}
 			break;
@@ -293,6 +297,15 @@ namespace Download_feeds_items_aux {
 		MLIB_D("[%1] Downloading next URL...", this);
 		MLIB_A(this->state == STATE_URLS_DOWNLOADING);
 
+		// Simple protection from the infinite loop from the Location headers.
+		// -->
+			if(this->downloads_limit < 1 && !this->needs_download.empty())
+			{
+				MLIB_D("[%1] URLs download limit has been exceeded.", this);
+				this->needs_download.clear();
+			}
+		// <--
+
 		if(this->needs_download.empty())
 		{
 			MLIB_D("[%1] All URLs downloaded.", this);
@@ -303,7 +316,9 @@ namespace Download_feeds_items_aux {
 		{
 			QString url = this->needs_download.dequeue();
 			MLIB_D("[%1] Getting '%2'.", this, url);
-			#warning fails count
+
+			this->downloads_limit--;
+			this->reset_fails();
 			this->get(url, false);
 		}
 	}
@@ -385,6 +400,12 @@ namespace Download_feeds_items_aux {
 		QString url = reply->url().toString();
 		MLIB_D("[%1] GET request for the '%2' finished.", this, url);
 
+		if(this->state == STATE_CLOSED)
+		{
+			MLIB_D("[%1] Stream is closed. Ignoring all pending tasks.", this);
+			return;
+		}
+
 		try
 		{
 			// Checking for errors -->
@@ -396,41 +417,48 @@ namespace Download_feeds_items_aux {
 				}
 			// Checking for errors <--
 
-// TODO: check for location existance
-			QString location;
-			QString content_type;
-			QString content_encoding;
+			// Adding gotten URL to the cache -->
+			{
+				QString location;
+				QString content_type;
+				QString content_encoding;
 
-			// Headers -->
-				Q_FOREACH(const QByteArray& header, reply->rawHeaderList())
+				// Headers -->
+					Q_FOREACH(const QByteArray& header, reply->rawHeaderList())
+					{
+						QString header_uni_name = header.toLower();
+
+						if(header_uni_name == "location")
+							location = reply->rawHeader(header);
+						else if(header_uni_name == "content-type")
+							content_type = reply->rawHeader(header);
+						else if(header_uni_name == "content-encoding")
+							content_encoding = reply->rawHeader(header);
+					}
+
+					if(content_type.isEmpty() && location.isEmpty())
+						MLIB_D("[%1] Gotten data with empty Content-Type and Location headers.", this);
+				// Headers <--
+
+				try
 				{
-					QString header_uni_name = header.toLower();
+					// Server may redirect us to the page with unique URL but with
+					// the same contents that the page which downloader got. So we
+					// must download it too.
+					if(!location.isEmpty() && !this->storage->has_web_cache_entry(location))
+						this->needs_download << location;
 
-					if(header_uni_name == "location")
-						location = reply->rawHeader(header);
-					else if(header_uni_name == "content-type")
-						content_type = reply->rawHeader(header);
-					else if(header_uni_name == "content-encoding")
-						content_encoding = reply->rawHeader(header);
+					this->storage->add_web_cache_entry(
+						Web_cache_entry(url, location, content_type, content_encoding, data) );
 				}
-
-				if(content_type.isEmpty() && location.isEmpty())
-					MLIB_D("[%1] Gotten data with empty Content-Type and Location headers.", this);
-			// Headers <--
-
-#warning
-if(!location.isEmpty() && !this->storage->has_web_cache_entry(location))
-	this->needs_download << location;
-			try
-			{
-				this->storage->add_web_cache_entry(
-					Web_cache_entry(url, location, content_type, content_encoding, data) );
+				catch(m::Exception& e)
+				{
+					emit this->error(EE(e));
+					this->close();
+					return;
+				}
 			}
-			catch(m::Exception& e)
-			{
-				#warning
-				MLIB_SW(EE(e));
-			}
+			// Adding gotten URL to the cache <--
 		}
 		catch(m::Exception& e)
 		{
@@ -444,7 +472,6 @@ if(!location.isEmpty() && !this->storage->has_web_cache_entry(location))
 
 	void Mirroring_stream::url_gotten(const QString& url)
 	{
-		#warning filter by state
 		MLIB_D("[%1] Downloader got a '%2'.", this, url);
 		this->gotten_urls << url;
 	}

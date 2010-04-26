@@ -168,6 +168,7 @@ void Viewer::link_clicked(const QUrl& qurl)
 	{
 		try
 		{
+			// TODO: check for location existance
 			if(this->storage->is_in_web_cache(url))
 			{
 				MLIB_D("This is item's cached page. Loading it...");

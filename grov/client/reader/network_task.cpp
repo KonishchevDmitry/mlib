@@ -40,14 +40,16 @@ Network_task::Network_task(QObject* parent)
 :
 	Task(parent),
 
-	fails_count(0),
-
 	manager(new QNetworkAccessManager(this)),
 	current_reply(NULL),
-	timeout_timer(new QTimer(this))
+	timeout_timer(new QTimer(this)),
+
+	fails(0),
+	max_fails(3)
 {
+	this->set_timeout(config::network_reply_timeout, false);
+
 	this->timeout_timer->setSingleShot(true);
-	this->timeout_timer->setInterval(config::network_reply_timeout * 1000);
 	connect(this->timeout_timer, SIGNAL(timeout()),
 		this, SLOT(on_timeout()) );
 }
@@ -71,9 +73,12 @@ void Network_task::on_data_gotten(qint64 size, qint64 total_size)
 	// If connection is not timed out yet
 	if(this->timeout_timer->isActive())
 	{
-		// Reset the timeout
-		this->timeout_timer->stop();
-		this->timeout_timer->start();
+		if(!this->overall_timeout)
+		{
+			// Reset the timeout
+			this->timeout_timer->stop();
+			this->timeout_timer->start();
+		}
 
 		// Request's reply size limit -->
 		{
@@ -140,7 +145,7 @@ void Network_task::on_finished(void)
 	}
 	catch(m::Exception& e)
 	{
-		this->fails_count++;
+		this->fails++;
 		reply_error = EE(e);
 	}
 
@@ -198,6 +203,28 @@ void Network_task::process_reply(QNetworkReply* reply, bool check_status_code)
 
 
 
+void Network_task::reset_fails(void)
+{
+	this->fails = 0;
+}
+
+
+
+void Network_task::set_max_fails(size_t fails)
+{
+	this->max_fails = fails;
+}
+
+
+
+void Network_task::set_timeout(int timeout, bool overall)
+{
+	this->timeout_timer->setInterval(timeout * 1000);
+	this->overall_timeout = overall;
+}
+
+
+
 bool Network_task::throw_if_fatal_error(const QString& error)
 {
 	if(error.isEmpty())
@@ -215,7 +242,7 @@ bool Network_task::throw_if_fatal_error(const QString& error)
 
 bool Network_task::to_many_tries(void)
 {
-	return this->fails_count >= 3;
+	return this->fails > this->max_fails;
 }
 
 

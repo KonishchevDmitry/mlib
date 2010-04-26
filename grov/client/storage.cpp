@@ -289,6 +289,12 @@ void Storage::add_items(const Gr_feed_item_list& items)
 
 void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 {
+	if(entry.data.isEmpty() && entry.location.isEmpty())
+	{
+		MLIB_D("Skipping adding the empty data with an empty Location header to the DB.");
+		return;
+	}
+
 	MLIB_D("Adding web cache entry for '%1' to the DB...", entry.url);
 
 	try

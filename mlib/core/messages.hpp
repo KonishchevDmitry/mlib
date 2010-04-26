@@ -48,6 +48,10 @@ class QTextStream;
 	})
 #endif
 
+/// Needs to be placed in every static class member in which you use MLib's
+/// debug functions.
+#define MLIB_STATIC_METHOD_DEBUG_WORKAROUND using ::metaObject;
+
 /// Shows a debug message.
 ///
 /// @param args - the same arguments as in m::_F().

@@ -46,10 +46,6 @@ class Network_task: public Task
 		Network_task(QObject* parent = NULL);
 
 
-	protected:
-		/// Number of failed requests.
-		size_t			fails_count;
-
 	private:
 		/// Object through which we carry out the networking.
 		QNetworkAccessManager*	manager;
@@ -60,12 +56,22 @@ class Network_task: public Task
 		/// Timer to implement timeouts.
 		QTimer*					timeout_timer;
 
+		/// Is the timeout for all reply's data or only for each portion of
+		/// gotten data.
+		bool					overall_timeout;
+
 		/// Error string if request failed.
 		QString					request_error;
 
 		/// If true and HTTP status code will be != 200, error will be
 		/// returned.
 		bool					check_status_code;
+
+		/// Number of failed requests.
+		size_t					fails;
+
+		/// Maximum number of allowed fails.
+		size_t					max_fails;
 
 
 	protected:
@@ -92,8 +98,21 @@ class Network_task: public Task
 		/// If request failed, \a error will hold error string, otherwise -
 		/// error.isEmpty() == true.
 		///
-		/// When request fails, the fails_count is incremented.
+		/// When request fails, the fails is incremented.
 		virtual void			request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data) = 0;
+
+		/// Resets current fails number.
+		void					reset_fails(void);
+
+		/// Sets maximum number of allowed fails.
+		void					set_max_fails(size_t fails);
+
+		/// Sets the reply timeout.
+		///
+		/// @param timeout - timeout in seconds.
+		/// @param timeout - is this timeout for all reply's data or only for
+		/// each portion of gotten data.
+		void					set_timeout(int timeout, bool overall);
 
 		/// This is convenient method for checking the \a error parameter of
 		/// request_finished() method.

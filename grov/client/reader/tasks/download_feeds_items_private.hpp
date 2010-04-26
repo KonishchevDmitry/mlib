@@ -126,6 +126,10 @@ class Mirroring_stream: public Network_task
 		/// download them on our own.
 		QQueue<QString>	needs_download;
 
+		/// Max number of URLs, which we can download while downloading URLs
+		/// from the needs_download.
+		ssize_t			downloads_limit;
+
 		/// Page loading timeout timer.
 		QTimer*			timeout_timer;
 
