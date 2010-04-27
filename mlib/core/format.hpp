@@ -46,6 +46,10 @@ QString			_F(const QString& format, const A1& arg_1, const A2& arg_2, const A3& 
 template <class A1, class A2, class A3, class A4>
 QString			_F(const QString& format, const A1& arg_1, const A2& arg_2, const A3& arg_3, const A4& arg_4);
 
+/// Formats the string.
+template <class A1, class A2, class A3, class A4, class A5>
+QString			_F(const QString& format, const A1& arg_1, const A2& arg_2, const A3& arg_3, const A4& arg_4, const A5& arg_5);
+
 
 /// Converts value to a string.
 template <class Value>

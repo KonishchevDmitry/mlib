@@ -27,6 +27,7 @@
 
 class QSqlDatabase;
 class QSqlQuery;
+class QTimer;
 
 #include <QtCore/QMap>
 #include <QtCore/QSet>
@@ -110,6 +111,9 @@ class Storage: public QObject
 
 		/// Cache of items' ids that needs to be marked as read.
 		QList<Big_id>				readed_items_cache;
+
+		/// Timer for cache flushing by specified time intervals.
+		QTimer*						cache_flushing_timer;
 
 
 	public:
@@ -315,6 +319,11 @@ class Storage: public QObject
 
 		/// Called when an item is marked as read/unread.
 		void	item_marked_as_read(const QList<Big_id>& feed_ids, bool read);
+
+
+	private slots:
+		/// Called when timeout for cache flushing is expired.
+		void	cache_flushing_timed_out(void);
 };
 
 

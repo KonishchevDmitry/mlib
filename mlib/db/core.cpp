@@ -37,7 +37,6 @@ QString EE(const QSqlDatabase& db)
 
 
 
-// TODO: test
 QString EE(const QSqlError& error)
 {
 	QString database_text = error.databaseText();

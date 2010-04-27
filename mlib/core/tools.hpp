@@ -28,6 +28,8 @@
 	#include <QtCore/QDebug>
 #endif
 
+#include "types.hpp"
+
 
 /// Returns variable's type.
 ///
@@ -54,6 +56,9 @@
 /// MLIB_CONST_ITER_TYPE(vec) vec_const_iter;
 /// \endcode
 #define MLIB_CONST_ITER_TYPE(container) MLIB_TYPEOF(container)::const_iterator
+
+/// Returns major, minor and patch versions encoded to one integer.
+#define MLIB_GET_VERSION(major, minor, patch) ( (major) * 100 * 100 + (minor) * 100 + (patch) )
 
 
 namespace m {
@@ -90,7 +95,22 @@ class Virtual_noncopyable: private Virtual, private boost::noncopyable
 
 /// Calls MLIB_LE() if qobject_cast() fails.
 template <class To, class From>
-To	checked_qobject_cast(From object);
+To		checked_qobject_cast(From object);
+
+/// Returns a major version.
+Version	get_major_version(Version version);
+
+/// Returns a minor version.
+Version	get_minor_version(Version version);
+
+/// Returns a minor version.
+Version	get_patch_version(Version version);
+
+/// Returns major, minor and patch versions encoded to one integer.
+Version	get_version(Version major, Version minor, Version patch);
+
+/// Returns a version string.
+QString	get_version_string(Version version);
 
 
 }

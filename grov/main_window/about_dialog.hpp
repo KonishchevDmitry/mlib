@@ -1,6 +1,6 @@
 /**************************************************************************
 *                                                                         *
-*   MLib - library of some useful things for internal usage               *
+*   Grov - Google Reader offline viewer                                   *
 *                                                                         *
 *   Copyright (C) 2010, Dmitry Konishchev                                 *
 *   http://konishchevdmitry.blogspot.com/                                 *
@@ -18,27 +18,37 @@
 **************************************************************************/
 
 
-#include <QtCore/QCoreApplication>
+#ifndef GROV_HEADER_MAIN_WINDOW_ABOUT_DIALOG
+#define GROV_HEADER_MAIN_WINDOW_ABOUT_DIALOG
 
-#include "core.hpp"
+#include <boost/scoped_ptr.hpp>
+
+#include <QtGui/QDialog>
+
+#include <grov/common.hpp>
 
 
-namespace m { namespace gui {
+namespace grov { namespace main_window {
+namespace Ui { class About_dialog; }
 
 
-QString format_window_title(const QString& title)
+/// About application dialog.
+class About_dialog: public QDialog
 {
-	if(title.isEmpty())
-		return QCoreApplication::applicationName();
-	else
-	#if 0
-		// May be in other applications
-		return title + " - " + QCoreApplication::applicationName();
-	#else
-		return title;
-	#endif
-}
+	Q_OBJECT
+
+	public:
+		About_dialog(QWidget *parent = 0);
+		~About_dialog(void);
+
+
+	private:
+		// Qt Designer-generated widgets.
+		boost::scoped_ptr<Ui::About_dialog>	ui;
+};
 
 
 }}
+
+#endif
 

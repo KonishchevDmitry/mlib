@@ -32,10 +32,6 @@ namespace m { namespace gui {
 
 
 /// Fixes few bugs in QMessageBox and adds extra functionality.
-///
-/// @ATTENTION
-/// You are not allowed to use QMessageBox's and QDialog's methods of this
-/// class. Use only this interface.
 class Message_box: public QMessageBox
 {
 	Q_OBJECT
@@ -53,14 +49,6 @@ class Message_box: public QMessageBox
 
 		/// Sets message box's title.
 		void	set_title(const QString& title);
-
-
-	public slots:
-		/// See QMessageBox::exec().
-		int		exec(void);
-
-		/// See QMessageBox::show().
-		void	show(void);
 };
 
 

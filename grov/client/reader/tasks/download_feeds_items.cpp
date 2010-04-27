@@ -102,12 +102,13 @@ namespace Download_feeds_items_aux {
 
 	void Logging_network_access_manager::reply_finished(void)
 	{
-		QNetworkReply* reply = m::checked_qobject_cast<QNetworkReply*>(this->sender());
+		if(QNetworkReply* reply = qobject_cast<QNetworkReply*>(this->sender()))
+		{
+			MLIB_D("Request for the '%1' finished.", reply->url().toString());
 
-		MLIB_D("Request for the '%1' finished.", reply->url().toString());
-
-		if(this->is_successful(reply))
-			emit this->url_gotten(reply->url().toString());
+			if(this->is_successful(reply))
+				emit this->url_gotten(reply->url().toString());
+		}
 	}
 // Logging_network_access_manager -->
 
@@ -331,9 +332,6 @@ namespace Download_feeds_items_aux {
 		try
 		{
 			this->item = this->storage->get_next_item();
-			// TODO
-			//this->item.url = "http://server.lab83/papercraft/test/" + QString::number(this->item.id) + "/";
-			//this->item.url = "http://server.lab83/tracs/prefix/doxygen";
 
 			MLIB_D("[%1] Mirroring item's '%2' (%3) summary...", this, this->item.title, this->item.url);
 			this->state = STATE_SUMMARY_DOWNLOADING;
@@ -363,7 +361,10 @@ namespace Download_feeds_items_aux {
 	{
 		MLIB_D("[%1] Page loading finished(%2).", this, ok);
 
-		if(this->downloader == m::checked_qobject_cast<QWebPage*>(this->sender()))
+		// May be NULL if QWebPage is destroying
+		QWebPage* finished_page = qobject_cast<QWebPage*>(this->sender());
+
+		if(finished_page && this->downloader == finished_page)
 			this->download_finished();
 		else
 			MLIB_D("[%1] Gotten the out of date downloader's signal. Ignoring it.", this);
@@ -413,6 +414,9 @@ namespace Download_feeds_items_aux {
 					this->get(url, false);
 					return;
 				}
+
+				if(!Logging_network_access_manager::is_successful(reply))
+					M_THROW("Reply is not successful.");
 			// Checking for errors <--
 
 			// Adding gotten URL to the cache -->
@@ -509,8 +513,7 @@ void Download_feeds_items::process(void)
 {
 	MLIB_D("Downloading all feeds' items' content...");
 
-// TODO
-#if 0 && GROV_OFFLINE_DEVELOPMENT
+#if GROV_OFFLINE_DEVELOPMENT
 	this->finish();
 	emit this->downloaded();
 #else
@@ -542,10 +545,8 @@ void Download_feeds_items::stream_finished(void)
 {
 	MLIB_D("Stream %1 finished.", this->sender());
 
-	Mirroring_stream* stream =
-		m::checked_qobject_cast<Mirroring_stream*>(this->sender());
-
-	this->streams.remove(stream);
+	this->streams.remove(
+		qobject_cast<Mirroring_stream*>(this->sender()) );
 
 	if(this->streams.empty() && !this->downloading_failed)
 	{

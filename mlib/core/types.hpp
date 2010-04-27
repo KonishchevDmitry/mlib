@@ -40,9 +40,15 @@ typedef long long Big_id;
 /// For file's and other sizes.
 typedef long long Size;
 
+/// Major, minor and patch version encoded to one integer.
+typedef qint32 Version;
+
 
 /// Converts QVariant to Big_id.
 Big_id	qvariant_to_big_id(const QVariant& variant);
+
+/// Converts QVariant to Version.
+Version	qvariant_to_version(const QVariant& variant);
 
 
 }
@@ -50,6 +56,7 @@ Big_id	qvariant_to_big_id(const QVariant& variant);
 #if MLIB_ENABLE_ALIASES
 	using m::Big_id;
 	using m::Size;
+	using m::Version;
 #endif
 
 #endif

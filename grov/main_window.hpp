@@ -23,6 +23,8 @@
 
 class QMessageBox;
 
+#include <boost/scoped_ptr.hpp>
+
 #include <QtGui/QMainWindow>
 
 #include <mlib/gui/message_box.hxx>
@@ -52,27 +54,30 @@ class Main_window: public QMainWindow
 
 	private:
 		// Qt Designer-generated widgets.
-		Ui::Main_window*		ui;
+		boost::scoped_ptr<Ui::Main_window>	ui;
 
 		/// Represents our Google Reader offline client.
-		Client*					client;
+		Client*								client;
 
 		/// Dialog that shows progress of current operation.
-		m::gui::Message_box*	progress_dialog;
+		m::gui::Message_box*				progress_dialog;
 
 
 	private slots:
 		/// Called when current mode changed.
 		void	mode_changed(Client::Mode mode);
 
+		/// When user clicks "About" button.
+		void	on_about_activated(void);
+
 		/// When user clicks "Discard all offline data" button.
-		void	on_discard_all_offline_data_action_activated(void);
+		void	on_discard_all_offline_data_activated(void);
 
 		/// When user clicks "Flush offline data" button.
-		void	on_flush_offline_data_action_activated(void);
+		void	on_flush_offline_data_activated(void);
 
 		/// When user clicks "Go offline" button.
-		void	on_go_offline_action_activated(void);
+		void	on_go_offline_activated(void);
 };
 
 

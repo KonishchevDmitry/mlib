@@ -2,6 +2,7 @@ set(MLIB_SOURCES
 	core/exception.cpp
 	core/format.cpp
 	core/messages.cpp
+	core/tools.cpp
 	core/types.cpp
 	db/core.cpp
 	db/scoped_transaction.cpp

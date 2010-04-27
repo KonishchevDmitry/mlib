@@ -32,5 +32,12 @@ Big_id qvariant_to_big_id(const QVariant& variant)
 }
 
 
+
+Version qvariant_to_version(const QVariant& variant)
+{
+	return variant.toULongLong();
+}
+
+
 }
 

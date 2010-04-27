@@ -18,6 +18,7 @@ set(GROV_SOURCES
 	common/feed_item.cpp
 	common/feed_tree.cpp
 	main.cpp
+	main_window/about_dialog.cpp
 	main_window.cpp
 	main_window/viewer.cpp
 	main_window/viewer/feeds_model.cpp
@@ -43,6 +44,7 @@ set(GROV_MOC_SOURCES
 	client/storage.hpp
 	client/web_cache.hpp
 	client/web_page.hpp
+	main_window/about_dialog.hpp
 	main_window.hpp
 	main_window/viewer/feeds_model.hpp
 	main_window/viewer/feeds_view.hpp
@@ -56,6 +58,7 @@ set(GROV_TRANSLATIONS
 
 set(GROV_UIS
 	client/login_dialog.ui
+	main_window/about_dialog.ui
 	main_window.ui
 	main_window/viewer.ui
 )

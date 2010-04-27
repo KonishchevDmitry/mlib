@@ -21,6 +21,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QHash>
 #include <QtCore/QSet>
+#include <QtCore/QTimer>
 #include <QtCore/QVariant>
 
 #include <QtSql/QSqlDatabase>
@@ -44,8 +45,8 @@
 namespace grov { namespace client {
 
 
-// TODO
-const int CURRENT_DB_FORMAT_VERSION = 0;
+/// Version of database format that we use.
+const Version CURRENT_DB_FORMAT_VERSION = MLIB_GET_VERSION(0, 1, 0);
 
 
 Storage::Storage(QObject* parent)
@@ -57,14 +58,16 @@ Storage::Storage(QObject* parent)
 	broadcast_feed_id(-1),
 	starred_feed_id(-1),
 
-	current_source(SOURCE_NONE)
+	current_source(SOURCE_NONE),
+
+	cache_flushing_timer(new QTimer(this))
 {
 #if !GROV_DEVELOP_MODE
 	QString app_home_dir = get_app_home_dir();
 
 	// Application's home directory
 	if(!QDir("").mkpath(app_home_dir))
-		M_THROW(tr("Can't create directory '%1."), app_home_dir);
+		M_THROW(tr("Can't create directory '%1'."), app_home_dir);
 #endif
 
 	// Opening the database -->
@@ -109,6 +112,16 @@ Storage::Storage(QObject* parent)
 
 		this->get_db_info();
 	// Preparing the database <--
+
+	// Setting cache flushing timer -->
+		this->cache_flushing_timer->setInterval(
+			config::cache_flushing_interval * 1000 );
+
+		connect(this->cache_flushing_timer, SIGNAL(timeout()),
+			SLOT(cache_flushing_timed_out()) );
+
+		this->cache_flushing_timer->start();
+	// Setting cache flushing timer <--
 }
 
 
@@ -196,7 +209,6 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 		}
 		// Adding feeds <--
 
-		// TODO: odd emits
 		emit feed_tree_changed();
 	}
 	catch(m::Exception& e)
@@ -243,20 +255,13 @@ void Storage::add_items(const Gr_feed_item_list& items)
 			{
 				Big_id feed_id = feeds.value(item.feed_gr_id, -1);
 
-				if(feed_id < 0)
+				if(feed_id < 0 && !item.starred && !item.broadcast)
 				{
-					// TODO: ?
-					if(item.starred || item.broadcast)
-						// TODO:
-						feed_id = -1;
-					else
-					{
-						// It may be due an error or when user mark feed's
-						// label by ignore mark.
-						MLIB_D("Gotten item '%1' for unknown feed '%2'. Skipping it.",
-							item.gr_id, item.feed_gr_id );
-						continue;
-					}
+					// It may be due an error or when user setted an ignore
+					// settings for this feed.
+					MLIB_D("Gotten item '%1' for unknown feed '%2'. Skipping it.",
+						item.gr_id, item.feed_gr_id );
+					continue;
 				}
 
 				insert_item_query.bindValue(":feed_id", feed_id);
@@ -274,7 +279,6 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		}
 		// Adding items <--
 
-		// TODO: odd emits
 		emit feed_tree_changed();
 	}
 	catch(m::Exception& e)
@@ -311,7 +315,6 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 		query.bindValue(":location", entry.location);
 		query.bindValue(":content_type", entry.content_type);
 		query.bindValue(":content_encoding", entry.content_encoding);
-		// TODO: data written in db in some ugly form. fix this
 		query.bindValue(":data", entry.data);
 		this->exec(query);
 	}
@@ -321,6 +324,22 @@ void Storage::add_web_cache_entry(const Web_cache_entry& entry)
 	}
 
 	MLIB_D("Web cache entry has been added successfully.");
+}
+
+
+
+void Storage::cache_flushing_timed_out(void)
+{
+	MLIB_D("Flushing the cache by timeout.");
+
+	try
+	{
+		this->flush_cache();
+	}
+	catch(m::Exception& e)
+	{
+		MLIB_SW(EE(e));
+	}
 }
 
 
@@ -345,17 +364,21 @@ void Storage::cancel_editing(void)
 
 void Storage::check_db_format_version(void)
 {
-	int version;
+	Version version;
 
 	try
 	{
 		QSqlQuery query = this->exec_and_next("SELECT value FROM config WHERE name = 'version'");
-		version = query.value(0).toInt();
+		version = m::qvariant_to_version(query.value(0));
 	}
 	catch(m::Exception& e)
 	{
 		M_THROW(PAM( tr("Unable to get the database format version:"), EE(e) ));
 	}
+
+	if(!version)
+		M_THROW(tr("Application's database '%1' has an invalid format version."),
+			this->db->databaseName() );
 
 	if(version != CURRENT_DB_FORMAT_VERSION)
 	{
@@ -363,9 +386,8 @@ void Storage::check_db_format_version(void)
 			"Application's database '%1' has unsupported format version. "
 			"Please delete it by yourself. "
 			"If you have an important unsaved offline data in it, "
-			"please flush this offline data by that version of %2, "
-			"which you have used to create it."),
-			this->db->databaseName(), GROV_APP_NAME
+			"please flush this offline data by %2 %3."),
+			this->db->databaseName(), GROV_APP_NAME, m::get_version_string(version)
 		);
 	}
 }
@@ -396,6 +418,8 @@ void Storage::clear(void)
 		M_THROW(PAM( tr("Error while deleting data from the database."), EE(e) ));
 	}
 
+// Takes too many time. May be in the future.
+#if 0
 	try
 	{
 		MLIB_D("Vacuuming the database...");
@@ -405,6 +429,7 @@ void Storage::clear(void)
 	{
 		MLIB_SW(PAM( tr("Unable to vacuum the database:"), EE(e) ));
 	}
+#endif
 
 	MLIB_D("Offline data cleaned.");
 
@@ -439,7 +464,7 @@ void Storage::create_current_query(void)
 		case SOURCE_FEED:
 		{
 			if(this->current_source_id == this->broadcast_feed_id)
-				where = "read = 0 AND broadcast = 1";
+				where = "broadcast = 1 AND read = 0";
 			else if(this->current_source_id == this->starred_feed_id)
 				where = "starred = 1";
 			else
@@ -491,7 +516,6 @@ void Storage::create_current_query(void)
 
 
 
-// TODO: selects and indexes optimization
 void Storage::create_db_tables(void)
 {
 	try
@@ -504,6 +528,7 @@ void Storage::create_db_tables(void)
 				"value TEXT"
 			")"
 		);
+		this->exec("CREATE INDEX lookup_config_by_name_idx ON config(name)");
 		this->exec(_F("INSERT INTO config VALUES ('version', %1)", CURRENT_DB_FORMAT_VERSION));
 		this->exec(_F("INSERT INTO config VALUES ('mode', '')"));
 
@@ -523,6 +548,14 @@ void Storage::create_db_tables(void)
 		);
 
 		this->exec(
+			"CREATE TABLE labels_to_feeds("
+				"label_id INTEGER,"
+				"feed_id INTEGER"
+			")"
+		);
+		this->exec("CREATE INDEX lookup_feeds_by_label_id_idx ON labels_to_feeds(label_id)");
+
+		this->exec(
 			"CREATE TABLE items("
 				"id INTEGER PRIMARY KEY,"
 				"feed_id INTEGER,"
@@ -537,15 +570,7 @@ void Storage::create_db_tables(void)
 				"summary TEXT"
 			")"
 		);
-		this->exec("CREATE INDEX items_feed_id_read_idx ON items(feed_id, read)");
-
-		this->exec(
-			"CREATE TABLE labels_to_feeds("
-				"label_id INTEGER,"
-				"feed_id INTEGER"
-			")"
-		);
-		this->exec("CREATE INDEX labels_to_feeds_label_id_idx ON labels_to_feeds(label_id)");
+		this->exec("CREATE INDEX lookup_feeds_unread_items_idx ON items(feed_id, read, id)");
 
 		this->exec(
 			"CREATE TABLE web_cache("
@@ -625,7 +650,6 @@ QSqlQuery Storage::exec_and_next(const QString& query_string)
 
 
 
-/// TODO: by timer
 void Storage::flush_cache(void)
 {
 	if(this->readed_items_cache.empty())
@@ -975,7 +999,7 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 	}
 	catch(m::Exception& e)
 	{
-		M_THROW(PAM( _F(tr("Error while getting web cache for the '%1':"), url), EE(e) ));
+		M_THROW(PAM( _F(tr("Error while getting web cache for '%1':"), url), EE(e) ));
 	}
 }
 
@@ -1035,7 +1059,9 @@ void Storage::mark_as_read(const Db_feed_item& item)
 		// Updating items counter -->
 		{
 			QList<Big_id> feed_ids;
-			feed_ids << item.feed_id;
+
+			if(item.feed_id >= 0)
+				feed_ids << item.feed_id;
 
 			if(item.broadcast)
 				feed_ids << this->broadcast_feed_id;

@@ -123,6 +123,14 @@ QString _F(const QString& format, const A1& arg_1, const A2& arg_2, const A3& ar
 
 
 
+template <class A1, class A2, class A3, class A4, class A5>
+QString _F(const QString& format, const A1& arg_1, const A2& arg_2, const A3& arg_3, const A4& arg_4, const A5& arg_5)
+{
+	return format.arg(_S(arg_1), _S(arg_2), _S(arg_3), _S(arg_4), _S(arg_5));
+}
+
+
+
 template <class Value>
 QString _S(const Value& value)
 {

@@ -2,6 +2,7 @@
 Type=Application
 Name=@APP_NAME@
 GenericName=Google Reader offline viewer
+GenericName[ru]=Offline-просмотрщик подписок Google Reader
 Comment=Read, star and share your Google Reader items when you are in offline
 Comment[ru]=Просмотр и расшаривание ваших новостей из Google Reader без подключения к Интернет
 Icon=@APP_UNIX_NAME@

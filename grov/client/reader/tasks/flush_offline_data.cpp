@@ -185,7 +185,7 @@ void Flush_offline_data::request_finished(QNetworkReply* reply, const QString& e
 				if(general_error.isEmpty() && server_answer != "OK")
 				{
 					if(server_answer.isEmpty())
-						general_error = tr("Server returned error.");
+						general_error = tr("Server returned an error.");
 					else
 						general_error = server_answer;
 				}

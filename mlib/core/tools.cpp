@@ -18,57 +18,50 @@
 **************************************************************************/
 
 
-#include <QtGui/QTextDocument>
-
-#include "core.hpp"
-
-#include "message_box.hpp"
+#include "tools.hpp"
 
 
-namespace m { namespace gui {
+namespace m {
 
 
-Message_box::Message_box(Icon icon, const QString& title, const QString& message, StandardButtons buttons, QWidget* parent, Qt::WindowFlags f)
-:
-	QMessageBox(icon, "", "", buttons, parent, f)
+Version get_major_version(Version version)
 {
-	this->setTextFormat(Qt::RichText);
-
-	this->set_title(title);
-	this->set_message(message);
+	return version / 100 / 100;
 }
 
 
 
-void Message_box::set_details(const QString& details)
+Version get_minor_version(Version version)
 {
-	// If message does not have '<' or '>' symbols, Qt thinks about it as
-	// of plain text message and shows to user an "&amp;" instead of a '&',
-	// etc.
-	this->setDetailedText("<b></b>" + Qt::escape(details));
+	return version % ( 100 * 100 ) / 100;
 }
 
 
 
-void Message_box::set_message(const QString& message)
+Version get_patch_version(Version version)
 {
-	// If message does not have '<' or '>' symbols, Qt thinks about it as
-	// of plain text message and shows to user an "&amp;" instead of a '&',
-	// etc.
-	this->setInformativeText("<b></b>" + Qt::escape(message));
+	return version % 100;
 }
 
 
 
-void Message_box::set_title(const QString& title)
+Version get_version(Version major, Version minor, Version patch)
 {
-	this->setWindowTitle(m::gui::format_window_title(title));
-
-	// QMessageBox always sets its width equal to width of the message title,
-	// so it often has too small width. This is a hack to prevent this bug.
-	this->setText("<table width='300'><tr><td><b>" + Qt::escape(title) + "</b></tr></td></table>");
+	return MLIB_GET_VERSION(major, minor, patch);
 }
 
 
-}}
+
+QString get_version_string(Version version)
+{
+	Version patch_version = get_patch_version(version);
+
+	return
+		QString::number(get_major_version(version)) +
+		"." + QString::number(get_minor_version(version)) +
+		( patch_version ? "." + QString::number(patch_version) : QString() );
+}
+
+
+}
 

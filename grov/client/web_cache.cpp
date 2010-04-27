@@ -355,7 +355,7 @@ namespace Web_cache_aux {
 
 		if(url.isEmpty())
 		{
-			MLIB_SW(tr("Gotten request for saving data in the Web cache for empty URL. Ignoring it."));
+			MLIB_DW("Gotten request for saving data in the Web cache for an empty URL. Ignoring it.");
 			return NULL;
 		}
 
@@ -481,8 +481,7 @@ namespace Web_cache_aux {
 		QNetworkRequest request = req;
 		// I could not make QtWebKit work with QNetworkRequest::AlwaysCache. :)
 		request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-#warning remove and test
-		request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, true);
+		request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
 		return QNetworkAccessManager::createRequest(op, request, outgoingData);
 	}
 // Web_cached_manager <--

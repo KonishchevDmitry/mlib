@@ -181,7 +181,7 @@ void Get_reading_list::request_finished(QNetworkReply* reply, const QString& err
 				MLIB_W(tr("Reading lists number limit exceeded"),
 					_F(tr(
 						"Gotten too big number (%1) of reading lists from Google Reader. "
-						"It seems that program entered in an infinite loop, or you have very big number of unread items. "
+						"It seems that program entered in an infinite loop, or you a have very big number of unread items. "
 						"Please read downloaded items first, than you can download others."
 					), this->reading_lists_counter)
 				);

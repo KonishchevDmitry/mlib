@@ -42,22 +42,29 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="go_offline_action"/>
-    <addaction name="discard_all_offline_data_action"/>
-    <addaction name="flush_offline_data_action"/>
-    <addaction name="quit_action"/>
+    <addaction name="go_offline"/>
+    <addaction name="discard_all_offline_data"/>
+    <addaction name="flush_offline_data"/>
+    <addaction name="quit"/>
    </widget>
    <widget class="QMenu" name="feed_menu">
     <property name="title">
      <string>&amp;Feed</string>
     </property>
-    <addaction name="previous_item_action"/>
-    <addaction name="next_item_action"/>
+    <addaction name="previous_item"/>
+    <addaction name="next_item"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="about"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="feed_menu"/>
+   <addaction name="menu_Help"/>
   </widget>
-  <action name="quit_action">
+  <action name="quit">
    <property name="text">
     <string>&amp;Quit</string>
    </property>
@@ -68,7 +75,7 @@
     <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
-  <action name="go_offline_action">
+  <action name="go_offline">
    <property name="text">
     <string>Go &amp;offline</string>
    </property>
@@ -79,7 +86,7 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="flush_offline_data_action">
+  <action name="flush_offline_data">
    <property name="text">
     <string>&amp;Flush offline data</string>
    </property>
@@ -87,7 +94,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="next_item_action">
+  <action name="next_item">
    <property name="text">
     <string>&amp;Next item</string>
    </property>
@@ -95,7 +102,7 @@
     <string>J</string>
    </property>
   </action>
-  <action name="previous_item_action">
+  <action name="previous_item">
    <property name="text">
     <string>&amp;Previous item</string>
    </property>
@@ -103,12 +110,17 @@
     <string>K</string>
    </property>
   </action>
-  <action name="discard_all_offline_data_action">
+  <action name="discard_all_offline_data">
    <property name="text">
     <string>&amp;Discard all offline data</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="about">
+   <property name="text">
+    <string>&amp;About</string>
    </property>
   </action>
  </widget>
@@ -124,7 +136,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>quit_action</sender>
+   <sender>quit</sender>
    <signal>activated()</signal>
    <receiver>grov::Main_window</receiver>
    <slot>close()</slot>

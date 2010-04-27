@@ -24,6 +24,8 @@
 #include <grov/client.hpp>
 #include <grov/common.hpp>
 
+#include "main_window/about_dialog.hpp"
+
 #include "main_window.hpp"
 #include "ui_main_window.h"
 
@@ -50,10 +52,10 @@ Main_window::Main_window(QWidget *parent)
 	// Viewer -->
 		ui->viewer->connect_to_storage(this->client);
 
-		connect(ui->next_item_action, SIGNAL(activated()),
+		connect(ui->next_item, SIGNAL(activated()),
 			ui->viewer, SLOT(go_to_next_item()) );
 
-		connect(ui->previous_item_action, SIGNAL(activated()),
+		connect(ui->previous_item, SIGNAL(activated()),
 			ui->viewer, SLOT(go_to_previous_item()) );
 	// Viewer <--
 
@@ -72,7 +74,6 @@ Main_window::Main_window(QWidget *parent)
 
 Main_window::~Main_window()
 {
-    delete ui;
 }
 
 
@@ -80,9 +81,9 @@ Main_window::~Main_window()
 void Main_window::mode_changed(Client::Mode mode)
 {
 	// Menus -->
-		ui->go_offline_action->setVisible(mode == Client::MODE_NONE);
-		ui->discard_all_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
-		ui->flush_offline_data_action->setVisible(mode == Client::MODE_OFFLINE);
+		ui->go_offline->setVisible(mode == Client::MODE_NONE);
+		ui->discard_all_offline_data->setVisible(mode == Client::MODE_OFFLINE);
+		ui->flush_offline_data->setVisible(mode == Client::MODE_OFFLINE);
 
 		ui->feed_menu->setEnabled(mode == Client::MODE_OFFLINE);
 	// Menus <--
@@ -128,7 +129,15 @@ void Main_window::mode_changed(Client::Mode mode)
 
 
 
-void Main_window::on_discard_all_offline_data_action_activated(void)
+void Main_window::on_about_activated(void)
+{
+	main_window::About_dialog about;
+	about.exec();
+}
+
+
+
+void Main_window::on_discard_all_offline_data_activated(void)
 {
 #if !GROV_DEVELOP_MODE
 	bool is = m::gui::yes_no_message(this, tr("Discard all offline data"),
@@ -141,14 +150,14 @@ void Main_window::on_discard_all_offline_data_action_activated(void)
 
 
 
-void Main_window::on_flush_offline_data_action_activated(void)
+void Main_window::on_flush_offline_data_activated(void)
 {
 	this->client->flush_offline_data();
 }
 
 
 
-void Main_window::on_go_offline_action_activated(void)
+void Main_window::on_go_offline_activated(void)
 {
 	this->client->go_offline();
 }

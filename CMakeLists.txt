@@ -74,6 +74,7 @@ add_subdirectory(${APP_UNIX_NAME})
 		"/grov/.vim"
 		"/grov/tags"
 		"/update_project"
+		"/update_translations"
 		"/TODO"
 		"/\\\\.git"
 		"/\\\\.gitignore"
