@@ -8,6 +8,7 @@
 #  MLIB_APP_TRANSLATIONS_DIR - directory for *.qm files (relative to install prefix).
 #
 # Application may set:
+#  MLIB_APP_QT_MIN_VERSION - Minimal Qt version needed for application
 #  MLIB_APP_QT_MODULES - Qt modules that application use.
 #  MLIB_DEBUG_MODE - enables debug mode.
 #  MLIB_DEVELOP_MODE - enables develop mode.
@@ -25,7 +26,7 @@
 
 
 # Qt -->
-	find_package(Qt4 COMPONENTS QtCore ${MLIB_APP_QT_MODULES} REQUIRED)
+	find_package(Qt4 ${MLIB_APP_QT_MIN_VERSION} COMPONENTS QtCore ${MLIB_APP_QT_MODULES} REQUIRED)
 	include(${QT_USE_FILE})
 	set(MLIB_LIBRARIES ${MLIB_LIBRARIES} ${QT_LIBRARIES})
 # Qt <--
