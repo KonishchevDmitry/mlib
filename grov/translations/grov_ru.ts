@@ -319,12 +319,12 @@ Options:
     <message>
         <location filename="../client/storage.cpp" line="380"/>
         <source>Application&apos;s database &apos;%1&apos; has an invalid format version.</source>
-        <translation type="unfinished"></translation>
+        <translation>База данных &apos;%1&apos; имеет недопустимое значение версии формата хранения данных.</translation>
     </message>
     <message>
         <location filename="../client/storage.cpp" line="385"/>
-        <source>Application&apos;s database &apos;%1&apos; has unsupported format version. Please delete it by yourself. If you have an important unsaved offline data in it, please flush this offline data by %2 %3.</source>
-        <translation type="unfinished">База данных &amp;apos;%1&amp;apos; имеет формат, версия которого не поддерживается. Пожалуйста, удалите ее самостоятельно. Если база данных содержит какие-либо важные для вас данные, то, пожалуйста, отправьте их в Google Reader при помощи той версии %2, которую вы использовали для того, чтобы создать данную БД.</translation>
+        <source>Application&apos;s database &apos;%1&apos; has unsupported format version. Please delete it by yourself. If you have an important unsaved offline data in it, please flush this offline data by %2.</source>
+        <translation>База данных &apos;%1&apos; имеет формат, версия которого не поддерживается. Пожалуйста, удалите ее самостоятельно. Если база данных содержит какие-либо важные для вас данные, то, пожалуйста, отправьте их в Google Reader при помощи %2.</translation>
     </message>
     <message>
         <location filename="../client/storage.cpp" line="418"/>
@@ -429,7 +429,7 @@ Options:
     <message>
         <location filename="../client/reader/tasks/flush_offline_data.cpp" line="188"/>
         <source>Server returned an error.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сервер вернул ошибку.</translation>
     </message>
     <message>
         <location filename="../client/reader/tasks/flush_offline_data.cpp" line="204"/>
@@ -518,17 +518,17 @@ Options:
         <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="136"/>
         <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="266"/>
         <source>( No title )</source>
-        <translation type="unfinished"></translation>
+        <translation>( Без заголовка )</translation>
     </message>
     <message>
         <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="145"/>
         <source>Gotten item with empty feed&apos;s id.</source>
-        <translation type="unfinished"></translation>
+        <translation>Получена запись с пустым идентификатором подписки.</translation>
     </message>
     <message>
         <location filename="../client/reader/tasks/gr_xml_parser.cpp" line="269"/>
         <source>Gotten subscription &apos;%1&apos; with no id.</source>
-        <translation type="unfinished"></translation>
+        <translation>Подписка &apos;%1&apos; не имеет идентификатора.</translation>
     </message>
 </context>
 <context>
@@ -536,12 +536,12 @@ Options:
     <message>
         <location filename="../client/reader/tasks/login_to_google_reader.cpp" line="54"/>
         <source>Server did not return Google Reader&apos;s authentication id.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сервер не вернул код для авторизации на Google Reader.</translation>
     </message>
     <message>
         <location filename="../client/reader/tasks/login_to_google_reader.cpp" line="84"/>
         <source>Unable to login to Google Reader.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось авторизироваться на Google Reader.</translation>
     </message>
 </context>
 <context>
@@ -549,38 +549,38 @@ Options:
     <message>
         <location filename="../main_window/about_dialog.cpp" line="62"/>
         <source>%1 - Google Reader offline viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - Offline-просмотрщик подписок Google Reader</translation>
     </message>
     <message>
         <location filename="../main_window/about_dialog.cpp" line="63"/>
         <location filename="../main_window/about_dialog.cpp" line="76"/>
         <source>Dmitry Konishchev</source>
-        <translation type="unfinished"></translation>
+        <translation>Дмитрий Конищев</translation>
     </message>
     <message>
         <location filename="../main_window/about_dialog.cpp" line="86"/>
         <source>Thanks to %1 for the application&apos;s icons.</source>
-        <translation type="unfinished"></translation>
+        <translation>Спасибо %1 за иконки для программы.</translation>
     </message>
     <message>
-        <location filename="../main_window/about_dialog.ui" line="12"/>
+        <location filename="../main_window/about_dialog.ui" line="20"/>
         <source>About Grov</source>
-        <translation type="unfinished"></translation>
+        <translation>О Grov</translation>
     </message>
     <message>
-        <location filename="../main_window/about_dialog.ui" line="67"/>
+        <location filename="../main_window/about_dialog.ui" line="75"/>
         <source>&amp;About</source>
-        <translation type="unfinished">&amp;О программе</translation>
+        <translation>&amp;О программе</translation>
     </message>
     <message>
-        <location filename="../main_window/about_dialog.ui" line="90"/>
-        <source>A&amp;uthors</source>
-        <translation type="unfinished"></translation>
+        <location filename="../main_window/about_dialog.ui" line="98"/>
+        <source>&amp;Authors</source>
+        <translation>&amp;Авторы</translation>
     </message>
     <message>
-        <location filename="../main_window/about_dialog.ui" line="116"/>
+        <location filename="../main_window/about_dialog.ui" line="124"/>
         <source>&amp;Thanks To</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Благодарности</translation>
     </message>
 </context>
 <context>
@@ -588,59 +588,54 @@ Options:
     <message>
         <location filename="../main_window/viewer.cpp" line="108"/>
         <source>Unable to mark feed&apos;s item as read</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось пометить запись как прочитанную</translation>
     </message>
     <message>
         <location filename="../main_window/viewer.cpp" line="130"/>
         <location filename="../main_window/viewer.cpp" line="147"/>
         <source>Unable to fetch feed&apos;s item</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось получить запись</translation>
     </message>
     <message>
         <location filename="../main_window/viewer.cpp" line="179"/>
         <source>Error while loading clicked link&apos;s page</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка при загрузке страницы</translation>
     </message>
     <message>
         <location filename="../main_window/viewer.cpp" line="199"/>
         <source>Unable to star feed&apos;s item</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось отметить запись</translation>
     </message>
     <message>
         <location filename="../main_window/viewer.cpp" line="245"/>
         <source>You have no unread items.</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет непрочитанных записей.</translation>
     </message>
     <message>
         <location filename="../main_window/viewer.cpp" line="260"/>
         <source>Please select a label or a feed to view its items.</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста, выберите метку или подписку, чтобы посмотреть соответствующие ей записи.</translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../main_window/viewer.ui" line="65"/>
+        <location filename="../main_window/viewer.ui" line="62"/>
         <source>about:blank</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../main_window/viewer.ui" line="92"/>
+        <source>Star this item &lt;Ctrl-S&gt;</source>
+        <translation>Отметить запись &lt;Ctrl-S&gt;</translation>
     </message>
     <message>
         <location filename="../main_window/viewer.ui" line="95"/>
-        <source>Star this item &lt;Ctrl-S&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../main_window/viewer.ui" line="98"/>
-        <location filename="../main_window/viewer.ui" line="112"/>
+        <location filename="../main_window/viewer.ui" line="109"/>
         <source>Star</source>
-        <translation type="unfinished"></translation>
+        <translation>Отметить</translation>
     </message>
     <message>
-        <location filename="../main_window/viewer.ui" line="115"/>
+        <location filename="../main_window/viewer.ui" line="112"/>
         <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -648,12 +643,12 @@ Options:
     <message>
         <location filename="../main_window/viewer/feeds_model.cpp" line="111"/>
         <source>Error while updating subscription list</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка при обновлении списка подписок</translation>
     </message>
     <message>
         <location filename="../main_window/viewer/feeds_model.cpp" line="147"/>
         <source>Subscriptions</source>
-        <translation type="unfinished"></translation>
+        <translation>Подписки</translation>
     </message>
 </context>
 <context>
@@ -661,7 +656,7 @@ Options:
     <message>
         <location filename="../tools/messenger.cpp" line="58"/>
         <source>Error happened at %1:%2. Please contact to developer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка произошла в %1:%2. Пожалуйста, свяжитесь с разработчиком.</translation>
     </message>
 </context>
 </TS>
