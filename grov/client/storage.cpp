@@ -386,8 +386,8 @@ void Storage::check_db_format_version(void)
 			"Application's database '%1' has unsupported format version. "
 			"Please delete it by yourself. "
 			"If you have an important unsaved offline data in it, "
-			"please flush this offline data by %2 %3."),
-			this->db->databaseName(), GROV_APP_NAME, m::get_version_string(version)
+			"please flush this offline data by %2."),
+			this->db->databaseName(), GROV_APP_NAME " " + m::get_version_string(version)
 		);
 	}
 }

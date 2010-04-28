@@ -18,24 +18,16 @@ build_packages()
 	do
 		rm -rf "$package_dir"
 		tar -xf "${package_name}_${package_version}.orig.tar.gz"
+		cp -r "$src_debian_dir" "$package_debian_dir"
 
-		# Creating Debian package files -->
-			cp -r "$src_debian_dir" "$package_debian_dir"
-			(
-				sed -n '1,/ --/p' "$src_debian_dir/changelog" | \
-					sed -r '1s/([^ ]+)\s+\(([0-9.]+)[^)]*\)\s+[^;]+/\1 (\2-0ubuntu1~ppa1~'$dist'1) '$dist'/' | \
-					sed '/^  \*/d' | sed '2a\  * '$(echo $dist | awk '{ printf "%s%s", toupper(substr($1, 1, 1)), substr($1, 2) }')' build.'
-				echo ''
-				cat "$src_debian_dir/changelog"
-			) > "$package_debian_dir/changelog"
-		# Creating Debian package files <--
-
-		# Creating package -->
+		# Creating the package -->
 		(
 			cd "$package_dir"
+			dch --force-bad-version --newversion "${package_version}-0ubuntu1~ppa1~${dist}1" \
+				--distribution "$dist" $(echo $dist | awk '{ printf "%s%s", toupper(substr($1, 1, 1)), substr($1, 2) }') build.
 			debuild -S -sa || true
 		)
-		# Creating package <--
+		# Creating the package <--
 
 		rm -rf "$package_dir"
 	done

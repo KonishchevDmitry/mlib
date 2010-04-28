@@ -178,7 +178,7 @@ namespace grov { namespace {
 			else
 				MESSENGER.show("", 0, m::MESSAGE_TYPE_ERROR, "", QApplication::tr("Unknown error."));
 
-			std::exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 		}
 		else
 		{
