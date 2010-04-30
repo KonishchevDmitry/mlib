@@ -1049,40 +1049,34 @@ void Storage::mark_as_read(const Db_feed_item& item)
 {
 	MLIB_D("Marking item [%1] as read...", item.id);
 
-	if(this->current_query_read_cache.contains(item.id))
+	// Starred items showed to user even if they is already read, so we must
+	// always check current item's status.
+	if(this->current_query_read_cache.contains(item.id) || item.read)
 		MLIB_D("Item [%1] is already marked as read.", item.id);
 	else
 	{
-		#warning test
-		// Starred items showed to user even if they is already read, so we
-		// must always check current item's status.
-		if(item.read)
-			MLIB_D("Item [%1] is already marked as read.", item.id);
-		else
+		this->current_query_read_cache.insert(item.id);
+		this->readed_items_cache << item.id;
+
+		// Updating items counter -->
 		{
-			this->current_query_read_cache.insert(item.id);
-			this->readed_items_cache << item.id;
+			QList<Big_id> feed_ids;
 
-			// Updating items counter -->
-			{
-				QList<Big_id> feed_ids;
+			if(item.feed_id >= 0)
+				feed_ids << item.feed_id;
 
-				if(item.feed_id >= 0)
-					feed_ids << item.feed_id;
+			if(item.broadcast)
+				feed_ids << this->broadcast_feed_id;
 
-				if(item.broadcast)
-					feed_ids << this->broadcast_feed_id;
-
-				emit this->item_marked_as_read(feed_ids, true);
-			}
-			// Updating items counter <--
-
-			if(readed_items_cache.size() > 10)
-				// Throws m::Exception
-				this->flush_cache();
-
-			MLIB_D("Item [%1] marked as read.", item.id);
+			emit this->item_marked_as_read(feed_ids, true);
 		}
+		// Updating items counter <--
+
+		if(readed_items_cache.size() > 10)
+			// Throws m::Exception
+			this->flush_cache();
+
+		MLIB_D("Item [%1] marked as read.", item.id);
 	}
 }
 
