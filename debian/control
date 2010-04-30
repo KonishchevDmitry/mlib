@@ -13,7 +13,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Google Reader offline viewer
  Grov gives you a facility to read, star and share your Google Reader items
- when you are in offline or have a very slow and inconsistent connection
+ when you are offline or have a very slow and inconsistent connection
  (transport, etc).
  .
  Features:
