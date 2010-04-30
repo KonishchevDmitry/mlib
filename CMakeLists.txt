@@ -11,9 +11,15 @@ cmake_minimum_required(VERSION 2.6)
 	set(APP_VERSION_PATCH 0)
 	set(APP_VERSION "0.1")
 
-	set(APP_BIN_DIR bin)
-	set(APP_ICONS_DIR share/icons/hicolor)
-	set(APP_TRANSLATIONS_DIR share/${APP_UNIX_NAME}/translations)
+	if(UNIX)
+		set(APP_BIN_DIR bin)
+		set(APP_ICONS_DIR share/icons/hicolor)
+		set(APP_TRANSLATIONS_DIR share/${APP_UNIX_NAME}/translations)
+	else()
+		set(APP_BIN_DIR .)
+		set(APP_ICONS_DIR icons)
+		set(APP_TRANSLATIONS_DIR translations)
+	endif()
 # Application's properties <--
 
 
@@ -23,10 +29,6 @@ cmake_minimum_required(VERSION 2.6)
 	endif()
 
 	string(COMPARE EQUAL ${CMAKE_BUILD_TYPE} Debug DEVELOP_BUILD)
-
-	if(DEVELOP_BUILD)
-		add_definitions(-DGROV_DEBUG_MODE -DGROV_DEVELOP_MODE)
-	endif()
 # Build type <--
 
 
@@ -48,6 +50,11 @@ cmake_minimum_required(VERSION 2.6)
 # Configuring MLib <--
 
 
+# Includes
+include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+
+
+# Sub-projects
 add_subdirectory(mlib)
 add_subdirectory(${APP_UNIX_NAME})
 
@@ -83,4 +90,3 @@ add_subdirectory(${APP_UNIX_NAME})
 
 	include(CPack)
 # CPack <--
-
