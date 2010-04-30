@@ -17,6 +17,9 @@ QT4_WRAP_UI(GROV_UI_CPP ${GROV_UIS})
 if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 	configure_file(${APP_UNIX_NAME}.desktop.in ${APP_UNIX_NAME}.desktop)
 	install(FILES ${PROJECT_BINARY_DIR}/${APP_UNIX_NAME}.desktop DESTINATION share/applications)
+
+	install(FILES ${PROJECT_SOURCE_DIR}/mans/${APP_UNIX_NAME}.1.gz DESTINATION share/man/man1)
+	install(FILES ${PROJECT_SOURCE_DIR}/mans/ru/${APP_UNIX_NAME}.1.gz DESTINATION share/man/ru/man1)
 endif()
 
 

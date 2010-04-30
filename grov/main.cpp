@@ -27,6 +27,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QLocale>
+#include <QtCore/QMap>
 #include <QtCore/QProcess>
 #include <QtCore/QSize>
 #include <QtCore/QTextCodec>
@@ -178,7 +179,7 @@ namespace grov { namespace {
 			else
 				MESSENGER.show("", 0, m::MESSAGE_TYPE_ERROR, "", QApplication::tr("Unknown error."));
 
-			std::exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 		}
 		else
 		{
@@ -315,38 +316,74 @@ int main(int argc, char *argv[])
 	MLIB_D("Starting the application...");
 
 	QString install_dir = get_install_dir();
+	QLocale locale = QLocale::system();
 
 	QTranslator qt_translator;
 	QTranslator app_translator;
 	QTranslator mlib_translator;
 
+	// TODO: All code above does not show translated strings to the user.
+
+#ifdef Q_OS_UNIX
+	// Qt's locale detection under UNIX works wrong -->
+	{
+		QMap<QString,QString> env_vars;
+
+		Q_FOREACH(const QString& var, QProcess::systemEnvironment())
+		{
+			int pos = var.indexOf('=');
+			QString name = var.mid(0, pos);
+			QString value = var.mid(pos + 1);
+			env_vars[name] = value;
+			MLIB_DV("Gotten an environment variable: '%1'='%2'.", name, value);
+		}
+
+		if(!env_vars["LC_ALL"].isEmpty())
+		{
+			locale = QLocale(env_vars["LC_ALL"]);
+			MLIB_D("Setting the locale to LC_ALL's value '%1'.", locale.name());
+		}
+		else if(!env_vars["LC_MESSAGES"].isEmpty())
+		{
+			locale = QLocale(env_vars["LC_MESSAGES"]);
+			MLIB_D("Setting the locale to LC_MESSAGES's value '%1'.", locale.name());
+		}
+		else if(!env_vars["LANG"].isEmpty())
+		{
+			locale = QLocale(env_vars["LANG"]);
+			MLIB_D("Setting the locale to LANG's value '%1'.", locale.name());
+		}
+	}
+	// Qt's locale detection under UNIX works wrong <--
+#endif
+
 	// Loading translations -->
 	{
 		bool is;
 
-		is = qt_translator.load("qt_" + QLocale::system().name(),
+		is = qt_translator.load("qt_" + locale.name(),
 			QLibraryInfo::location(QLibraryInfo::TranslationsPath) );
 		if(is)
 			app.installTranslator(&qt_translator);
 		else
-			MLIB_D("Qt's translations for '%1' did not found.", QLocale::system().name());
+			MLIB_D("Qt's translations for '%1' did not found.", locale.name());
 
 
 		if(!install_dir.isEmpty())
 		{
-			is = app_translator.load(_F("%1_%2", GROV_APP_UNIX_NAME, QLocale::system().name()),
+			is = app_translator.load(_F("%1_%2", GROV_APP_UNIX_NAME, locale.name()),
 				QDir(install_dir).absoluteFilePath(GROV_APP_TRANSLATIONS_DIR) );
 			if(is)
 				app.installTranslator(&app_translator);
 			else
-				MLIB_D("Application's translations for '%1' did not found.", QLocale::system().name());
+				MLIB_D("Application's translations for '%1' did not found.", locale.name());
 
-			is = mlib_translator.load("mlib_" + QLocale::system().name(),
+			is = mlib_translator.load("mlib_" + locale.name(),
 				QDir(install_dir).absoluteFilePath(GROV_APP_TRANSLATIONS_DIR) );
 			if(is)
 				app.installTranslator(&mlib_translator);
 			else
-				MLIB_D("MLib's translations for '%1' did not found.", QLocale::system().name());
+				MLIB_D("MLib's translations for '%1' did not found.", locale.name());
 		}
 	}
 	// Loading translations <--

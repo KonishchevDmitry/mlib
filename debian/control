@@ -15,3 +15,9 @@ Description: Google Reader offline viewer
  Grov gives you a facility to read, star and share your Google Reader items
  when you are in offline or have a very slow and inconsistent connection
  (transport, etc).
+ .
+ Features:
+ * Downloading images from items' summaries.
+ * Full downloading of pages to which items refers.
+ * Single file data storage which makes very convenient its coping from one PC
+   to another.

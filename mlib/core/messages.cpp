@@ -86,9 +86,9 @@ void default_message_handler(const char* file, int line, Message_type type, cons
 			QTextStream stream(stderr);
 			print_message(stream, file, line, type, title, message);
 		#if MLIB_DEVELOP_MODE
-			std::abort();
+			abort();
 		#else
-			std::exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 		#endif
 		}
 		break;
