@@ -74,6 +74,9 @@ namespace grov { namespace config {
 	/// Cache flushes every this time interval in seconds.
 	const int cache_flushing_interval = 60;
 
+	/// Minimum font size when displaying items.
+	const int min_font_size = 16;
+
 }}
 
 #endif
