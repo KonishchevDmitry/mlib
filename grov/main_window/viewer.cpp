@@ -224,7 +224,7 @@ void Viewer::set_current_item(const Db_feed_item& item)
 			"<a href='%1'><h1 style='font-size: 14pt'>%2</h1></a>"
 			"%3"
 		"</body></html>",
-		QUrl::toPercentEncoding(item.url), item.title, item.summary
+		item.url, item.title, item.summary
 	));
 
 	this->current_item = item;
