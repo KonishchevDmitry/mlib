@@ -94,7 +94,7 @@ void Db_feed_item::set_invalid(void)
 
 
 
-bool Db_feed_item::valid(void)
+bool Db_feed_item::valid(void) const
 {
 	return this->id >= 0;
 }

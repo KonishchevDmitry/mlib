@@ -21,6 +21,8 @@
 #ifndef GROV_HEADER_MAIN_WINDOW_VIEWER
 #define GROV_HEADER_MAIN_WINDOW_VIEWER
 
+class QAction;
+class QMenu;
 class QUrl;
 
 #include <QtGui/QWidget>
@@ -42,7 +44,7 @@ namespace Ui {
 /// A widget that displays all ours offline data.
 ///
 /// This viewer is not works itself after construction. You must call
-/// connect_to_storage() method to start its work.
+/// connect_to_parent() method to start its work.
 class Viewer: public QWidget
 {
 	Q_OBJECT
@@ -53,8 +55,15 @@ class Viewer: public QWidget
 
 
 	private:
-		// Qt Designer-generated widgets.
+		/// Qt Designer-generated widgets.
 		Ui::Viewer*			ui;
+
+		/// Action for going to item's page.
+		QAction*			go_to_page_action;
+
+		/// Action for starring item.
+		QAction*			star_action;
+
 
 		/// All offline data.
 		client::Storage*	storage;
@@ -66,14 +75,15 @@ class Viewer: public QWidget
 
 
 	public:
-		/// Connects viewer to the storage, so it will display its data.
-		void	connect_to_storage(client::Storage* storage);
+		/// Connects viewer to a parent widget and the storage, so it will
+		/// display its data.
+		void	connect_to_parent(client::Storage* storage, QAction* go_to_page_action, QAction* star_action);
 
 		/// Sets selection in feed tree to none.
 		void	select_no_feed(void);
 
 	private:
-		/// Sets current_item.id to -1.
+		/// Sets current_item to invalid item.
 		void	reset_current_item(void);
 
 		/// Sets current feed item.
@@ -81,6 +91,14 @@ class Viewer: public QWidget
 
 		/// Displays "There is no more unread items" message instead of item.
 		void	set_no_more_items(void);
+
+		/// Makes widgets that displays star flag display \a starred flag.
+		void	set_star_flag_to(bool starred);
+
+
+	signals:
+		/// Emitted when user selects an item.
+		void	item_selected(bool valid);
 
 
 	public slots:
@@ -97,6 +115,12 @@ class Viewer: public QWidget
 		/// Called when user selects a feed.
 		void	feed_selected(Big_id id);
 
+		/// Called when user clicks "Go to item's page" button.
+		void	go_to_item_page(void);
+
+		/// Called when user selects an item.
+		void	item_selected_cb(bool valid);
+
 		/// Called when user selects a label.
 		void	label_selected(Big_id id);
 
@@ -104,7 +128,7 @@ class Viewer: public QWidget
 		void	link_clicked(const QUrl& qurl);
 
 		/// Called when user stars/unstars an item.
-		void	on_star_check_box_stateChanged(int state);
+		void	on_star_check_box_toggled(bool state);
 
 		/// Sets items view widget to "Please select a label or a feed" state.
 		void	set_no_selected_feed(void);

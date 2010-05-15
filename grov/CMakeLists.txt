@@ -5,7 +5,7 @@ include(CMakeProjectFiles.txt)
 
 
 # Config
-configure_file(config.hpp.in config.hpp)
+configure_file(${PROJECT_SOURCE_DIR}/config.hpp.in ${PROJECT_BINARY_DIR}/config.hpp)
 
 
 # Includes
@@ -25,7 +25,7 @@ QT4_WRAP_UI(GROV_UI_CPP ${GROV_UIS})
 
 # Desktop files
 if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
-	configure_file(${APP_UNIX_NAME}.desktop.in ${APP_UNIX_NAME}.desktop)
+	configure_file(${PROJECT_SOURCE_DIR}/${APP_UNIX_NAME}.desktop.in ${PROJECT_BINARY_DIR}/${APP_UNIX_NAME}.desktop)
 	install(FILES ${PROJECT_BINARY_DIR}/${APP_UNIX_NAME}.desktop DESTINATION share/applications)
 endif()
 

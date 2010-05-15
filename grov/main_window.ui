@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>549</width>
-    <height>390</height>
+    <width>457</width>
+    <height>373</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,11 +34,11 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>549</width>
-     <height>22</height>
+     <width>457</width>
+     <height>23</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File">
+   <widget class="QMenu" name="file_menu">
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -54,15 +54,23 @@
     <addaction name="previous_item"/>
     <addaction name="next_item"/>
    </widget>
-   <widget class="QMenu" name="menu_Help">
+   <widget class="QMenu" name="help_menu">
     <property name="title">
      <string>&amp;Help</string>
     </property>
     <addaction name="about"/>
    </widget>
-   <addaction name="menu_File"/>
+   <widget class="QMenu" name="item_menu">
+    <property name="title">
+     <string>&amp;Item</string>
+    </property>
+    <addaction name="go_to_item_page"/>
+    <addaction name="star"/>
+   </widget>
+   <addaction name="file_menu"/>
    <addaction name="feed_menu"/>
-   <addaction name="menu_Help"/>
+   <addaction name="item_menu"/>
+   <addaction name="help_menu"/>
   </widget>
   <action name="quit">
    <property name="text">
@@ -121,6 +129,28 @@
   <action name="about">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="go_to_item_page">
+   <property name="text">
+    <string>&amp;Go to item's page</string>
+   </property>
+   <property name="shortcut">
+    <string>G</string>
+   </property>
+  </action>
+  <action name="star">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Star</string>
+   </property>
+   <property name="toolTip">
+    <string>Star</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

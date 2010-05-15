@@ -10,7 +10,7 @@ Homepage: https://sourceforge.net/projects/grov/
 
 Package: grov
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqt4-sql-sqlite (>= 4.5)
 Description: Google Reader offline viewer
  Grov gives you a facility to read, star and share your Google Reader items
  when you are offline or have a very slow and inconsistent connection
