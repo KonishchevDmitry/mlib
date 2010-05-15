@@ -144,7 +144,7 @@ class Db_feed_item: public Feed_item
 		void	set_invalid(void);
 
 		/// Return false if the item is invalid item.
-		bool	valid(void);
+		bool	valid(void) const;
 };
 
 

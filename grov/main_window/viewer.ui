@@ -104,14 +104,6 @@
     </widget>
    </item>
   </layout>
-  <action name="star_action">
-   <property name="text">
-    <string>Star</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="0"/>
  <customwidgets>
@@ -127,22 +119,5 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>star_action</sender>
-   <signal>activated()</signal>
-   <receiver>star_check_box</receiver>
-   <slot>toggle()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>713</x>
-     <y>640</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
