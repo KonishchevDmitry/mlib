@@ -102,14 +102,20 @@ class Viewer: public QWidget
 
 
 	public slots:
-		/// When user clicks "Next feed item" button (or when he changes
+		/// Called when user clicks "Next feed item" button (or when he changes
 		/// current feed or label).
 		///
 		/// @param source_changed - is this a feed or label changed event.
 		void	go_to_next_item(bool source_changed = false);
 
-		/// When user clicks "Previous feed item" button.
+		/// Called when user clicks "Next unread feed or label" button.
+		void	go_to_next_unread_feed_or_label(void);
+
+		/// Called when user clicks "Previous feed item" button.
 		void	go_to_previous_item(void);
+
+		/// Called when user clicks "Previous unread feed or label" button.
+		void	go_to_previous_unread_feed_or_label(void);
 
 	private slots:
 		/// Called when user selects a feed.

@@ -66,6 +66,11 @@ class Feeds_view: public QTreeView
 		/// Sets selection to none.
 		void	select_no_items(void);
 
+	private:
+		/// Goes to a next or a previous feed or label with unread items if
+		/// such exists.
+		void	go_to_unread(bool next);
+
 
 	signals:
 		/// Emits when user selects a feed.
@@ -77,6 +82,13 @@ class Feeds_view: public QTreeView
 		/// Emits when user selects nothing.
 		void	unselected(void);
 
+
+	public slots:
+		/// Goes to a next feed or label with unread items if such exists.
+		void	go_to_next_unread(void);
+
+		/// Goes to a previous feed or label with unread items if such exists.
+		void	go_to_previous_unread(void);
 
 	private slots:
 		/// View's selection changed.

@@ -168,6 +168,13 @@ void Viewer::go_to_next_item(bool source_changed)
 
 
 
+void Viewer::go_to_next_unread_feed_or_label(void)
+{
+	ui->feeds_view->go_to_next_unread();
+}
+
+
+
 void Viewer::go_to_previous_item(void)
 {
 	try
@@ -181,6 +188,13 @@ void Viewer::go_to_previous_item(void)
 	{
 		MLIB_W(tr("Unable to fetch feed's item"), EE(e));
 	}
+}
+
+
+
+void Viewer::go_to_previous_unread_feed_or_label(void)
+{
+	ui->feeds_view->go_to_previous_unread();
 }
 
 

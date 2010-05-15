@@ -51,6 +51,8 @@
     <property name="title">
      <string>&amp;Feed</string>
     </property>
+    <addaction name="previous_unread_feed_or_label"/>
+    <addaction name="next_unread_feed_or_label"/>
     <addaction name="previous_item"/>
     <addaction name="next_item"/>
    </widget>
@@ -151,6 +153,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="previous_unread_feed_or_label">
+   <property name="text">
+    <string>P&amp;revious unread feed or label</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+K</string>
+   </property>
+  </action>
+  <action name="next_unread_feed_or_label">
+   <property name="text">
+    <string>N&amp;ext unread feed or label</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+J</string>
    </property>
   </action>
  </widget>

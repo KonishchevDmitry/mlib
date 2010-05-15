@@ -73,6 +73,15 @@ class Feeds_model: public QAbstractItemModel
 		virtual QModelIndex		parent(const QModelIndex& index) const;
 		virtual int				rowCount(const QModelIndex& parent) const;
 
+	public:
+		/// Returns a next or a previous feed or label with unread items if
+		/// such exists.
+		///
+		/// @param index - index from which start search.
+		/// @param next - find next or previous feed/label.
+		/// @param include_star_pos - does we need return index if it has unread items.
+		QModelIndex				get_next_unread(const QModelIndex& index, bool next, bool include_star_pos);
+
 	private:
 		// Returns Feed_tree_item by QModelIndex.
 		const Feed_tree_item*	get(const QModelIndex& index) const;

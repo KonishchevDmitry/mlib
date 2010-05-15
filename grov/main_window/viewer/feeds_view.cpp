@@ -53,7 +53,64 @@ void Feeds_view::connect_to_storage(client::Storage* storage)
 	this->selection = this->selectionModel();
 
 	connect(this->selection, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
-		this, SLOT(selection_changed(const QItemSelection&, const QItemSelection&)) );
+		SLOT(selection_changed(const QItemSelection&, const QItemSelection&)) );
+}
+
+
+
+void Feeds_view::go_to_next_unread(void)
+{
+	this->go_to_unread(true);
+}
+
+
+
+void Feeds_view::go_to_previous_unread(void)
+{
+	this->go_to_unread(false);
+}
+
+
+
+void Feeds_view::go_to_unread(bool next)
+{
+	QModelIndex index;
+	bool include_start_pos = false;
+
+	// Getting start position -->
+	{
+		QModelIndexList selected = this->selection->selectedIndexes();
+
+		if(selected.isEmpty())
+		{
+			int rows = this->model->rowCount(index);
+
+			if(rows)
+			{
+				index = this->model->index(next ? 0 : rows - 1, 0, index);
+				include_start_pos = true;
+			}
+		}
+		else
+			index = selected.at(0);
+	}
+	// Getting start position <--
+
+	// There is no feeds at all
+	if(!index.isValid())
+		return;
+
+	// Going to next feed/label with unread items -->
+		index = this->model->get_next_unread(index, next, include_start_pos);
+
+		if(index.isValid())
+		{
+			this->selection->select(index, QItemSelectionModel::SelectCurrent);
+			this->selection->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
+		}
+		else
+			this->select_no_items();
+	// Going to next feed/label with unread items <--
 }
 
 

@@ -141,6 +141,61 @@ const Feed_tree_item* Feeds_model::get(const QModelIndex& index) const
 
 
 
+QModelIndex Feeds_model::get_next_unread(const QModelIndex& index, bool next, bool include_star_pos)
+{
+	MLIB_D("Getting next(%1) feed or label with unread items...", next);
+
+	if(!index.isValid())
+		return QModelIndex();
+
+	const Feed_tree_item* item = this->get(index);
+	const Feed_tree_item* found_item = NULL;
+
+	while(!item->is_root())
+	{
+		const Feed_tree_item* parent = item->get_parent();
+		MLIB_D("Going through '%1' children...", parent->get_name());
+
+		// Searching for an appropriate item on the same level -->
+		{
+			Big_id id = parent->get_child_id(item);
+			Big_id boundary = ( next ? parent->count() : -1 );
+
+			if(!include_star_pos)
+				next ? ++id : --id;
+
+			while(id != boundary)
+			{
+				item = parent->get_child(id);
+				MLIB_D("Child [%1] '%2': %3.", id, item->get_name(), item->unread_items);
+
+				if(item->unread_items)
+				{
+					found_item = item;
+					break;
+				}
+
+				next ? ++id : --id;
+			}
+		}
+		// Searching for an appropriate item on the same level <--
+
+		if(found_item)
+			break;
+
+		// Moving to one level upper
+		item = parent;
+	}
+
+	if(found_item)
+		return createIndex(found_item->get_parent()->get_child_id(found_item), 0,
+			static_cast<void*>(const_cast<Feed_tree_item*>( found_item )) );
+	else
+		return QModelIndex();
+}
+
+
+
 QVariant Feeds_model::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	if(orientation == Qt::Horizontal && role == Qt::DisplayRole)
