@@ -48,6 +48,7 @@ Viewer::Viewer(QWidget *parent)
 
 	ui->item_view->setPage(new client::Web_page(ui->item_view));
 	ui->item_view->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+	ui->item_view->settings()->setFontSize(QWebSettings::MinimumFontSize, config::min_font_size);
 	connect(ui->item_view, SIGNAL(linkClicked(const QUrl&)),
 		SLOT(link_clicked(const QUrl&)) );
 

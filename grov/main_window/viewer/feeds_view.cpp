@@ -39,6 +39,8 @@ Feeds_view::Feeds_view(QWidget *parent)
 	QTreeView(parent),
 	storage(NULL)
 {
+	this->setWordWrap(true);
+	this->setTextElideMode(Qt::ElideMiddle);
 }
 
 
