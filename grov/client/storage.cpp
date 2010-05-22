@@ -214,19 +214,29 @@ void Storage::add_feeds(const QHash<QString, QString>& label_sort_ids, const Gr_
 		}
 		// Adding feeds <--
 
-		#warning
+		// Adding ordering info -->
 		{
 			QSqlQuery insert_ordering_query = this->prepare(
 				"INSERT INTO orderings (parent_id, child_id, order_id) "
 					"values (:parent_id, :child_id, :order_id)"
 			);
 
+			bool root_target = true;
 			const int sort_id_size = 8;
-			QString target_name = "state/com.google/root";
-			QString orderings_string = orderings[target_name];
+			QString target = "state/com.google/root";
+			Big_id target_id = this->root_label_id;
 
-			if(!orderings_string.isEmpty())
+			MLIB_CONST_ITER_TYPE(labels) label_it = labels.constBegin();
+
+			while(true)
 			{
+				if(!root_target)
+				{
+					target = "label/" + label_it.key();
+					target_id = label_it.value();
+				}
+
+				QString orderings_string = orderings[target];
 				if(orderings_string.size() % sort_id_size)
 					M_THROW(tr("Logical error."));
 
@@ -240,11 +250,13 @@ void Storage::add_feeds(const QHash<QString, QString>& label_sort_ids, const Gr_
 
 					if(
 						( feed_id_it = feed_sort_ids.find(sort_id) ) != feed_sort_ids.constEnd() ||
-						( label_name_it = label_sort_ids.find(sort_id) ) != label_sort_ids.constEnd() &&
-						( label_id_it = labels.find(*label_name_it) ) != labels.constEnd()
+						(
+							( label_name_it = label_sort_ids.find(sort_id) ) != label_sort_ids.constEnd() &&
+							( label_id_it = labels.find(*label_name_it) ) != labels.constEnd()
+						)
 					)
 					{
-						insert_ordering_query.bindValue(":parent_id", this->root_label_id);
+						insert_ordering_query.bindValue(":parent_id", target_id);
 
 						if(feed_id_it != feed_sort_ids.constEnd())
 							insert_ordering_query.bindValue(":child_id", *feed_id_it);
@@ -257,12 +269,21 @@ void Storage::add_feeds(const QHash<QString, QString>& label_sort_ids, const Gr_
 						// +1 is because feeds and labels without order id (if
 						// such will) has order_id = 0
 						insert_ordering_query.bindValue(":order_id", i / sort_id_size + 1);
+
 						this->exec(insert_ordering_query);
 					}
 				}
+
+				if(root_target)
+					root_target = false;
+				else
+					++label_it;
+
+				if(label_it == labels.constEnd())
+					break;
 			}
 		}
-		#warning
+		// Adding ordering info <--
 
 		emit feed_tree_changed();
 	}
@@ -797,52 +818,9 @@ Feed_tree Storage::get_feed_tree(void)
 	{
 		Feed_tree feed_tree = Feed_tree::create();
 
-#warning
-/*
-		QSqlQuery lonely_feeds_query = this->exec(
+		QSqlQuery root_query = this->exec(_F(
 			"SELECT "
-				"id, name "
-			"FROM "
-				"feeds "
-			"WHERE "
-				"id NOT IN ("
-					"SELECT "
-						"feed_id "
-					"FROM "
-						"labels_to_feeds "
-					"GROUP BY "
-						"feed_id"
-				")"
-		);
-*/
-		QSqlQuery lonely_feeds_query = this->exec(_F(
-			"SELECT "
-				"id, name "
-			"FROM "
-				"feeds "
-			"LEFT JOIN "
-				"orderings "
-			"ON "
-				"orderings.parent_id = %1 AND feeds.id = orderings.child_id "
-			"WHERE "
-				"feeds.id NOT IN ("
-					"SELECT "
-						"feed_id "
-					"FROM "
-						"labels_to_feeds "
-					"GROUP BY "
-						"feed_id"
-				") "
-			"ORDER BY "
-				// Negative sign and DESC is to place feeds without ordering
-				// to the end.
-				"-orderings.order_id DESC",
-			this->root_label_id
-		));
-
-		QSqlQuery labels_query = this->exec(_F(
-			"SELECT "
-				"id, name "
+				"id, name, 1 AS is_label, 1 AS prio_order, -orderings.order_id AS neg_order_id "
 			"FROM "
 				"labels "
 			"LEFT JOIN "
@@ -850,20 +828,57 @@ Feed_tree Storage::get_feed_tree(void)
 			"ON "
 				// Negative sign is to distinguish labels from feeds.
 				"orderings.parent_id = %1 AND labels.id = -orderings.child_id "
+
+			"UNION "
+
+			"SELECT "
+				"id, name, 0 AS is_label, (id != %2) AS prio_order, -orderings.order_id AS neg_order_id "
+			"FROM "
+				"feeds "
+			"LEFT JOIN "
+				"orderings "
+			"ON "
+				"orderings.parent_id = %1 AND feeds.id = orderings.child_id "
+			"WHERE "
+				"feeds.id NOT IN ( "
+					"SELECT "
+						"feed_id "
+					"FROM "
+						"labels_to_feeds "
+					"GROUP BY "
+						"feed_id "
+				") "
+
 			"ORDER BY "
-				// Negative sign and DESC is to place labels without ordering
-				// to the end.
-				"-orderings.order_id DESC",
-			this->root_label_id
+				// Negative sign and DESC is to place labels and feeds without
+				// ordering to the end.
+				"prio_order, neg_order_id DESC",
+
+			this->root_label_id, this->broadcast_feed_id
 		));
 
-		QSqlQuery labels_feeds_query = this->prepare(
+		QSqlQuery label_feeds_query = this->prepare(
 			"SELECT "
-				"feeds.id, feeds.name "
+				"id, name "
 			"FROM "
-				"feeds, labels_to_feeds "
+				"feeds "
+			"LEFT JOIN "
+				"orderings "
+			"ON "
+				"orderings.parent_id = :sort_id AND feeds.id = orderings.child_id "
 			"WHERE "
-				"label_id = :label_id AND feeds.id = feed_id"
+				"feeds.id IN ( "
+					"SELECT "
+						"id "
+					"FROM "
+						"feeds, labels_to_feeds "
+					"WHERE "
+						"label_id = :label_id AND feeds.id = feed_id "
+				") "
+			"ORDER BY "
+				// Negative sign and DESC is to place feeds without ordering to
+				// the end.
+				"-orderings.order_id DESC"
 		);
 
 		QSqlQuery feeds_items_query = this->prepare(
@@ -884,20 +899,23 @@ Feed_tree Storage::get_feed_tree(void)
 				"broadcast = 1"
 		);
 
-		// Labeled feeds -->
-			while(labels_query.next())
+		while(root_query.next())
+		{
+			// This is a label
+			if(root_query.value(2).toInt())
 			{
-				Big_id label_id = m::qvariant_to_big_id(labels_query.value(0));
-				QString label_name = labels_query.value(1).toString();
+				Big_id label_id = m::qvariant_to_big_id(root_query.value(0));
+				QString label_name = root_query.value(1).toString();
 
 				Feed_tree_item* label = feed_tree.add_label(label_id, label_name);
-				labels_feeds_query.bindValue(":label_id", label_id);
-				this->exec(labels_feeds_query);
+				label_feeds_query.bindValue(":label_id", label_id);
+				label_feeds_query.bindValue(":sort_id", label_id);
+				this->exec(label_feeds_query);
 
-				while(labels_feeds_query.next())
+				while(label_feeds_query.next())
 				{
-					Big_id feed_id = m::qvariant_to_big_id(labels_feeds_query.value(0));
-					QString feed_name = labels_feeds_query.value(1).toString();
+					Big_id feed_id = m::qvariant_to_big_id(label_feeds_query.value(0));
+					QString feed_name = label_feeds_query.value(1).toString();
 
 					feeds_items_query.bindValue(":feed_id", feed_id);
 					this->exec_and_next(feeds_items_query);
@@ -907,14 +925,12 @@ Feed_tree Storage::get_feed_tree(void)
 					label->unread_items += feed->unread_items;
 				}
 			}
-		// Labeled feeds <--
-
-		// Lonely feeds -->
-			while(lonely_feeds_query.next())
+			// This is a feed
+			else
 			{
 				QSqlQuery query;
-				Big_id feed_id = m::qvariant_to_big_id(lonely_feeds_query.value(0));
-				QString feed_name = lonely_feeds_query.value(1).toString();
+				Big_id feed_id = m::qvariant_to_big_id(root_query.value(0));
+				QString feed_name = root_query.value(1).toString();
 
 				if(feed_id == this->broadcast_feed_id)
 					query = broadcast_items_query;
@@ -929,7 +945,7 @@ Feed_tree Storage::get_feed_tree(void)
 				Feed_tree_item* feed = feed_tree.add_feed(feed_id, feed_name);
 				feed->unread_items = m::qvariant_to_big_id(query.value(0));
 			}
-		// Lonely feeds <--
+		}
 
 		MLIB_D("Feed tree gotten.");
 

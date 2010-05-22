@@ -153,8 +153,7 @@ void Get_feed_list::request_finished(QNetworkReply* reply, const QString& error,
 		}
 		catch(m::Exception& e)
 		{
-			#warning
-			M_THROW(PAM( tr("Unable to get Google Reader's subscription list."), EE(e) ));
+			M_THROW(PAM( _F(tr("Unable to get Google Reader's %1 list."), state_list_name()), EE(e) ));
 		}
 
 		// Changing the current state -->

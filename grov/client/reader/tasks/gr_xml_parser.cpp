@@ -18,7 +18,9 @@
 **************************************************************************/
 
 
+#include <QtCore/QRegExp>
 #include <QtCore/QSet>
+
 #include <QtXml/QDomDocument>
 
 #include <grov/common.hpp>
@@ -191,6 +193,9 @@ QHash<QString, QString> Gr_xml_parser::stream_preference_list(const QByteArray& 
 	QHash<QString, QString> orderings;
 	QDomNode target_node;
 
+	QRegExp user_feeds_regex("^user/\\d+/(.+)$");
+	user_feeds_regex.setMinimal(true);
+
 	// Getting target nodes -->
 	{
 		QDomElement root = xml.documentElement();
@@ -255,16 +260,13 @@ QHash<QString, QString> Gr_xml_parser::stream_preference_list(const QByteArray& 
 							prop_node = prop_node.nextSibling();
 						}
 
-						#warning
-						QString target_prefix = "user/14394675015157700687/";
-
-						if(target_name.startsWith(target_prefix) && pref_name == "subscription-ordering")
+						if(pref_name == "subscription-ordering" && user_feeds_regex.indexIn(target_name) >= 0)
 						{
 							if(pref_value.size() % 8)
 								M_THROW(tr("Gotten invalid '%1' preference value for %2: '%3'."),
 									pref_name, target_name, pref_value);
 
-							orderings[target_name.mid(target_prefix.size())] = pref_value;
+							orderings[user_feeds_regex.cap(1)] = pref_value;
 						}
 					}
 
@@ -399,6 +401,9 @@ QHash<QString, QString> Gr_xml_parser::tag_list(const QByteArray& data)
 {
 	MLIB_DV("Parsing the tag list:");
 
+	QRegExp user_labels_regex("^user/\\d+/label/(.+)$");
+	user_labels_regex.setMinimal(true);
+
 	// Throws m::Exception
 	QDomDocument xml = this->get_dom(data);
 
@@ -453,14 +458,11 @@ QHash<QString, QString> Gr_xml_parser::tag_list(const QByteArray& data)
 				prop_node = prop_node.nextSibling();
 			}
 
-			if(name.isEmpty() || sort_id.isEmpty())
-				M_THROW(tr("Gotten invalid tag name -> sort id pair: '%1' -> '%2'."), name, sort_id);
+			if(name.isEmpty())
+				M_THROW(tr("Gotten empty label name."));
 
-			#warning
-			QString target_prefix = "user/14394675015157700687/label/";
-
-			if(name.startsWith(target_prefix))
-				sort_ids[sort_id] = name.mid(target_prefix.size());
+			if(user_labels_regex.indexIn(name) >= 0 && !sort_id.isEmpty())
+				sort_ids[sort_id] = user_labels_regex.cap(1);
 
 			tag_node = tag_node.nextSibling();
 
