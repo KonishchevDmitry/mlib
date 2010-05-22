@@ -46,7 +46,7 @@ namespace grov { namespace client {
 
 
 /// Version of database format that we use.
-const Version CURRENT_DB_FORMAT_VERSION = MLIB_GET_VERSION(0, 1, 0);
+const Version CURRENT_DB_FORMAT_VERSION = MLIB_GET_VERSION(0, 2, 0);
 
 
 Storage::Storage(QObject* parent)
@@ -55,6 +55,7 @@ Storage::Storage(QObject* parent)
 
 	db(new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE"))),
 
+	root_label_id(0),
 	broadcast_feed_id(-1),
 	starred_feed_id(-1),
 
@@ -142,7 +143,7 @@ Storage::~Storage(void)
 
 
 
-void Storage::add_feeds(const Gr_feed_list& feeds)
+void Storage::add_feeds(const QHash<QString, QString>& label_sort_ids, const Gr_feed_list& feeds, const QHash<QString, QString>& orderings)
 {
 	MLIB_D("Adding %1 feeds to DB...", feeds.size());
 
@@ -152,6 +153,7 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 		uniq_feeds[feed.gr_id] = &feed;
 
 	QHash<QString, Big_id> labels;
+	QHash<QString, Big_id> feed_sort_ids;
 
 	try
 	{
@@ -177,6 +179,9 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 					this->exec(insert_feed_query);
 					feed_id = m::qvariant_to_big_id(insert_feed_query.lastInsertId());
 				// Feed <--
+
+				// Sorting
+				feed_sort_ids[feed->sort_id] = feed_id;
 
 				// Labels -->
 					Q_FOREACH(const QString& label, feed->labels)
@@ -208,6 +213,56 @@ void Storage::add_feeds(const Gr_feed_list& feeds)
 			}
 		}
 		// Adding feeds <--
+
+		#warning
+		{
+			QSqlQuery insert_ordering_query = this->prepare(
+				"INSERT INTO orderings (parent_id, child_id, order_id) "
+					"values (:parent_id, :child_id, :order_id)"
+			);
+
+			const int sort_id_size = 8;
+			QString target_name = "state/com.google/root";
+			QString orderings_string = orderings[target_name];
+
+			if(!orderings_string.isEmpty())
+			{
+				if(orderings_string.size() % sort_id_size)
+					M_THROW(tr("Logical error."));
+
+				for(int i = 0; i < orderings_string.size(); i += sort_id_size)
+				{
+					QString sort_id = orderings_string.mid(i, sort_id_size);
+
+					MLIB_CONST_ITER_TYPE(feed_sort_ids) feed_id_it;
+					MLIB_CONST_ITER_TYPE(label_sort_ids) label_name_it;
+					MLIB_CONST_ITER_TYPE(labels) label_id_it;
+
+					if(
+						( feed_id_it = feed_sort_ids.find(sort_id) ) != feed_sort_ids.constEnd() ||
+						( label_name_it = label_sort_ids.find(sort_id) ) != label_sort_ids.constEnd() &&
+						( label_id_it = labels.find(*label_name_it) ) != labels.constEnd()
+					)
+					{
+						insert_ordering_query.bindValue(":parent_id", this->root_label_id);
+
+						if(feed_id_it != feed_sort_ids.constEnd())
+							insert_ordering_query.bindValue(":child_id", *feed_id_it);
+						else
+						{
+							// Negative sign is to distinguish labels from feeds.
+							insert_ordering_query.bindValue(":child_id", -*label_id_it);
+						}
+
+						// +1 is because feeds and labels without order id (if
+						// such will) has order_id = 0
+						insert_ordering_query.bindValue(":order_id", i / sort_id_size + 1);
+						this->exec(insert_ordering_query);
+					}
+				}
+			}
+		}
+		#warning
 
 		emit feed_tree_changed();
 	}
@@ -384,7 +439,8 @@ void Storage::check_db_format_version(void)
 	{
 		M_THROW(tr(
 			"Application's database '%1' has unsupported format version. "
-			"Please delete it by yourself. "
+			"Please delete it by yourself."
+			"\n\n"
 			"If you have an important unsaved offline data in it, "
 			"please flush this offline data by %2."),
 			this->db->databaseName(), GROV_APP_NAME " " + m::get_version_string(version)
@@ -405,6 +461,7 @@ void Storage::clear(void)
 			this->exec("DELETE FROM labels");
 			this->exec("DELETE FROM items");
 			this->exec("DELETE FROM labels_to_feeds");
+			this->exec("DELETE FROM orderings");
 			this->exec("DELETE FROM web_cache");
 			this->init_empty_database();
 			this->get_db_info();
@@ -536,7 +593,7 @@ void Storage::create_db_tables(void)
 			"CREATE TABLE feeds("
 				"id INTEGER PRIMARY KEY,"
 				"name TEXT,"
-				"gr_id TEXT"
+				"gr_id TEXT" // Google Reader's id.
 			")"
 		);
 
@@ -547,6 +604,7 @@ void Storage::create_db_tables(void)
 			")"
 		);
 
+		// Label -> Feeds mapping.
 		this->exec(
 			"CREATE TABLE labels_to_feeds("
 				"label_id INTEGER,"
@@ -554,6 +612,16 @@ void Storage::create_db_tables(void)
 			")"
 		);
 		this->exec("CREATE INDEX lookup_feeds_by_label_id_idx ON labels_to_feeds(label_id)");
+
+		// Label and feed ordering in the Subscriptions tree.
+		this->exec(
+			"CREATE TABLE orderings("
+				"parent_id INTEGER,"
+				"child_id INTEGER,"
+				"order_id INTEGER DEFAULT 100"
+			")"
+		);
+		this->exec("CREATE INDEX orderings_idx ON orderings(parent_id, child_id)");
 
 		this->exec(
 			"CREATE TABLE items("
@@ -564,7 +632,7 @@ void Storage::create_db_tables(void)
 				"orig_read INTEGER,"
 				"starred INTEGER,"
 				"orig_starred INTEGER,"
-				"gr_id TEXT,"
+				"gr_id TEXT," // Google Reader's id.
 				"url TEXT,"
 				"title TEXT,"
 				"summary TEXT"
@@ -729,6 +797,8 @@ Feed_tree Storage::get_feed_tree(void)
 	{
 		Feed_tree feed_tree = Feed_tree::create();
 
+#warning
+/*
 		QSqlQuery lonely_feeds_query = this->exec(
 			"SELECT "
 				"id, name "
@@ -744,9 +814,48 @@ Feed_tree Storage::get_feed_tree(void)
 						"feed_id"
 				")"
 		);
+*/
+		QSqlQuery lonely_feeds_query = this->exec(_F(
+			"SELECT "
+				"id, name "
+			"FROM "
+				"feeds "
+			"LEFT JOIN "
+				"orderings "
+			"ON "
+				"orderings.parent_id = %1 AND feeds.id = orderings.child_id "
+			"WHERE "
+				"feeds.id NOT IN ("
+					"SELECT "
+						"feed_id "
+					"FROM "
+						"labels_to_feeds "
+					"GROUP BY "
+						"feed_id"
+				") "
+			"ORDER BY "
+				// Negative sign and DESC is to place feeds without ordering
+				// to the end.
+				"-orderings.order_id DESC",
+			this->root_label_id
+		));
 
-		QSqlQuery labels_query = this->exec(
-			"SELECT id, name FROM labels" );
+		QSqlQuery labels_query = this->exec(_F(
+			"SELECT "
+				"id, name "
+			"FROM "
+				"labels "
+			"LEFT JOIN "
+				"orderings "
+			"ON "
+				// Negative sign is to distinguish labels from feeds.
+				"orderings.parent_id = %1 AND labels.id = -orderings.child_id "
+			"ORDER BY "
+				// Negative sign and DESC is to place labels without ordering
+				// to the end.
+				"-orderings.order_id DESC",
+			this->root_label_id
+		));
 
 		QSqlQuery labels_feeds_query = this->prepare(
 			"SELECT "

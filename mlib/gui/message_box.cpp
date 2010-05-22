@@ -55,7 +55,7 @@ void Message_box::set_message(const QString& message)
 	// If message does not have '<' or '>' symbols, Qt thinks about it as
 	// of plain text message and shows to user an "&amp;" instead of a '&',
 	// etc.
-	this->setInformativeText("<b></b>" + Qt::escape(message));
+	this->setInformativeText("<b></b>" + Qt::escape(message).replace("\n", "<br />"));
 }
 
 

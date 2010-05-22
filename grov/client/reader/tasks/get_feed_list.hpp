@@ -21,7 +21,10 @@
 #ifndef GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
 #define GROV_HEADER_CLIENT_READER_TASKS_GET_FEED_LIST
 
+#include <QtCore/QHash>
+
 #include <grov/common.hpp>
+#include <grov/common/feed.hpp>
 
 #include <grov/client/storage.hxx>
 #include <grov/client/reader/google_reader_task.hpp>
@@ -37,13 +40,45 @@ class Get_feed_list: public Google_reader_task
 {
 	Q_OBJECT
 
+	private:
+		/// Current state.
+		enum State {
+			/// Now we are getting Google Reader's tag list.
+			STATE_GETTING_TAG_LIST,
+
+			/// Now we are getting Google Reader's stream preference list.
+			STATE_GETTING_STREAM_PREFERENCE_LIST,
+
+			/// Now we are getting Google Reader's subscription list.
+			STATE_GETTING_SUBSCRIPTION_LIST,
+
+			/// Number of states.
+			STATE_NUM
+		};
+
+		/// State list names.
+		static const char* const state_list_names[STATE_NUM];
+
+
 	public:
 		Get_feed_list(Storage* storage, const QString& auth_id, QObject* parent = NULL);
 
 
 	private:
+		/// Current state.
+		State					state;
+
 		/// Our offline data storage.
-		Storage*	storage;
+		Storage*				storage;
+
+		/// Label sort ids.
+		QHash<QString, QString>	label_sort_ids;
+
+		/// Subscriptions and labels orderings.
+		QHash<QString, QString>	orderings;
+
+		/// Feed list.
+		Gr_feed_list			feeds;
 
 
 	public:
@@ -52,6 +87,13 @@ class Get_feed_list: public Google_reader_task
 
 		/// See Network_task::request_finished().
 		virtual void	request_finished(QNetworkReply* reply, const QString& error, const QByteArray& data);
+
+	private:
+		/// Processes all actions needed for the current state.
+		void			process_current_state(void);
+
+		/// Returns current state list name.
+		QString			state_list_name(void);
 
 
 	signals:

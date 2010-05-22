@@ -29,6 +29,7 @@ class QSqlDatabase;
 class QSqlQuery;
 class QTimer;
 
+#include <QtCore/QHash>
 #include <QtCore/QMap>
 #include <QtCore/QSet>
 
@@ -86,6 +87,9 @@ class Storage: public QObject
 		boost::scoped_ptr<QSqlDatabase>	db;
 
 
+		/// Id of the fake "root label".
+		const Big_id				root_label_id;
+
 		/// Id of the fake "broadcast feed".
 		Big_id						broadcast_feed_id;
 
@@ -120,7 +124,7 @@ class Storage: public QObject
 		/// Adds feeds to the storage.
 		///
 		/// @throw m::Exception.
-		void					add_feeds(const Gr_feed_list& feeds);
+		void					add_feeds(const QHash<QString, QString>& label_sort_ids, const Gr_feed_list& feeds, const QHash<QString, QString>& orderings);
 
 		/// Adds items to the storage.
 		///

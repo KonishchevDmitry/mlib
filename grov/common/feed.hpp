@@ -43,6 +43,9 @@ class Gr_feed
 
 		/// Feed's labels.
 		QSet<QString>	labels;
+
+		/// Feed's Google Reader sort id.
+		QString 		sort_id;
 };
 
 

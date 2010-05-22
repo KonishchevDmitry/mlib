@@ -23,6 +23,8 @@
 
 class QDomDocument;
 
+#include <QtCore/QHash>
+
 #include <grov/common.hpp>
 #include <grov/common/feed.hxx>
 #include <grov/common/feed_item.hxx>
@@ -37,19 +39,33 @@ class Gr_xml_parser: public QObject
 	Q_OBJECT
 
 	public:
-		/// Parses a reading list.
+		/// Parses the reading list.
 		///
 		/// @param continuation_code - if not NULL, writes by pointer Google
 		/// Reader continuation code or empty string, if there is no continuation
 		/// code in \a data.
 		///
 		/// @throw m::Exception.
-		Gr_feed_item_list	reading_list(const QByteArray& data, QString* continuation_code);
+		Gr_feed_item_list		reading_list(const QByteArray& data, QString* continuation_code);
 
-		/// Parses a subscription list.
+		/// Parses the stream preference list.
+		///
+		/// @return labels and states mapped to its subscription ordering.
 		///
 		/// @throw m::Exception.
-		Gr_feed_list		subscription_list(const QByteArray& data);
+		QHash<QString, QString>	stream_preference_list(const QByteArray& data);
+
+		/// Parses the subscription list.
+		///
+		/// @throw m::Exception.
+		Gr_feed_list			subscription_list(const QByteArray& data);
+
+		/// Parses the tag list.
+		///
+		/// @return sort ids of all tags.
+		///
+		/// @throw m::Exception.
+		QHash<QString, QString>	tag_list(const QByteArray& data);
 
 
 	private:

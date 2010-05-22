@@ -57,7 +57,7 @@ QDomDocument Gr_xml_parser::get_dom(const QByteArray& data)
 
 Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* continuation_code)
 {
-	MLIB_DV("Parsing reading list:");
+	MLIB_DV("Parsing the reading list:");
 
 	Gr_feed_item_list items;
 
@@ -181,9 +181,113 @@ Gr_feed_item_list Gr_xml_parser::reading_list(const QByteArray& data, QString* c
 
 
 
+QHash<QString, QString> Gr_xml_parser::stream_preference_list(const QByteArray& data)
+{
+	MLIB_DV("Parsing the stream preference list:");
+
+	// Throws m::Exception
+	QDomDocument xml = this->get_dom(data);
+
+	QHash<QString, QString> orderings;
+	QDomNode target_node;
+
+	// Getting target nodes -->
+	{
+		QDomElement root = xml.documentElement();
+		if(root.tagName() != "object")
+			M_THROW(tr("Invalid XML root element: '%1'."), root.tagName());
+
+		QDomNodeList lists = root.elementsByTagName("object");
+		for(int id = 0; id < lists.size(); id++)
+		{
+			QDomNode list = lists.item(id);
+
+			if(list.toElement().attribute("name") == "streamprefs")
+			{
+				target_node = list.firstChild();
+				break;
+			}
+		}
+	}
+	// Getting target nodes <--
+
+	// Parsing preference nodes -->
+		while(!target_node.isNull())
+		{
+			QDomElement target = target_node.toElement();
+
+			if(target.tagName() == "list")
+			{
+				QString target_name = target.attribute("name");
+				MLIB_DV("Target: '%1'.", target_name);
+
+				QDomNode preference_node = target_node.firstChild();
+
+				while(!preference_node.isNull())
+				{
+					QDomElement preference = preference_node.toElement();
+
+					if(preference.tagName() == "object")
+					{
+						QString pref_name;
+						QString pref_value;
+
+						QDomNode prop_node = preference_node.firstChild();
+
+						while(!prop_node.isNull())
+						{
+							QDomElement prop = prop_node.toElement();
+
+							if(prop.tagName() == "string")
+							{
+								if(prop.attribute("name") == "id")
+								{
+									pref_name = prop.text();
+									MLIB_DV("Name: '%1'.", pref_name);
+								}
+								else if(prop.attribute("name") == "value")
+								{
+									pref_value = prop.text();
+									MLIB_DV("Value: '%1'.", pref_value);
+								}
+							}
+
+							prop_node = prop_node.nextSibling();
+						}
+
+						#warning
+						QString target_prefix = "user/14394675015157700687/";
+
+						if(target_name.startsWith(target_prefix) && pref_name == "subscription-ordering")
+						{
+							if(pref_value.size() % 8)
+								M_THROW(tr("Gotten invalid '%1' preference value for %2: '%3'."),
+									pref_name, target_name, pref_value);
+
+							orderings[target_name.mid(target_prefix.size())] = pref_value;
+						}
+					}
+
+					preference_node = preference_node.nextSibling();
+				}
+			}
+
+			target_node = target_node.nextSibling();
+
+			MLIB_DV("");
+		}
+	// Parsing preference nodes <--
+
+	MLIB_DV("The stream preference list parsed.");
+
+	return orderings;
+}
+
+
+
 Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 {
-	MLIB_DV("Parsing subscriptions list:");
+	MLIB_DV("Parsing the subscriptions list:");
 
 	// Throws m::Exception
 	QDomDocument xml = this->get_dom(data);
@@ -234,6 +338,11 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 						feed.name = prop.text();
 						MLIB_DV("Title: '%1'.", feed.name);
 					}
+					else if(prop.attribute("name") == "sortid")
+					{
+						feed.sort_id = prop.text();
+						MLIB_DV("Sort id: '%1'.", feed.sort_id);
+					}
 				}
 				else if(prop.tagName() == "list" && prop.attribute("name") == "categories")
 				{
@@ -282,6 +391,86 @@ Gr_feed_list Gr_xml_parser::subscription_list(const QByteArray& data)
 	MLIB_DV("Subscriptions list parsed.");
 
 	return feeds;
+}
+
+
+
+QHash<QString, QString> Gr_xml_parser::tag_list(const QByteArray& data)
+{
+	MLIB_DV("Parsing the tag list:");
+
+	// Throws m::Exception
+	QDomDocument xml = this->get_dom(data);
+
+	QHash<QString, QString> sort_ids;
+	QDomNode tag_node;
+
+	// Getting tag nodes -->
+	{
+		QDomElement root = xml.documentElement();
+		if(root.tagName() != "object")
+			M_THROW(tr("Invalid XML root element: '%1'."), root.tagName());
+
+		QDomNodeList lists = root.elementsByTagName("list");
+		for(int id = 0; id < lists.size(); id++)
+		{
+			QDomNode list = lists.item(id);
+
+			if(list.toElement().attribute("name") == "tags")
+			{
+				tag_node = list.firstChild();
+				break;
+			}
+		}
+	}
+	// Getting tag nodes <--
+
+	// Parsing tag nodes -->
+		while(!tag_node.isNull())
+		{
+			QString name;
+			QString sort_id;
+			QDomNode prop_node = tag_node.firstChild();
+
+			while(!prop_node.isNull())
+			{
+				QDomElement prop = prop_node.toElement();
+
+				if(prop.tagName() == "string")
+				{
+					if(prop.attribute("name") == "id")
+					{
+						name = prop.text();
+						MLIB_DV("Name: '%1'.", name);
+					}
+					else if(prop.attribute("name") == "sortid")
+					{
+						sort_id = prop.text();
+						MLIB_DV("Sort id: '%1'.", sort_id);
+					}
+				}
+
+				prop_node = prop_node.nextSibling();
+			}
+
+			if(name.isEmpty() || sort_id.isEmpty())
+				M_THROW(tr("Gotten invalid tag name -> sort id pair: '%1' -> '%2'."), name, sort_id);
+
+			#warning
+			QString target_prefix = "user/14394675015157700687/label/";
+
+			if(name.startsWith(target_prefix))
+				sort_ids[sort_id] = name.mid(target_prefix.size());
+
+			tag_node = tag_node.nextSibling();
+
+			MLIB_DV("");
+		}
+	// Parsing tag nodes <--
+
+	MLIB_DV("The tag list parsed.");
+
+	return sort_ids;
 }
 
 
