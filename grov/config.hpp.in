@@ -77,6 +77,12 @@ namespace grov { namespace config {
 	/// Minimum font size when displaying items.
 	const int min_font_size = 15;
 
+	/// Default font size when displaying items.
+	const int default_font_size = min_font_size;
+
+	/// Default fixed font size when displaying items.
+	const int default_fixed_font_size = default_font_size;
+
 }}
 
 #endif

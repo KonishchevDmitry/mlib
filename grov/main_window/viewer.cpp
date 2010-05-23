@@ -48,11 +48,16 @@ Viewer::Viewer(QWidget *parent)
 
 	ui->item_view->setPage(new client::Web_page(ui->item_view));
 	ui->item_view->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
-	#warning
-//	ui->item_view->settings()->setFontSize(QWebSettings::MinimumFontSize, config::min_font_size);
-	ui->item_view->settings()->setFontSize(QWebSettings::MinimumFontSize, 14);
-	ui->item_view->settings()->setFontSize(QWebSettings::DefaultFontSize, 14);
-	ui->item_view->settings()->setFontSize(QWebSettings::DefaultFixedFontSize, 14);
+
+	if(config::min_font_size > 0)
+		ui->item_view->settings()->setFontSize(QWebSettings::MinimumFontSize, config::min_font_size);
+
+	if(config::default_font_size > 0)
+		ui->item_view->settings()->setFontSize(QWebSettings::DefaultFontSize, config::default_font_size);
+
+	if(config::default_fixed_font_size > 0)
+		ui->item_view->settings()->setFontSize(QWebSettings::DefaultFixedFontSize, config::default_fixed_font_size);
+
 	connect(ui->item_view, SIGNAL(linkClicked(const QUrl&)),
 		SLOT(link_clicked(const QUrl&)) );
 
