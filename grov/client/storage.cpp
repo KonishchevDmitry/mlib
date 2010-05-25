@@ -444,32 +444,78 @@ void Storage::cancel_editing(void)
 
 void Storage::check_db_format_version(void)
 {
-	Version version;
+	Version version = 0;
 
-	try
+	while(version != CURRENT_DB_FORMAT_VERSION)
 	{
-		QSqlQuery query = this->exec_and_next("SELECT value FROM config WHERE name = 'version'");
-		version = m::qvariant_to_version(query.value(0));
-	}
-	catch(m::Exception& e)
-	{
-		M_THROW(PAM( tr("Unable to get the database format version:"), EE(e) ));
-	}
+		try
+		{
+			QSqlQuery query = this->exec_and_next("SELECT value FROM config WHERE name = 'version'");
 
-	if(!version)
-		M_THROW(tr("Application's database '%1' has an invalid format version."),
-			this->db->databaseName() );
+			// An infinite loop
+			if(version && version == query.value(0))
+				M_THROW(tr("Logical error."));
 
-	if(version != CURRENT_DB_FORMAT_VERSION)
-	{
-		M_THROW(tr(
-			"Application's database '%1' has unsupported format version. "
-			"Please delete it by yourself."
-			"\n\n"
-			"If you have an important unsaved offline data in it, "
-			"please flush this offline data by %2."),
-			this->db->databaseName(), GROV_APP_NAME " " + m::get_version_string(version)
-		);
+			version = m::qvariant_to_version(query.value(0));
+		}
+		catch(m::Exception& e)
+		{
+			M_THROW(PAM( tr("Unable to get the database format version:"), EE(e) ));
+		}
+
+		if(!version)
+			M_THROW(tr("Application's database '%1' has an invalid format version."),
+				this->db->databaseName() );
+
+		try
+		{
+			switch(version)
+			{
+				case CURRENT_DB_FORMAT_VERSION:
+					// All is OK.
+					return;
+					break;
+
+				// Upgrading the DB -->
+					case MLIB_GET_VERSION(0, 1, 0):
+					{
+						m::db::Scoped_transaction transaction(*this->db);
+							this->exec("INSERT INTO feeds (name) VALUES ('shared')");
+
+							this->exec(
+								"CREATE TABLE orderings("
+									"parent_id INTEGER,"
+									"child_id INTEGER,"
+									"order_id INTEGER"
+								")"
+							);
+							this->exec("CREATE INDEX orderings_idx ON orderings(parent_id, child_id)");
+
+							this->exec("ALTER TABLE items ADD COLUMN shared INTEGER");
+							this->exec("UPDATE items SET shared = 0");
+
+							this->exec(_F("UPDATE config SET value = %1 WHERE name = 'version'", MLIB_GET_VERSION(0, 2, 0)));
+						transaction.commit();
+					}
+					break;
+				// Upgrading the DB <--
+
+				default:
+					M_THROW(tr(
+						"Application's database '%1' has unsupported format version. "
+						"Please delete it by yourself."
+						"\n\n"
+						"If you have an important unsaved offline data in it, "
+						"please flush this offline data by %2."),
+						this->db->databaseName(), GROV_APP_NAME " " + m::get_version_string(version)
+					);
+					break;
+			}
+		}
+		catch(m::Exception& e)
+		{
+			M_THROW(PAM( tr("Error while upgrading the database to a new version."), EE(e) ));
+		}
 	}
 }
 
@@ -645,7 +691,7 @@ void Storage::create_db_tables(void)
 			"CREATE TABLE orderings("
 				"parent_id INTEGER,"
 				"child_id INTEGER,"
-				"order_id INTEGER DEFAULT 100"
+				"order_id INTEGER"
 			")"
 		);
 		this->exec("CREATE INDEX orderings_idx ON orderings(parent_id, child_id)");

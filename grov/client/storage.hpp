@@ -46,39 +46,6 @@ class QTimer;
 namespace grov { namespace client {
 
 
-#warning
-#if 0
-	QSqlQuery query = this->prepare("INSERT INTO feeds (name) VALUES (:name)");
-	query.bindValue(":name", "shared");
-	this->exec(query);
-
-		// Label and feed ordering in the Subscriptions tree.
-		this->exec(
-			"CREATE TABLE orderings("
-				"parent_id INTEGER,"
-				"child_id INTEGER,"
-				"order_id INTEGER DEFAULT 100"
-			")"
-		);
-		this->exec("CREATE INDEX orderings_idx ON orderings(parent_id, child_id)");
-
-		this->exec(
-			"CREATE TABLE items("
-				"id INTEGER PRIMARY KEY,"
-				"feed_id INTEGER,"
-				"broadcast INTEGER,"
-				"read INTEGER,"
-				"orig_read INTEGER,"
-				"starred INTEGER,"
-				"orig_starred INTEGER,"
-				"shared INTEGER,"
-				"gr_id TEXT," // Google Reader's id.
-				"url TEXT,"
-				"title TEXT,"
-				"summary TEXT"
-			")"
-		);
-#endif
 /// Represents a storage which stores all feeds' items for offline viewing.
 class Storage: public QObject
 {
