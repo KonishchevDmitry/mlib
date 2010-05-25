@@ -46,6 +46,39 @@ class QTimer;
 namespace grov { namespace client {
 
 
+#warning
+#if 0
+	QSqlQuery query = this->prepare("INSERT INTO feeds (name) VALUES (:name)");
+	query.bindValue(":name", "shared");
+	this->exec(query);
+
+		// Label and feed ordering in the Subscriptions tree.
+		this->exec(
+			"CREATE TABLE orderings("
+				"parent_id INTEGER,"
+				"child_id INTEGER,"
+				"order_id INTEGER DEFAULT 100"
+			")"
+		);
+		this->exec("CREATE INDEX orderings_idx ON orderings(parent_id, child_id)");
+
+		this->exec(
+			"CREATE TABLE items("
+				"id INTEGER PRIMARY KEY,"
+				"feed_id INTEGER,"
+				"broadcast INTEGER,"
+				"read INTEGER,"
+				"orig_read INTEGER,"
+				"starred INTEGER,"
+				"orig_starred INTEGER,"
+				"shared INTEGER,"
+				"gr_id TEXT," // Google Reader's id.
+				"url TEXT,"
+				"title TEXT,"
+				"summary TEXT"
+			")"
+		);
+#endif
 /// Represents a storage which stores all feeds' items for offline viewing.
 class Storage: public QObject
 {
@@ -96,6 +129,9 @@ class Storage: public QObject
 		/// Id of the fake "starred feed".
 		Big_id						starred_feed_id;
 
+		/// Id of the fake "shared feed".
+		Big_id						shared_feed_id;
+
 
 		// Current source.
 		Current_source				current_source;
@@ -111,6 +147,9 @@ class Storage: public QObject
 
 		/// Items, that have been starred/unstarred in the current query.
 		QMap<Big_id, bool>			current_query_star_cache;
+
+		/// Items, that have been shared/unshared in the current query.
+		QMap<Big_id, bool>			current_query_share_cache;
 
 
 		/// Cache of items' ids that needs to be marked as read.
@@ -197,6 +236,11 @@ class Storage: public QObject
 
 		/// Sets current source to none.
 		void					set_current_source_to_none(void);
+
+		/// Shares or unshares an item.
+		///
+		/// @throw m::Exception.
+		void					share(Big_id id, bool is);
 
 		/// Adds or removes star from item.
 		///

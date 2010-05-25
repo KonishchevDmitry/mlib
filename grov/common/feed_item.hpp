@@ -58,11 +58,14 @@ class Changed_feed_item
 	public:
 		/// Item property that had been changed.
 		enum Changed_property {
-			/// Read status of item.
+			/// Read status of an item.
 			PROPERTY_READ,
 
-			/// Starred status of item.
-			PROPERTY_STARRED
+			/// Starred status of an item.
+			PROPERTY_STARRED,
+
+			/// Shared status of an item.
+			PROPERTY_SHARED
 		};
 
 
@@ -118,7 +121,7 @@ class Db_feed_item: public Feed_item
 		Db_feed_item(
 			Big_id id, Big_id feed_id, const QString& url,
 			const QString& title, const QString& summary,
-			bool broadcast, bool read, bool starred
+			bool broadcast, bool read, bool starred, bool shared
 		);
 
 
@@ -137,6 +140,9 @@ class Db_feed_item: public Feed_item
 
 		/// Is item starred.
 		bool	starred;
+
+		/// Is item shared.
+		bool	shared;
 
 
 	public:

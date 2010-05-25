@@ -61,8 +61,11 @@ class Viewer: public QWidget
 		/// Action for going to item's page.
 		QAction*			go_to_page_action;
 
-		/// Action for starring item.
+		/// Action for starring an item.
 		QAction*			star_action;
+
+		/// Action for sharing an item.
+		QAction*			share_action;
 
 
 		/// All offline data.
@@ -77,7 +80,7 @@ class Viewer: public QWidget
 	public:
 		/// Connects viewer to a parent widget and the storage, so it will
 		/// display its data.
-		void	connect_to_parent(client::Storage* storage, QAction* go_to_page_action, QAction* star_action);
+		void	connect_to_parent(client::Storage* storage, QAction* go_to_page_action, QAction* star_action, QAction* share_action);
 
 		/// Sets selection in feed tree to none.
 		void	select_no_feed(void);
@@ -91,6 +94,9 @@ class Viewer: public QWidget
 
 		/// Displays "There is no more unread items" message instead of item.
 		void	set_no_more_items(void);
+
+		/// Makes widgets that displays share flag display \a shared flag.
+		void	set_share_flag_to(bool shared);
 
 		/// Makes widgets that displays star flag display \a starred flag.
 		void	set_star_flag_to(bool starred);
@@ -133,8 +139,11 @@ class Viewer: public QWidget
 		/// Called when user clicks a URL.
 		void	link_clicked(const QUrl& qurl);
 
+		/// Called when user shares/unshares an item.
+		void	on_share_toggled(bool state);
+
 		/// Called when user stars/unstars an item.
-		void	on_star_check_box_toggled(bool state);
+		void	on_star_toggled(bool state);
 
 		/// Sets items view widget to "Please select a label or a feed" state.
 		void	set_no_selected_feed(void);

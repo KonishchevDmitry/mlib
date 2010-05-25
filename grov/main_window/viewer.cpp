@@ -42,6 +42,7 @@ Viewer::Viewer(QWidget *parent)
     ui(new Ui::Viewer),
 	go_to_page_action(NULL),
 	star_action(NULL),
+	share_action(NULL),
 	storage(NULL)
 {
 	ui->setupUi(this);
@@ -76,7 +77,7 @@ Viewer::~Viewer(void)
 
 
 
-void Viewer::connect_to_parent(client::Storage* storage, QAction* go_to_page_action, QAction* star_action)
+void Viewer::connect_to_parent(client::Storage* storage, QAction* go_to_page_action, QAction* star_action, QAction* share_action)
 {
 	MLIB_A(!this->storage);
 	this->storage = storage;
@@ -105,13 +106,21 @@ void Viewer::connect_to_parent(client::Storage* storage, QAction* go_to_page_act
 				SLOT(go_to_item_page()) );
 		// Go to item's page <--
 
-		// Star item -->
+		// Star an item -->
 			this->star_action = star_action;
-			this->star_action->setChecked(ui->star_check_box->isChecked());
+			this->star_action->setChecked(ui->star->isChecked());
 
 			connect(this->star_action, SIGNAL(activated()),
-				ui->star_check_box, SLOT(toggle()) );
-		// Star item <--
+				ui->star, SLOT(toggle()) );
+		// Star an item <--
+
+		// Share an item -->
+			this->share_action = share_action;
+			this->share_action->setChecked(ui->share->isChecked());
+
+			connect(this->share_action, SIGNAL(activated()),
+				ui->share, SLOT(toggle()) );
+		// Share an item <--
 	// Item's actions <--
 
 	// To generate all signals that we need to fully synchronize with parent
@@ -216,6 +225,9 @@ void Viewer::item_selected_cb(bool valid)
 
 	if(this->star_action)
 		this->star_action->setEnabled(valid);
+
+	if(this->share_action)
+		this->share_action->setEnabled(valid);
 }
 
 
@@ -258,7 +270,27 @@ void Viewer::link_clicked(const QUrl& qurl)
 
 
 
-void Viewer::on_star_check_box_toggled(bool state)
+void Viewer::on_share_toggled(bool state)
+{
+	if(this->share_action)
+		this->share_action->setChecked(state);
+
+	try
+	{
+		this->storage->share(this->current_item.id, state);
+	}
+	catch(m::Exception& e)
+	{
+		// Giving back the old value
+		this->set_share_flag_to(!state);
+
+		MLIB_W(tr("Unable to share feed's item"), EE(e));
+	}
+}
+
+
+
+void Viewer::on_star_toggled(bool state)
 {
 	if(this->star_action)
 		this->star_action->setChecked(state);
@@ -310,6 +342,7 @@ void Viewer::set_current_item(const Db_feed_item& item)
 		));
 
 		this->set_star_flag_to(item.starred);
+		this->set_share_flag_to(item.shared);
 	}
 
 	emit this->item_selected(valid);
@@ -347,11 +380,23 @@ void Viewer::set_no_selected_feed(void)
 
 
 
+void Viewer::set_share_flag_to(bool shared)
+{
+	ui->share->blockSignals(true);
+	ui->share->setChecked(shared);
+	ui->share->blockSignals(false);
+
+	if(this->share_action)
+		this->share_action->setChecked(shared);
+}
+
+
+
 void Viewer::set_star_flag_to(bool starred)
 {
-	ui->star_check_box->blockSignals(true);
-	ui->star_check_box->setChecked(starred);
-	ui->star_check_box->blockSignals(false);
+	ui->star->blockSignals(true);
+	ui->star->setChecked(starred);
+	ui->star->blockSignals(false);
 
 	if(this->star_action)
 		this->star_action->setChecked(starred);

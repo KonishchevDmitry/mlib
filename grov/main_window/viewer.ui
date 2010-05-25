@@ -87,12 +87,22 @@
            </spacer>
           </item>
           <item>
-           <widget class="QCheckBox" name="star_check_box">
+           <widget class="QCheckBox" name="star">
             <property name="toolTip">
              <string>Star this item &lt;Ctrl-S&gt;</string>
             </property>
             <property name="text">
              <string>Star</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="share">
+            <property name="toolTip">
+             <string>Share this item &lt;Ctrl-B&gt;</string>
+            </property>
+            <property name="text">
+             <string>Share</string>
             </property>
            </widget>
           </item>

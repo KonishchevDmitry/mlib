@@ -18,6 +18,8 @@
 **************************************************************************/
 
 
+#include <boost/foreach.hpp>
+
 #include <QtCore/QDir>
 #include <QtCore/QHash>
 #include <QtCore/QSet>
@@ -58,6 +60,7 @@ Storage::Storage(QObject* parent)
 	root_label_id(0),
 	broadcast_feed_id(-1),
 	starred_feed_id(-1),
+	shared_feed_id(-1),
 
 	current_source(SOURCE_NONE),
 
@@ -319,10 +322,10 @@ void Storage::add_items(const Gr_feed_item_list& items)
 		{
 			QSqlQuery insert_item_query = this->prepare(
 				"INSERT INTO items ("
-					"feed_id, broadcast, read, orig_read, starred, orig_starred,"
+					"feed_id, broadcast, read, orig_read, starred, orig_starred, shared,"
 					"gr_id, url, title, summary"
 				") values ("
-					":feed_id, :broadcast, :read, :orig_read, :starred, :orig_starred,"
+					":feed_id, :broadcast, :read, :orig_read, :starred, :orig_starred, :shared,"
 					":gr_id, :url, :title, :summary"
 				")"
 			);
@@ -331,7 +334,7 @@ void Storage::add_items(const Gr_feed_item_list& items)
 			{
 				Big_id feed_id = feeds.value(item.feed_gr_id, -1);
 
-				if(feed_id < 0 && !item.starred && !item.broadcast)
+				if(feed_id < 0 && !item.broadcast && !item.starred)
 				{
 					// It may be due an error or when user setted an ignore
 					// settings for this feed.
@@ -346,6 +349,7 @@ void Storage::add_items(const Gr_feed_item_list& items)
 				insert_item_query.bindValue(":orig_read", 0);
 				insert_item_query.bindValue(":starred", int(item.starred));
 				insert_item_query.bindValue(":orig_starred", int(item.starred));
+				insert_item_query.bindValue(":shared", 0);
 				insert_item_query.bindValue(":gr_id", item.gr_id);
 				insert_item_query.bindValue(":url", item.url);
 				insert_item_query.bindValue(":title", item.title);
@@ -545,6 +549,8 @@ void Storage::create_current_query(void)
 				where = "broadcast = 1 AND read = 0";
 			else if(this->current_source_id == this->starred_feed_id)
 				where = "starred = 1";
+			else if(this->current_source_id == this->shared_feed_id)
+				where = "shared = 1";
 			else
 			{
 				where = "feed_id = :source_id AND read = 0";
@@ -575,7 +581,7 @@ void Storage::create_current_query(void)
 	// Throws m::Exception
 	QSqlQuery query = this->prepare(_F(
 		"SELECT "
-			"id, feed_id, url, title, summary, broadcast, read, starred "
+			"id, feed_id, url, title, summary, broadcast, read, starred, shared "
 		"FROM "
 			"items "
 		"%1 "
@@ -653,6 +659,7 @@ void Storage::create_db_tables(void)
 				"orig_read INTEGER,"
 				"starred INTEGER,"
 				"orig_starred INTEGER,"
+				"shared INTEGER,"
 				"gr_id TEXT," // Google Reader's id.
 				"url TEXT,"
 				"title TEXT,"
@@ -773,6 +780,7 @@ void Storage::get_db_info(void)
 {
 	Big_id broadcast_feed_id;
 	Big_id starred_feed_id;
+	Big_id shared_feed_id;
 
 	try
 	{
@@ -795,6 +803,10 @@ void Storage::get_db_info(void)
 		query.bindValue(":name", "starred");
 		this->exec_and_next(query);
 		starred_feed_id = m::qvariant_to_big_id(query.value(0));
+
+		query.bindValue(":name", "shared");
+		this->exec_and_next(query);
+		shared_feed_id = m::qvariant_to_big_id(query.value(0));
 	}
 	catch(m::Exception& e)
 	{
@@ -803,6 +815,7 @@ void Storage::get_db_info(void)
 
 	this->broadcast_feed_id = broadcast_feed_id;
 	this->starred_feed_id = starred_feed_id;
+	this->shared_feed_id = shared_feed_id;
 }
 
 
@@ -995,7 +1008,8 @@ Db_feed_item Storage::get_item(bool next)
 				query->value(4).toString(),
 				query->value(5).toBool(),
 				this->current_query_read_cache.contains(id) ? true : query->value(6).toBool(),
-				this->current_query_star_cache.value(id, query->value(7).toBool())
+				this->current_query_star_cache.value(id, query->value(7).toBool()),
+				this->current_query_share_cache.value(id, query->value(8).toBool())
 			);
 
 			MLIB_D("Item gotten.");
@@ -1077,6 +1091,17 @@ Changed_feed_item_list Storage::get_user_changes(void)
 				query.value(2).toBool()
 			);
 		}
+
+		query = this->exec("SELECT id, gr_id FROM items WHERE shared = 1");
+		while(query.next())
+		{
+			items << Changed_feed_item(
+				m::qvariant_to_big_id(query.value(0)),
+				query.value(1).toString(),
+				Changed_feed_item::PROPERTY_SHARED,
+				true
+			);
+		}
 	}
 	catch(m::Exception& e)
 	{
@@ -1132,15 +1157,20 @@ Web_cache_entry Storage::get_web_cache_entry(const QString& url)
 
 void Storage::init_empty_database(void)
 {
-	// "broadcast" and "starred" is a special feeds that must always exists.
-
 	QSqlQuery query = this->prepare("INSERT INTO feeds (name) VALUES (:name)");
 
-	query.bindValue(":name", "broadcast");
-	this->exec(query);
+	// This is special feeds that must always exists.
+	const char* const feeds[] = {
+		"broadcast",
+		"starred",
+		"shared"
+	};
 
-	query.bindValue(":name", "starred");
-	this->exec(query);
+	BOOST_FOREACH(const char* feed, feeds)
+	{
+		query.bindValue(":name", feed);
+		this->exec(query);
+	}
 }
 
 
@@ -1237,7 +1267,7 @@ void Storage::mark_changes_as_flushed(Changed_feed_item_list::const_iterator beg
 		while(begin != end)
 		{
 			const Changed_feed_item& item = *begin;
-			QSqlQuery* query;
+			QSqlQuery* query = NULL;
 
 			switch(item.property)
 			{
@@ -1249,14 +1279,20 @@ void Storage::mark_changes_as_flushed(Changed_feed_item_list::const_iterator beg
 					query = &star_query;
 					break;
 
+				case Changed_feed_item::PROPERTY_SHARED:
+					break;
+
 				default:
 					MLIB_LE();
 					break;
 			}
 
-			query->bindValue(":id", item.id);
-			query->bindValue(":value", item.value);
-			this->exec(*query);
+			if(query)
+			{
+				query->bindValue(":id", item.id);
+				query->bindValue(":value", item.value);
+				this->exec(*query);
+			}
 
 			++begin;
 		}
@@ -1300,6 +1336,7 @@ void Storage::reset(void)
 	this->current_query.reset();
 	this->current_query_read_cache.clear();
 	this->current_query_star_cache.clear();
+	this->current_query_share_cache.clear();
 }
 
 
@@ -1351,6 +1388,31 @@ void Storage::set_mode(const QString& mode)
 		"WHERE "
 			"name = 'mode'", mode
 	));
+}
+
+
+void Storage::share(Big_id id, bool is)
+{
+	MLIB_D("Sharing(%1) item [%2]...", is, id);
+
+	try
+	{
+		this->exec(_F(
+			"UPDATE "
+				"items "
+			"SET "
+				"shared = %1 "
+			"WHERE "
+				"id = %2",
+			is, id
+		));
+	}
+	catch(m::Exception& e)
+	{
+		M_THROW(PAM( tr("Database error:"), EE(e) ));
+	}
+
+	this->current_query_share_cache[id] = is;
 }
 
 

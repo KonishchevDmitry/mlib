@@ -73,7 +73,7 @@ Db_feed_item::Db_feed_item(void)
 Db_feed_item::Db_feed_item(
 	Big_id id, Big_id feed_id, const QString& url,
 	const QString& title, const QString& summary,
-	bool broadcast, bool read, bool starred
+	bool broadcast, bool read, bool starred, bool shared
 )
 :
 	Feed_item(url, title, summary),
@@ -81,7 +81,8 @@ Db_feed_item::Db_feed_item(
 	feed_id(feed_id),
 	broadcast(broadcast),
 	read(read),
-	starred(starred)
+	starred(starred),
+	shared(shared)
 {
 }
 

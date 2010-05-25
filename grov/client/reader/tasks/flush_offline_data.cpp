@@ -83,7 +83,7 @@ void Flush_offline_data::flush(void)
 		}
 	// If we flushed all data <--
 
-	// Flushing next item -->
+	// Flushing next items -->
 	{
 		QString items_string;
 		Changed_feed_item::Changed_property change;
@@ -152,6 +152,17 @@ void Flush_offline_data::flush(void)
 					);
 					break;
 
+				case Changed_feed_item::PROPERTY_SHARED:
+				#warning
+					url += "edit-tag";
+					post_data = _F(
+						"%1=%2&T=%3",
+						changed_value ? 'a' : 'r',
+						QUrl::toPercentEncoding("user/-/state/com.google/broadcast"),
+						QUrl::toPercentEncoding(this->token)
+					);
+					break;
+
 				default:
 				#if GROV_DEVELOP_MODE
 					MLIB_LE();
@@ -163,7 +174,7 @@ void Flush_offline_data::flush(void)
 		url += "?client=" + QUrl::toPercentEncoding(get_user_agent());
 		this->post(url, post_data + items_string);
 	}
-	// Flushing next item <--
+	// Flushing next items <--
 #endif
 }
 

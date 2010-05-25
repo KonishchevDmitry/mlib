@@ -68,6 +68,7 @@
     </property>
     <addaction name="go_to_item_page"/>
     <addaction name="star"/>
+    <addaction name="share"/>
    </widget>
    <addaction name="file_menu"/>
    <addaction name="feed_menu"/>
@@ -169,6 +170,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+J</string>
+   </property>
+  </action>
+  <action name="share">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>S&amp;hare</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
    </property>
   </action>
  </widget>

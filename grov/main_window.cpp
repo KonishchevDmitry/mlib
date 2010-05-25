@@ -50,7 +50,7 @@ Main_window::Main_window(QWidget *parent)
 	// Client <--
 
 	// Viewer -->
-		ui->viewer->connect_to_parent(this->client, ui->go_to_item_page, ui->star);
+		ui->viewer->connect_to_parent(this->client, ui->go_to_item_page, ui->star, ui->share);
 
 		connect(ui->next_unread_feed_or_label, SIGNAL(activated()),
 			ui->viewer, SLOT(go_to_next_unread_feed_or_label()) );
