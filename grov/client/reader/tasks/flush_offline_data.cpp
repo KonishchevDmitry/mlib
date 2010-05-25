@@ -127,7 +127,7 @@ void Flush_offline_data::flush(void)
 			{
 				case Changed_feed_item::PROPERTY_READ:
 				#if GROV_DEVELOP_MODE
-					MLIB_D("Skipping flushing for developer mode.");
+					MLIB_D("Skipping flushing reading items for developer mode.");
 					this->flush_start = this->flush_end;
 					this->flush();
 					return;
@@ -153,7 +153,12 @@ void Flush_offline_data::flush(void)
 					break;
 
 				case Changed_feed_item::PROPERTY_SHARED:
-				#warning
+				#if GROV_DEVELOP_MODE
+					MLIB_D("Skipping flushing shared items for developer mode.");
+					this->flush_start = this->flush_end;
+					this->flush();
+					return;
+				#else
 					url += "edit-tag";
 					post_data = _F(
 						"%1=%2&T=%3",
@@ -161,6 +166,7 @@ void Flush_offline_data::flush(void)
 						QUrl::toPercentEncoding("user/-/state/com.google/broadcast"),
 						QUrl::toPercentEncoding(this->token)
 					);
+				#endif
 					break;
 
 				default:
