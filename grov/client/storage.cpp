@@ -949,15 +949,6 @@ Feed_tree Storage::get_feed_tree(void)
 				"feed_id = :feed_id AND read = 0"
 		);
 
-		QSqlQuery broadcast_items_query = this->prepare(
-			"SELECT "
-				"COUNT(*) "
-			"FROM "
-				"items "
-			"WHERE "
-				"broadcast = 1"
-		);
-
 		while(root_query.next())
 		{
 			// This is a label
@@ -987,22 +978,14 @@ Feed_tree Storage::get_feed_tree(void)
 			// This is a feed
 			else
 			{
-				QSqlQuery query;
 				Big_id feed_id = m::qvariant_to_big_id(root_query.value(0));
 				QString feed_name = root_query.value(1).toString();
 
-				if(feed_id == this->broadcast_feed_id)
-					query = broadcast_items_query;
-				else
-				{
-					query = feeds_items_query;
-					feeds_items_query.bindValue(":feed_id", feed_id);
-				}
-
-				this->exec_and_next(query);
+				feeds_items_query.bindValue(":feed_id", feed_id);
+				this->exec_and_next(feeds_items_query);
 
 				Feed_tree_item* feed = feed_tree.add_feed(feed_id, feed_name);
-				feed->unread_items = m::qvariant_to_big_id(query.value(0));
+				feed->unread_items = m::qvariant_to_big_id(feeds_items_query.value(0));
 			}
 		}
 
