@@ -159,7 +159,7 @@ QModelIndex Feeds_model::get_next_unread(const QModelIndex& index, bool next, bo
 		// Searching for an appropriate item on the same level -->
 		{
 			Big_id id = parent->get_child_id(item);
-			Big_id boundary = ( next ? parent->count() : -1 );
+			Big_id boundary = ( next ? Big_id(parent->count()) : -1 );
 
 			if(!include_star_pos)
 				next ? ++id : --id;
