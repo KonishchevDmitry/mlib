@@ -1,3 +1,13 @@
+-----
+[+] Support of Google Reader's subscription ordering.
+[+] Next/previous unread feed or label hotkey.
+[+] Ellipsis in the subscription list.
+[+] Go to item's page hotkey.
+[+] Minimum font size limit.
+[+] Item sharing.
+[*] Item's link copying error fix.
+
+
 0.1 (2010.05.01)
 -----
 [+] Initial release.
