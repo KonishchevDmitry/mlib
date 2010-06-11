@@ -8,7 +8,3 @@ Features:
 * Full downloading of pages to which items refers.
 * Single file data storage which makes very convenient its coping from one PC
   to another.
-
-I recently started the development and it has not yet most of features, but it
-is already usable. Also, I am writing this program in order to learn the Qt
-library, so I will write it slowly and exclusively just for fun. :)
