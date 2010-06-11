@@ -955,7 +955,7 @@ Feed_tree Storage::get_feed_tree(void)
 			"FROM "
 				"items "
 			"WHERE "
-				"broadcast = 1"
+				"broadcast = 1 AND read = 0"
 		);
 
 		while(root_query.next())
