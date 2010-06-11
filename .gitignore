@@ -2,3 +2,6 @@ grov/.vim/ide.session
 grov/cscope.files
 grov/cscope.out
 grov/tags
+.cproject
+.project
+.settings
