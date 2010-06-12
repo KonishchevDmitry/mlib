@@ -4,7 +4,6 @@
 # be called twice).
 #
 # Application must set:
-#  MLIB_APP_MLIB_PARENT_DIR - directory in which MLib is located.
 #  MLIB_APP_TRANSLATIONS_DIR - directory for *.qm files (relative to install prefix).
 #
 # Application may set:
@@ -14,6 +13,10 @@
 #  MLIB_DEVELOP_MODE - enables develop mode.
 #  MLIB_ENABLE_ALIASES - enables global namespace aliases for common classes
 #      and functions.
+
+
+# Directory in which MLib is located.
+set(MLIB_DIR ${PROJECT_SOURCE_DIR}/mlib)
 
 
 # Boost -->
@@ -46,7 +49,7 @@
 
 
 # Includes
-include_directories(${MLIB_APP_MLIB_PARENT_DIR})
+include_directories(${MLIB_DIR})
 
 
 # Compiler CFLAGS -->
@@ -71,5 +74,5 @@ include_directories(${MLIB_APP_MLIB_PARENT_DIR})
 # Compiler CFLAGS <--
 
 
-link_directories(${MLIB_APP_MLIB_PARENT_DIR}/mlib)
+link_directories(${MLIB_DIR}/mlib)
 set(MLIB_LIBRARIES ${MLIB_LIBRARIES} mlib)

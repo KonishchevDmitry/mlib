@@ -5,13 +5,29 @@
 
 set -e
 
-for project in grov mlib
-do (
-	cd "$project"
+update_project_translations()
+{
+	local project_name="$1"
+	local project_path="$2"
 
-	for lang in ru
-	do
-		lupdate . -noobsolete -ts translations/${project}_${lang}.ts
-	done
-) done
+	(
+		cd "$project_path"
+
+		for lang in ru
+		do
+			lupdate . -noobsolete -ts translations/${project_name}_${lang}.ts
+		done
+	)
+}
+
+main()
+{
+	local main_project_name
+
+	main_project_name="$(basename "$(pwd)")"
+	update_project_translations "$main_project_name" "$main_project_name"
+	update_project_translations "mlib" "mlib/mlib"
+}
+
+main
 

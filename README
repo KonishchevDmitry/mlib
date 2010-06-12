@@ -1,10 +1,5 @@
-Grov - Google Reader offline viewer
+MLib - library of some useful things for internal usage 
 
-Grov gives you a facility to read, star and share your Google Reader items when
-you are offline or have a very slow and inconsistent connection (transport, etc).
-
-Features:
-* Downloading images from items' summaries.
-* Full downloading of pages to which items refers.
-* Single file data storage which makes very convenient its coping from one PC
-  to another.
+This library/toolchain is intended to be included in all my Qt projects and
+includes all functions, scripts, etc. that is common or may be common to all of
+or some of this projects.

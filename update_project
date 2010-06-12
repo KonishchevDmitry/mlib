@@ -3,11 +3,12 @@
 # Updates projects' CMakeProjectFiles.txt
 #
 
+set -e
 
 update()
 {(
-	project_path="$1"
 	project_name="$1"
+	project_path="$2"
 	project_uppercase_name=$(echo -n "$project_name" | awk '{ print toupper($0) }')
 
 	cd "$project_path"
@@ -44,8 +45,15 @@ update()
 )}
 
 
-set -e
+main()
+{
+	local main_project_name
 
-update mlib
-update grov
+	main_project_name="$(basename "$(pwd)")"
+
+	update "mlib" "mlib/mlib"
+	update "$main_project_name" "$main_project_name"
+}
+
+main
 

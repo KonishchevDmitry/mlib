@@ -70,7 +70,7 @@ main()
 }
 
 
-src_dir=$(cd $(dirname "$0") && pwd) || exit 1
+src_dir="$(cd "$(dirname "$(dirname "$0")")" && pwd)" || exit 1
 
 if [[ ! -d "$src_dir" ]]
 then
