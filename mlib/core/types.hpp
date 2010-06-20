@@ -43,6 +43,9 @@ typedef qint64 Size;
 /// For time in seconds.
 typedef qint64 Time;
 
+/// For time in milliseconds
+typedef qint64 Time_ms;
+
 /// Major, minor and patch version encoded to one integer.
 typedef qint32 Version;
 
@@ -60,6 +63,7 @@ Version	qvariant_to_version(const QVariant& variant);
 	using m::Big_id;
 	using m::Size;
 	using m::Time;
+	using m::Time_ms;
 	using m::Version;
 #endif
 
