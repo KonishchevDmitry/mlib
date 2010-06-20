@@ -35,10 +35,13 @@ namespace m {
 
 
 /// Id for databases' entries and for other storages with big amount of data.
-typedef long long Big_id;
+typedef qint64 Big_id;
 
 /// For file's and other sizes.
-typedef long long Size;
+typedef qint64 Size;
+
+/// For time in seconds.
+typedef qint64 Time;
 
 /// Major, minor and patch version encoded to one integer.
 typedef qint32 Version;
@@ -56,6 +59,7 @@ Version	qvariant_to_version(const QVariant& variant);
 #if MLIB_ENABLE_ALIASES
 	using m::Big_id;
 	using m::Size;
+	using m::Time;
 	using m::Version;
 #endif
 
