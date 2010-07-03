@@ -47,12 +47,15 @@ update()
 
 main()
 {
-	local main_project_name
-
-	main_project_name="$(basename "$(pwd)")"
-
 	update "mlib" "mlib/mlib"
-	update "$main_project_name" "$main_project_name"
+
+	for dir in *
+	do
+		if [[ -d "$dir" && -e "$dir/CMakeProjectFiles.txt" ]]
+		then
+			update "$dir" "$dir"
+		fi
+	done
 }
 
 main
