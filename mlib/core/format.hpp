@@ -51,13 +51,17 @@ template <class A1, class A2, class A3, class A4, class A5>
 QString			_F(const QString& format, const A1& arg_1, const A2& arg_2, const A3& arg_3, const A4& arg_4, const A5& arg_5);
 
 
-/// Converts value to a string.
+/// Converts a value to a string.
 template <class Value>
 QString			_S(const Value& value);
 
-/// Converts pointer to a string.
+/// Converts a pointer to a string.
 template <class Value>
 QString			_S(Value* value);
+
+/// Converts an array to a string.
+template <class Value>
+QString			_S(const QList<Value>& values);
 
 /// Specialization of _S().
 inline QString	_S(char symbol);

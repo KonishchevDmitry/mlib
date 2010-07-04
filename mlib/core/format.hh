@@ -153,6 +153,33 @@ QString _S(Value* value)
 
 
 
+template <class Value>
+QString _S(const QList<Value>& values)
+{
+	QString string;
+
+	if(values.size() > 1)
+		string += '{';
+
+	bool first = true;
+	Q_FOREACH(const Value& value, values)
+	{
+		if(first)
+			first = false;
+		else
+			string += ',';
+
+		string += _S(value);
+	}
+
+	if(values.size() > 1)
+		string += '}';
+
+	return string;
+}
+
+
+
 QString _S(char symbol)
 {
 	return QChar(symbol);
