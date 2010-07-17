@@ -4,12 +4,12 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../core/tools.cpp" line="50"/>
+        <location filename="../core/tools.cpp" line="54"/>
         <source>Invalid application&apos;s binaries&apos; directory path &apos;%1&apos;.</source>
         <translation>Неверный путь к исполняемым файлам приложения &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../core/tools.cpp" line="63"/>
+        <location filename="../core/tools.cpp" line="67"/>
         <source>Invalid application&apos;s binaries&apos; directory path &apos;%1&apos; or gotten application&apos;s binary path &apos;%2&apos;.</source>
         <translation>Неверный путь к исполняемым файлам приложения &apos;%1&apos;, или получен неверный путь к исполняемому файлу приложения &apos;%2&apos;.</translation>
     </message>
@@ -44,6 +44,14 @@
         <location filename="../db/scoped_transaction.cpp" line="51"/>
         <source>Unable to rollback a transaction:</source>
         <translation>Не удалось произвести откат транзакции:</translation>
+    </message>
+</context>
+<context>
+    <name>m::gui::Messenger</name>
+    <message>
+        <location filename="../gui/messenger.cpp" line="56"/>
+        <source>Error happened at %1:%2. Please contact to developer.</source>
+        <translation>Ошибка произошла в %1:%2. Пожалуйста, свяжитесь с разработчиком.</translation>
     </message>
 </context>
 <context>

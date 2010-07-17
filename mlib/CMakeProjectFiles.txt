@@ -9,12 +9,14 @@ set(MLIB_SOURCES
 	gui/core.cpp
 	gui/message_box.cpp
 	gui/messages.cpp
+	gui/messenger.cpp
 	sys/system_signal_notifier.cpp
 )
 
 set(MLIB_MOC_SOURCES
 	db/scoped_transaction.hpp
 	gui/message_box.hpp
+	gui/messenger.hpp
 	sys/system_signal_notifier_private.hpp
 )
 

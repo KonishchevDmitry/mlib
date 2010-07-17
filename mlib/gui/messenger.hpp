@@ -18,32 +18,41 @@
 **************************************************************************/
 
 
-#ifndef MLIB_HEADER_GUI_CORE
-#define MLIB_HEADER_GUI_CORE
+#ifndef MLIB_HEADER_GUI_MESSENGER
+#define MLIB_HEADER_GUI_MESSENGER
 
-#include <memory>
+#include "core.hpp"
 
-class QApplication;
-
-#include <QtGui/QWidget>
-
-#include <mlib/core.hpp>
+#include "messenger.hxx"
 
 
 namespace m { namespace gui {
 
-/// Formats window title to the form "$title - $app_name".
-QString						format_window_title(const QString& title);
 
-/// Initializes a GUI application.
-std::auto_ptr<QApplication> init(int& argc, char* argv[], const QString& app_name, Version app_version);
+/// Shows messages to the user.
+class Messenger: public QObject
+{
+	Q_OBJECT
 
-/// Returns the main window or NULL if it had not been setted yet.
-QWidget*					get_main_window(void);
+	public:
+		Messenger(QObject* parent = NULL);
 
-/// Sets current main window (some GUI tools needs it for e.g. to display
-/// messages on top of it).
-void						set_main_window(QWidget* window);
+
+	public:
+		/// Shows a message.
+		void	show(const QString& file, int line, m::Message_type type, const QString& title, const QString& message);
+
+
+	signals:
+		/// Shows a message.
+		void	message(const QString& file, int line, m::Message_type type, const QString& title, const QString& message);
+
+
+	private slots:
+		/// Called when we get a message.
+		void	on_message(const QString& file, int line, m::Message_type type, const QString& title, const QString& message);
+};
+
 
 }}
 

@@ -18,34 +18,51 @@
 **************************************************************************/
 
 
-#ifndef MLIB_HEADER_GUI_CORE
-#define MLIB_HEADER_GUI_CORE
+#include <QtCore/QCoreApplication>
 
-#include <memory>
+#include "core.hpp"
+#include "messages.hpp"
 
-class QApplication;
-
-#include <QtGui/QWidget>
-
-#include <mlib/core.hpp>
+#include "messenger.hpp"
 
 
 namespace m { namespace gui {
 
-/// Formats window title to the form "$title - $app_name".
-QString						format_window_title(const QString& title);
 
-/// Initializes a GUI application.
-std::auto_ptr<QApplication> init(int& argc, char* argv[], const QString& app_name, Version app_version);
+Messenger::Messenger(QObject* parent)
+:
+	QObject(parent)
+{
+	connect(this, SIGNAL(message(const QString&, int, m::Message_type, const QString&, const QString&)),
+		this, SLOT(on_message(const QString&, int, m::Message_type, const QString&, const QString&)) );
+}
 
-/// Returns the main window or NULL if it had not been setted yet.
-QWidget*					get_main_window(void);
 
-/// Sets current main window (some GUI tools needs it for e.g. to display
-/// messages on top of it).
-void						set_main_window(QWidget* window);
+
+void Messenger::show(const QString& file, int line, m::Message_type type, const QString& title, const QString& message)
+{
+	emit this->message(file, line, type, title, message);
+}
+
+
+
+void Messenger::on_message(const QString& file, int line, m::Message_type type, const QString& title, const QString& message)
+{
+	QString details;
+
+	if(type == m::MESSAGE_TYPE_ERROR)
+	{
+		details += _F("%1 %2\n\n", QCoreApplication::applicationName(), QCoreApplication::applicationVersion());
+		details += _F( tr("Error happened at %1:%2. Please contact to developer."), file, line );
+	}
+
+	m::gui::show_message(
+		get_main_window(), type,
+		title, message, details,
+		type != m::MESSAGE_TYPE_SILENT_WARNING
+	);
+}
+
 
 }}
-
-#endif
 

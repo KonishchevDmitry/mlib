@@ -18,33 +18,11 @@
 **************************************************************************/
 
 
-#ifndef MLIB_HEADER_GUI_CORE
-#define MLIB_HEADER_GUI_CORE
-
-#include <memory>
-
-class QApplication;
-
-#include <QtGui/QWidget>
-
-#include <mlib/core.hpp>
-
+#ifndef MLIB_HEADER_GUI_MESSENGER_FWD
+#define MLIB_HEADER_GUI_MESSENGER_FWD
 
 namespace m { namespace gui {
-
-/// Formats window title to the form "$title - $app_name".
-QString						format_window_title(const QString& title);
-
-/// Initializes a GUI application.
-std::auto_ptr<QApplication> init(int& argc, char* argv[], const QString& app_name, Version app_version);
-
-/// Returns the main window or NULL if it had not been setted yet.
-QWidget*					get_main_window(void);
-
-/// Sets current main window (some GUI tools needs it for e.g. to display
-/// messages on top of it).
-void						set_main_window(QWidget* window);
-
+	class Messenger;
 }}
 
 #endif

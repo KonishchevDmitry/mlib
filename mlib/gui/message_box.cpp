@@ -42,10 +42,7 @@ Message_box::Message_box(Icon icon, const QString& title, const QString& message
 
 void Message_box::set_details(const QString& details)
 {
-	// If message does not have '<' or '>' symbols, Qt thinks about it as
-	// of plain text message and shows to user an "&amp;" instead of a '&',
-	// etc.
-	this->setDetailedText("<b></b>" + Qt::escape(details));
+	this->setDetailedText(details);
 }
 
 

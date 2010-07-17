@@ -126,6 +126,8 @@ Version	get_version(Version major, Version minor, Version patch);
 QString	get_version_string(Version version);
 
 /// Loads Qt's, MLib's and application's translations.
+///
+/// If \a translations_dir is empty, loads only Qt's translations.
 void	load_translations(const QString& translations_dir, const QString app_name);
 
 
