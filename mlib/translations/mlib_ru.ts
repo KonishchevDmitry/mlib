@@ -2,6 +2,19 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>QApplication</name>
+    <message>
+        <location filename="../core/tools.cpp" line="50"/>
+        <source>Invalid application&apos;s binaries&apos; directory path &apos;%1&apos;.</source>
+        <translation>Неверный путь к исполняемым файлам приложения &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <location filename="../core/tools.cpp" line="63"/>
+        <source>Invalid application&apos;s binaries&apos; directory path &apos;%1&apos; or gotten application&apos;s binary path &apos;%2&apos;.</source>
+        <translation>Неверный путь к исполняемым файлам приложения &apos;%1&apos;, или получен неверный путь к исполняемому файлу приложения &apos;%2&apos;.</translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="../core/messages.cpp" line="110"/>

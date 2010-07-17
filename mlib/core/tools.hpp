@@ -24,6 +24,8 @@
 #include <boost/noncopyable.hpp>
 #include <boost/typeof/typeof.hpp>
 
+class QLocale;
+
 #if MLIB_DEVELOP_MODE
 	#include <QtCore/QDebug>
 #endif
@@ -97,6 +99,14 @@ class Virtual_noncopyable: private Virtual, private boost::noncopyable
 template <class To, class From>
 To		checked_qobject_cast(From object);
 
+/// Returns application's installation directory absolute path.
+///
+/// @param app_bin_dir - application's binaries' directory path (relative to
+/// the install prefix).
+///
+/// @throw m::Exception.
+QString	get_app_install_dir(const QString& app_bin_dir);
+
 /// Returns a major version.
 Version	get_major_version(Version version);
 
@@ -106,11 +116,17 @@ Version	get_minor_version(Version version);
 /// Returns a minor version.
 Version	get_patch_version(Version version);
 
+/// Returns the system locale.
+QLocale	get_system_locale(void);
+
 /// Returns major, minor and patch versions encoded to one integer.
 Version	get_version(Version major, Version minor, Version patch);
 
 /// Returns a version string.
 QString	get_version_string(Version version);
+
+/// Loads Qt's, MLib's and application's translations.
+void	load_translations(const QString& translations_dir, const QString app_name);
 
 
 }
